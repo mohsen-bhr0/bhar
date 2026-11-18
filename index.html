@@ -284,7 +284,8 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_complete_standalone_v31";
+    const STORAGE_KEY = "bahr_complete_standalone_v32";
+    const LOGO_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi5SPFh3P2CSWR2kiixtqqGs7Q7_K6HGBa6vREqY644cGTuuccPHn10ohMH4mj5qAzeWWrIjdcoUi4v3EaEyMW98Bm4MWo6jdZ3l4bYEea2ZP0dsfpR57iVwOwouI7UkKkKgIvWwDBovNA527L3eSi4OvmacduOGIbP_4YphD6eMH5gFEaJhu8yPtUhq52g/s1024/53039.png";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     
@@ -429,7 +430,7 @@
       agreement: {
         ar: {
           title: "اتفاقية المستخدم",
-          body: "تشكل هذه الاتفاقية عقداً ملزماً بينك وبين إدارة منصة 'بحر'. أنت مسؤول مسؤولية كاملة عن كافة الأنشطة التي تتم عبر حسابك وعن سرية كلمة المرور الخاصة بك. تحتفظ الإدارة بالحق في تعديل هذه الشروط في أي وقت، ويعتبر استمرارك في استخدام المنصة موافقة صريحة على تلك التعديلات."
+          body: "تشكل هذه الاتفاقية عقداً ملزماً بينك وبين إدارة منصة 'بحر'. أنت مسؤول مسؤولية كاملة عن كافة الأنشطة التي تتم عبر حسابك وعن سرية كلمة المرور الخاصة بك. تحتفظ الإدارة الحق في تعديل هذه الشروط في أي وقت، ويعتبر استمرارك في استخدام المنصة موافقة صريحة على تلك التعديلات."
         },
         en: {
           title: "User Agreement",
@@ -468,19 +469,23 @@
       const now = Date.now();
       return {
         settings: { registrationOpen: true, autoDeleteEnabled: false, autoDeleteHours: 24, allowPostEdits: true },
-        currentUserId: null,
+        currentUserId: 1,
         nextId: 100,
         users: [
           {
-            id: 1, username: "admin", firstName: "مدير", secondName: "النظام", password: "BahrAdmin123", role: "admin", verified: true, disabled: false,
-            photoData: null, gender: "رجل", birthDate: "1995-01-01", country: "مصر",
-            bio: "الحساب الإداري الرسمي لمنصة بحر.",
+            id: 1, username: "BahrOfficial", firstName: "بحر", secondName: "", password: "BahrAdmin123", role: "admin", verified: true, disabled: false,
+            photoData: LOGO_URL, gender: "رجل", birthDate: "1995-01-01", country: "مصر",
+            bio: "الحساب الرسمي لمنصة بحر.",
             dailyPostLimit: 10, autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: now,
             blockedUsers: [], mutedUsers: []
           },
         ],
         follows: [],
-        posts: [],
+        posts: [
+          {
+            id: 10, userId: 1, content: "أهلاً بك في منصة بحر الرسمية! تواصل بحرية وبكل هدوء. #بحر #تواصل", category: "تقنية", likes: [], comments: [], createdAt: now - 10000
+          }
+        ],
         drafts: [],
         postLogs: [],
         conversations: [],
@@ -495,6 +500,14 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
+          // تأكيد تعيين حساب الإدارة الأساسي بالاسم المطلوب وصورة الشعار
+          let admin = parsed.users.find(u => u.id === 1 || u.role === 'admin');
+          if (admin) {
+            admin.username = "BahrOfficial";
+            admin.firstName = "بحر";
+            admin.secondName = "";
+            admin.photoData = LOGO_URL;
+          }
           parsed.users.forEach(u => {
             if (!u.firstName) u.firstName = u.username;
             if (!u.secondName) u.secondName = "";
@@ -1274,7 +1287,7 @@
                 </div>
                 <div style="flex:1">
                   <label class="muted">الاسم الثاني</label>
-                  <input id="acc-second" class="input" required value="${esc(me.secondName || "")}" />
+                  <input id="acc-second" class="input" value="${esc(me.secondName || "")}" />
                 </div>
               </div>
               <div>
@@ -1331,7 +1344,7 @@
       e.preventDefault();
       const me = currentUser();
       if (!me) return;
-      const newUname = document.getElementById("acc-username").value.trim().toLowerCase();
+      const newUname = document.getElementById("acc-username").value.trim();
       const newFirst = document.getElementById("acc-first").value.trim();
       const newSecond = document.getElementById("acc-second").value.trim();
       const newBio = document.getElementById("acc-bio").value.trim().slice(0, 160);
@@ -1340,7 +1353,7 @@
       const newBirth = document.getElementById("acc-birth").value;
 
       if (newUname.length < 3) return toast("اسم المستخدم يجب ألا يقل عن 3 أحرف");
-      const exists = db.users.some((u) => u.id !== me.id && u.username.toLowerCase() === newUname);
+      const exists = db.users.some((u) => u.id !== me.id && u.username.toLowerCase() === newUname.toLowerCase());
       if (exists) return toast("اسم المستخدم مستخدم مسبقاً");
 
       me.username = newUname;
@@ -1434,7 +1447,7 @@
       return `
         <div class="card" style="max-width:520px;margin:30px auto;">
           <div style="text-align:center;margin-bottom:20px">
-            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi5SPFh3P2CSWR2kiixtqqGs7Q7_K6HGBa6vREqY644cGTuuccPHn10ohMH4mj5qAzeWWrIjdcoUi4v3EaEyMW98Bm4MWo6jdZ3l4bYEea2ZP0dsfpR57iVwOwouI7UkKkKgIvWwDBovNA527L3eSi4OvmacduOGIbP_4YphD6eMH5gFEaJhu8yPtUhq52g/s1024/53039.png" alt="بحر" style="width:56px;height:56px;border-radius:14px;object-fit:cover;border:1px solid var(--border);margin-bottom:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1)" />
+            <img src="${LOGO_URL}" alt="بحر" style="width:56px;height:56px;border-radius:14px;object-fit:cover;border:1px solid var(--border);margin-bottom:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1)" />
             <h2 style="font-size:22px">بحر</h2>
             <div class="muted" style="margin-top:4px">${ui.lang === 'en' ? 'Sign in or create account' : 'منصة تواصل اجتماعي نصية هادفة'}</div>
           </div>
@@ -1448,8 +1461,8 @@
             ? `<div style="padding:14px;background:#fef7ec;border:1px solid #f5d0a9;border-radius:12px;font-size:13px;color:#8a4b08">عذراً، التسجيل مغلق حالياً من قِبل الإدارة.</div>`
             : `<form onsubmit="submitAuth(event)" class="stack">
                 <div>
-                  <label class="muted">اسم المستخدم (للتسجيل ورابط الحساب - بالإنجليزية وبدون مسافات)</label>
-                  <input id="auth-u" class="input" required minlength="3" maxlength="24" placeholder="username" oninput="checkUsernameLive(this.value)" />
+                  <label class="muted">اسم المستخدم (للتسجيل ورابط الحساب)</label>
+                  <input id="auth-u" class="input" required minlength="3" maxlength="24" placeholder="BahrOfficial" oninput="checkUsernameLive(this.value)" />
                   <div id="u-suggest" style="margin-top:6px"></div>
                 </div>
                 ${ui.authMode === "register" ? `
@@ -1460,7 +1473,7 @@
                     </div>
                     <div style="flex:1">
                       <label class="muted">الاسم الثاني</label>
-                      <input id="reg-second" class="input" required placeholder="الاسم الثاني..." />
+                      <input id="reg-second" class="input" placeholder="الاسم الثاني..." />
                     </div>
                   </div>` : ""}
                 <div>
@@ -1544,10 +1557,10 @@
 
     function submitAuth(e) {
       e.preventDefault();
-      const u = document.getElementById("auth-u").value.trim().toLowerCase();
+      const u = document.getElementById("auth-u").value.trim();
       const p = document.getElementById("auth-p").value;
       if (ui.authMode === "login") {
-        const found = db.users.find((x) => x.username.toLowerCase() === u && x.password === p);
+        const found = db.users.find((x) => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
         if (!found) return toast("بيانات تسجيل الدخول غير صحيحة");
         if (found.disabled) return toast("عذراً، هذا الحساب معطل من قِبل الإدارة");
         db.currentUserId = found.id;
@@ -1556,7 +1569,7 @@
         render();
       } else {
         if (!db.settings.registrationOpen) return toast("التسجيل مغلق حالياً");
-        if (db.users.some((x) => x.username.toLowerCase() === u)) {
+        if (db.users.some((x) => x.username.toLowerCase() === u.toLowerCase())) {
           checkUsernameLive(u);
           return toast("اسم المستخدم مستخدم مسبقاً");
         }
@@ -1565,10 +1578,10 @@
         const gender = document.getElementById("reg-gender").value;
         const birthDate = document.getElementById("reg-birth").value;
         const country = document.getElementById("reg-country").value;
-        if (!firstName || !secondName || !gender || !birthDate || !country) return toast("يرجى إكمال كافة الحقول المطلوبة");
+        if (!firstName || !gender || !birthDate || !country) return toast("يرجى إكمال كافة الحقول المطلوبة");
 
         const newUser = {
-          id: uid(), username: u, firstName, secondName, password: p, role: "user", verified: false, disabled: false,
+          id: uid(), username: u, firstName, secondName: secondName || "", password: p, role: "user", verified: false, disabled: false,
           photoData: window.__regPhotoData || null,
           gender, birthDate, country,
           bio: "", dailyPostLimit: 1,
@@ -1577,11 +1590,6 @@
         };
         db.users.push(newUser);
         
-        const primaryTarget = db.users[0] && db.users[0].id !== newUser.id ? db.users[0].id : null;
-        if (primaryTarget) {
-          db.follows.push({ followerId: newUser.id, followingId: primaryTarget });
-        }
-
         db.currentUserId = newUser.id;
         window.__regPhotoData = null;
         save();
