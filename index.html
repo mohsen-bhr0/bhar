@@ -58,25 +58,39 @@
       border-bottom: 1px solid var(--border);
     }
     .topbar {
-      height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 14px;
     }
     .brand-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: none; border: none; color: var(--ink); font-size: 20px; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 8px;
+      background: none; border: none; color: var(--ink); font-size: 19px; font-weight: 700;
       white-space: nowrap;
     }
     .brand-mark {
       width: 32px; height: 32px; border-radius: 10px; background: var(--blue); color: #fff;
-      display: inline-flex; align-items: center; justify-content: center;
+      display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .brand-mark svg { width: 18px; height: 18px; fill: currentColor; }
     
-    nav { display: flex; align-items: center; gap: 20px; overflow-x: auto; }
+    nav { display: flex; align-items: center; gap: 16px; overflow-x: auto; }
     .nav-link {
       background: none; border: none; border-bottom: 2px solid transparent;
       padding: 6px 2px; font-size: 14px; font-weight: 500; color: var(--muted); white-space: nowrap;
     }
     .nav-link.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+    .header-search {
+      position: relative; width: 210px; max-width: 36vw;
+    }
+    .header-search input {
+      width: 100%; padding: 7px 32px 7px 12px; font-size: 13px; color: var(--ink);
+      background: var(--surface-soft); border: 1px solid var(--border); border-radius: 20px;
+      outline: none;
+    }
+    .header-search input:focus { border-color: var(--blue); }
+    .header-search svg {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      width: 15px; height: 15px; fill: var(--muted); pointer-events: none;
+    }
 
     main { padding: 26px 0 60px; }
     .grid-2 { display: grid; grid-template-columns: 1fr; gap: 22px; align-items: start; }
@@ -110,12 +124,13 @@
     .avatar {
       border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center;
       flex-shrink: 0; font-weight: 700; color: #fff; user-select: none; overflow: hidden;
+      object-fit: cover;
     }
-    .avatar svg { width: 68%; height: 68%; fill: currentColor; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .av-xs { width: 28px; height: 28px; font-size: 11px; }
     .av-sm { width: 36px; height: 36px; font-size: 13px; }
     .av-md { width: 44px; height: 44px; font-size: 15px; }
-    .av-lg { width: 68px; height: 68px; font-size: 24px; }
+    .av-lg { width: 72px; height: 72px; font-size: 26px; }
     
     .verified {
       width: 16px; height: 16px; border-radius: 9999px; background: var(--blue); color: #fff;
@@ -141,33 +156,36 @@
       background: var(--surface-tint); color: var(--blue); border: 1px solid var(--border);
     }
 
-    .avatar-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
-      padding: 10px; background: var(--surface-soft); border: 1px solid var(--border);
-      border-radius: 12px; max-height: 200px; overflow-y: auto;
+    .info-chips {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
     }
-    .avatar-pick {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-      padding: 8px 5px; display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--ink);
+    .info-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 8px; font-size: 12px;
+      background: var(--surface-soft); border: 1px solid var(--border); color: var(--ink);
     }
-    .avatar-pick.selected { border-color: var(--blue); background: var(--surface-tint); }
+
+    .photo-upload-box {
+      display: flex; align-items: center; gap: 14px; padding: 12px;
+      background: var(--surface-soft); border: 1px dashed var(--border); border-radius: 12px;
+    }
 
     .dropdown { position: relative; display: inline-block; }
-    .menu-btn, .theme-btn {
+    .menu-btn {
       background: var(--surface-soft); border: 1px solid var(--border); border-radius: 11px;
-      padding: 8px 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: var(--ink);
+      padding: 8px 11px; display: inline-flex; align-items: center; justify-content: center; color: var(--ink);
     }
-    .menu-btn:hover, .theme-btn:hover { background: var(--surface-tint); }
-    .menu-btn svg, .theme-btn svg { width: 18px; height: 18px; fill: currentColor; }
+    .menu-btn:hover { background: var(--surface-tint); }
+    .menu-btn svg { width: 18px; height: 18px; fill: currentColor; }
     .dropdown-content {
-      position: absolute; left: 0; top: 48px; background: var(--surface); min-width: 195px;
+      position: absolute; left: 0; top: 48px; background: var(--surface); min-width: 215px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid var(--border);
       border-radius: 12px; z-index: 40; display: none; overflow: hidden;
     }
     .dropdown-content.show { display: block; }
     .dropdown-item {
       width: 100%; text-align: right; background: none; border: none; padding: 11px 16px;
-      font-size: 13px; font-weight: 500; color: var(--ink); display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 500; color: var(--ink); display: flex; align-items: center; gap: 9px;
     }
     .dropdown-item:hover { background: var(--surface-soft); }
     .dropdown-item.danger { color: var(--danger); }
@@ -189,10 +207,10 @@
       position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.6);
       display: flex; align-items: center; justify-content: center; padding: 16px;
     }
-    .modal-card { width: 100%; max-width: 460px; background: var(--surface); border-radius: 16px; padding: 20px; border: 1px solid var(--border); color: var(--ink); max-height: 90vh; overflow-y: auto; }
+    .modal-card { width: 100%; max-width: 470px; background: var(--surface); border-radius: 16px; padding: 20px; border: 1px solid var(--border); color: var(--ink); max-height: 90vh; overflow-y: auto; }
   </style>
 </head>
-<body onclick="closeAllMenus(event)">
+<body onclick="closeAllMenus()">
   <header>
     <div class="container topbar">
       <button class="brand-btn" onclick="goHome()">
@@ -211,20 +229,13 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_standalone_v5";
+    const STORAGE_KEY = "bahr_standalone_v6";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     const CATEGORIES = ["تقنية", "خواطر", "طب وصحة", "ريادة أعمال", "كتب"];
-
-    const PRESET_AVATARS = [
-      { id: "student", name: "طالب", bg: "#2563eb", svg: '<svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7c0 2.21 1.44 4.08 3.44 4.74C8.42 12.56 7 14.86 7 17.5 7 20.54 9.46 23 12.5 23s5.5-2.46 5.5-5.5c0-2.64-1.42-4.94-3.44-5.76C15.56 11.08 17 9.21 17 7c0-2.76-2.24-5-5-5zm0 2c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 13c-2.33 0-4.32-1.35-5.26-3.32-.15-.31.09-.68.44-.68h9.64c.35 0 .59.37.44.68C16.32 15.65 14.33 17 12 17z"/></svg>' },
-      { id: "doctor", name: "طبيب", bg: "#059669", svg: '<svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7c0 2.21 1.44 4.08 3.44 4.74C8.42 12.56 7 14.86 7 17.5 7 20.54 9.46 23 12.5 23s5.5-2.46 5.5-5.5c0-2.64-1.42-4.94-3.44-5.76C15.56 11.08 17 9.21 17 7c0-2.76-2.24-5-5-5zm-2 9H8V9h2V7h2v2h2v2h-2v2h-2v-2z"/></svg>' },
-      { id: "engineer", name: "مهندس", bg: "#d97706", svg: '<svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7c0 2.21 1.44 4.08 3.44 4.74C8.42 12.56 7 14.86 7 17.5 7 20.54 9.46 23 12.5 23s5.5-2.46 5.5-5.5c0-2.64-1.42-4.94-3.44-5.76C15.56 11.08 17 9.21 17 7c0-2.76-2.24-5-5-5zm2 5h-4V5h4v2z"/></svg>' },
-      { id: "programmer", name: "مبرمج", bg: "#4f46e5", svg: '<svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7c0 2.21 1.44 4.08 3.44 4.74C8.42 12.56 7 14.86 7 17.5 7 20.54 9.46 23 12.5 23s5.5-2.46 5.5-5.5c0-2.64-1.42-4.94-3.44-5.76C15.56 11.08 17 9.21 17 7c0-2.76-2.24-5-5-5zm-3 9l-3-3 3-3 1.4 1.4L10.8 9l1.6 1.6L11 12l-2-2zm6 0l-1.4-1.4L13.2 12l1.4 1.4 2-2-2-2-1.4 1.4z"/></svg>' },
-      { id: "teacher", name: "معلم", bg: "#0891b2", svg: '<svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7c0 2.21 1.44 4.08 3.44 4.74C8.42 12.56 7 14.86 7 17.5 7 20.54 9.46 23 12.5 23s5.5-2.46 5.5-5.5c0-2.64-1.42-4.94-3.44-5.76C15.56 11.08 17 9.21 17 7c0-2.76-2.24-5-5-5zm-1 14h2v2h-2v-2zm0-4h2v2h-2v-2z"/></svg>' },
-      { id: "designer", name: "مصمم", bg: "#db2777", svg: '<svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7c0 2.21 1.44 4.08 3.44 4.74C8.42 12.56 7 14.86 7 17.5 7 20.54 9.46 23 12.5 23s5.5-2.46 5.5-5.5c0-2.64-1.42-4.94-3.44-5.76C15.56 11.08 17 9.21 17 7c0-2.76-2.24-5-5-5zm2.5 7.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>' },
-      { id: "writer", name: "كاتب", bg: "#7c3aed", svg: '<svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7c0 2.21 1.44 4.08 3.44 4.74C8.42 12.56 7 14.86 7 17.5 7 20.54 9.46 23 12.5 23s5.5-2.46 5.5-5.5c0-2.64-1.42-4.94-3.44-5.76C15.56 11.08 17 9.21 17 7c0-2.76-2.24-5-5-5zm1 10h-2V7h2v5z"/></svg>' },
-      { id: "business", name: "رائد أعمال", bg: "#374151", svg: '<svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7c0 2.21 1.44 4.08 3.44 4.74C8.42 12.56 7 14.86 7 17.5 7 20.54 9.46 23 12.5 23s5.5-2.46 5.5-5.5c0-2.64-1.42-4.94-3.44-5.76C15.56 11.08 17 9.21 17 7c0-2.76-2.24-5-5-5zm-3 8h6v2H9v-2z"/></svg>' }
+    const COUNTRIES = [
+      "مصر", "السعودية", "الإمارات", "الأردن", "فلسطين", "لبنان", "سوريا", "العراق",
+      "الكويت", "قطر", "البحرين", "عُمان", "اليمن", "المغرب", "الجزائر", "تونس", "ليبيا", "السودان", "أخرى"
     ];
 
     const LETTER_COLORS = ["#0d63a5", "#0e7490", "#1e40af", "#0f766e", "#0369a1", "#1d4ed8", "#155e75"];
@@ -236,14 +247,14 @@
           registrationOpen: true,
           autoDeleteEnabled: false,
           autoDeleteHours: 24,
-          enabledAvatars: PRESET_AVATARS.map((a) => a.id),
         },
         currentUserId: null,
         nextId: 100,
         users: [
           {
             id: 1, username: "admin", password: "BahrAdmin123", role: "admin", verified: true,
-            avatarId: "engineer", bio: "الحساب الإداري الرسمي لمنصة بحر.",
+            photoData: null, gender: "رجل", birthDate: "1995-01-01", country: "مصر",
+            bio: "الحساب الإداري الرسمي لمنصة بحر.",
             dailyPostLimit: 10, autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: now,
             blockedUsers: [], mutedUsers: []
           },
@@ -283,7 +294,6 @@
       theme: localStorage.getItem("bahr_theme") || "light"
     };
 
-    // دعم فتح رابط حساب مشارك مباشرة
     function checkInitialHash() {
       const h = location.hash || "";
       if (h.startsWith("#user-")) {
@@ -306,7 +316,11 @@
     }
 
     function save() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+      } catch (err) {
+        toast("مساحة التخزين ممتلئة، جرب صورة أصغر حجماً");
+      }
     }
 
     function uid() {
@@ -373,13 +387,41 @@
       return h > 0 ? `${h} س و ${m} د` : `${m} د`;
     }
 
+    // ضغط الصورة الشخصية المرفوعة لحجم خفيف يناسب التخزين
+    function compressImageFile(file, callback) {
+      if (!file || !file.type.startsWith("image/")) {
+        toast("يرجى اختيار ملف صورة صالح");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement("canvas");
+          const MAX = 220;
+          let w = img.width, h = img.height;
+          if (w > h) {
+            if (w > MAX) { h = Math.round((h * MAX) / w); w = MAX; }
+          } else {
+            if (h > MAX) { w = Math.round((w * MAX) / h); h = MAX; }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+          callback(dataUrl);
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // عرض الصورة الشخصية للمستخدم، وإن لم يضع صورة يظهر أول حرف من اسمه
     function avatarHtml(user, size = "av-md") {
       if (!user) return "";
-      const preset = user.avatarId && db.settings.enabledAvatars.includes(user.avatarId)
-        ? PRESET_AVATARS.find((a) => a.id === user.avatarId)
-        : null;
-      if (preset) {
-        return `<span class="avatar ${size}" style="background:${preset.bg}" title="${esc(preset.name)}">${preset.svg}</span>`;
+      if (user.photoData) {
+        return `<span class="avatar ${size}"><img src="${user.photoData}" alt="${esc(user.username)}" /></span>`;
       }
       let hash = 0;
       for (let i = 0; i < user.username.length; i++) hash = (hash * 31 + user.username.charCodeAt(i)) >>> 0;
@@ -439,6 +481,27 @@
       render();
     }
 
+    function handleHeaderSearch(val) {
+      ui.searchQuery = val;
+      if (ui.view !== "discover") {
+        ui.view = "discover";
+        render();
+        const inp = document.getElementById("header-search-input");
+        if (inp) {
+          inp.focus();
+          inp.setSelectionRange(val.length, val.length);
+        }
+      } else {
+        renderDiscoverAreaOnly();
+      }
+    }
+
+    function renderDiscoverAreaOnly() {
+      const container = document.getElementById("discover-results");
+      if (!container) { render(); return; }
+      container.innerHTML = getDiscoverPostsHtml();
+    }
+
     function toggleUserMenu(e) {
       e.stopPropagation();
       const menu = document.getElementById("user-dropdown-menu");
@@ -456,14 +519,19 @@
       cleanupSweep();
       const me = currentUser();
 
-      const themeBtnHtml = `
-        <button class="theme-btn" onclick="toggleTheme()" title="تبديل الوضع الليلي">
-          <svg viewBox="0 0 24 24"><path d="${ui.theme === 'light' ? 'M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z' : 'M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z'}"/></svg>
-        </button>`;
-
       if (!me) {
         document.getElementById("nav").innerHTML = "";
-        document.getElementById("auth-actions").innerHTML = themeBtnHtml;
+        document.getElementById("auth-actions").innerHTML = `
+          <div class="dropdown">
+            <button class="menu-btn" onclick="toggleUserMenu(event)" title="القائمة">
+              <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            </button>
+            <div id="user-dropdown-menu" class="dropdown-content">
+              <button class="dropdown-item" onclick="toggleTheme()">
+                ${ui.theme === "light" ? "🌙 الوضع الليلي" : "☀️ الوضع النهاري"}
+              </button>
+            </div>
+          </div>`;
         document.getElementById("app").innerHTML = renderAuth();
         return;
       }
@@ -481,10 +549,14 @@
         .map(([id, label]) => `<button class="nav-link ${ui.view === id ? "active" : ""}" onclick="setView('${id}')">${label}</button>`)
         .join("");
 
+      // شريط البحث في المكان العلوي بدلاً من زر الوضع، ونقل الوضع الليلي إلى الثلاث شرط
       document.getElementById("auth-actions").innerHTML = `
-        ${themeBtnHtml}
+        <div class="header-search">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input id="header-search-input" type="search" placeholder="بحث في بحر..." value="${esc(ui.searchQuery)}" oninput="handleHeaderSearch(this.value)" />
+        </div>
         <button class="brand-btn" style="font-size:14px" onclick="openProfile(${me.id})">
-          ${avatarHtml(me, "av-xs")} <span>${esc(me.username)}</span> ${badgeHtml(me)}
+          ${avatarHtml(me, "av-xs")} <span style="max-width:90px;overflow:hidden;text-overflow:ellipsis">${esc(me.username)}</span> ${badgeHtml(me)}
         </button>
         <div class="dropdown">
           <button class="menu-btn" onclick="toggleUserMenu(event)" title="القائمة">
@@ -493,11 +565,15 @@
           <div id="user-dropdown-menu" class="dropdown-content">
             <button class="dropdown-item" onclick="openAccountSettingsModal()">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-              حسابي (تغيير الاسم)
+              حسابي (الاسم والصورة)
             </button>
             <button class="dropdown-item" onclick="openChangePasswordModal()">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
               تغيير كلمة المرور
+            </button>
+            <button class="dropdown-item" onclick="toggleTheme()">
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="${ui.theme === 'light' ? 'M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z' : 'M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z'}"/></svg>
+              ${ui.theme === "light" ? "الوضع الليلي" : "الوضع النهاري"}
             </button>
             <button class="dropdown-item" onclick="setView('admin')" style="${me.role === 'admin' ? '' : 'display:none'}">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
@@ -525,12 +601,11 @@
       else app.innerHTML = renderFeed();
     }
 
-    // نافذة "حسابي" لتغيير الاسم والنبذة والأفاتار من قائمة الثلاث شرط
+    // نافذة "حسابي" داخل الثلاث شرط لتغيير الاسم والصورة الشخصية والبيانات
     function openAccountSettingsModal() {
       const me = currentUser();
       if (!me) return;
-      const presets = PRESET_AVATARS.filter((a) => db.settings.enabledAvatars.includes(a.id));
-      window.__editAv = me.avatarId;
+      window.__editPhotoData = me.photoData || null;
 
       document.getElementById("modal-root").innerHTML = `
         <div class="modal-backdrop">
@@ -541,26 +616,46 @@
             </div>
             <form onsubmit="saveAccountSettings(event)" class="stack">
               <div>
-                <label class="muted">اسم المستخدم (تغيير الاسم)</label>
+                <label class="muted">الصورة الشخصية (إن لم تضع صورة يظهر أول حرف من اسمك)</label>
+                <div class="photo-upload-box" style="margin-top:6px">
+                  <div id="edit-photo-preview">
+                    ${avatarHtml({ username: me.username, photoData: window.__editPhotoData }, "av-md")}
+                  </div>
+                  <div class="stack" style="gap:6px;flex:1">
+                    <input type="file" id="edit-photo-input" accept="image/*" style="display:none" onchange="handleEditPhotoUpload(event)" />
+                    <div class="row">
+                      <button type="button" class="btn btn-soft" style="padding:6px 12px;font-size:12px" onclick="document.getElementById('edit-photo-input').click()">اختيار صورة</button>
+                      <button type="button" class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="removeEditPhoto()">إزالة الصورة</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label class="muted">اسم المستخدم</label>
                 <input id="acc-username" class="input" required minlength="3" maxlength="24" value="${esc(me.username)}" />
               </div>
               <div>
                 <label class="muted">النبذة التعريفية</label>
                 <input id="acc-bio" class="input" maxlength="160" value="${esc(me.bio)}" placeholder="اكتب نبذة قصيرة..." />
               </div>
-              <div>
-                <label class="muted">الصورة الشخصية (الأفاتار)</label>
-                <div class="avatar-grid" style="margin-top:6px">
-                  <button type="button" class="avatar-pick ${!window.__editAv ? "selected" : ""}" onclick="selectModalAv(this, null)">
-                    <span class="avatar av-sm" style="background:#0d63a5">${esc(me.username[0])}</span>
-                    <span style="font-size:10px">أول حرف</span>
-                  </button>
-                  ${presets.map((p) => `
-                    <button type="button" class="avatar-pick ${window.__editAv === p.id ? "selected" : ""}" onclick="selectModalAv(this, '${p.id}')">
-                      <span class="avatar av-sm" style="background:${p.bg}">${p.svg}</span>
-                      <span style="font-size:10px">${p.name}</span>
-                    </button>`).join("")}
+              <div class="row">
+                <div style="flex:1">
+                  <label class="muted">الجنس</label>
+                  <select id="acc-gender" class="input">
+                    <option value="رجل" ${me.gender === "رجل" ? "selected" : ""}>رجل</option>
+                    <option value="امرأة" ${me.gender === "امرأة" ? "selected" : ""}>امرأة</option>
+                  </select>
                 </div>
+                <div style="flex:1">
+                  <label class="muted">البلد / الجنسية</label>
+                  <select id="acc-country" class="input">
+                    ${COUNTRIES.map((c) => `<option value="${c}" ${me.country === c ? "selected" : ""}>${c}</option>`).join("")}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="muted">تاريخ الميلاد</label>
+                <input id="acc-birth" type="date" class="input" value="${esc(me.birthDate || "")}" />
               </div>
               <div class="row" style="justify-content:flex-end">
                 <button type="button" class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
@@ -571,10 +666,22 @@
         </div>`;
     }
 
-    function selectModalAv(btn, avId) {
-      window.__editAv = avId;
-      btn.parentElement.querySelectorAll(".avatar-pick").forEach((el) => el.classList.remove("selected"));
-      btn.classList.add("selected");
+    function handleEditPhotoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      compressImageFile(file, (dataUrl) => {
+        window.__editPhotoData = dataUrl;
+        const name = document.getElementById("acc-username")?.value || currentUser().username;
+        const prev = document.getElementById("edit-photo-preview");
+        if (prev) prev.innerHTML = avatarHtml({ username: name, photoData: dataUrl }, "av-md");
+      });
+    }
+
+    function removeEditPhoto() {
+      window.__editPhotoData = null;
+      const name = document.getElementById("acc-username")?.value || currentUser().username;
+      const prev = document.getElementById("edit-photo-preview");
+      if (prev) prev.innerHTML = avatarHtml({ username: name, photoData: null }, "av-md");
     }
 
     function saveAccountSettings(e) {
@@ -583,6 +690,10 @@
       if (!me) return;
       const newName = document.getElementById("acc-username").value.trim();
       const newBio = document.getElementById("acc-bio").value.trim().slice(0, 160);
+      const newGender = document.getElementById("acc-gender").value;
+      const newCountry = document.getElementById("acc-country").value;
+      const newBirth = document.getElementById("acc-birth").value;
+
       if (newName.length < 3) return toast("الاسم يجب أن يكون 3 أحرف على الأقل");
 
       const exists = db.users.some((u) => u.id !== me.id && u.username.toLowerCase() === newName.toLowerCase());
@@ -590,14 +701,16 @@
 
       me.username = newName;
       me.bio = newBio;
-      me.avatarId = window.__editAv || null;
+      me.gender = newGender;
+      me.country = newCountry;
+      me.birthDate = newBirth;
+      me.photoData = window.__editPhotoData || null;
       save();
       closeModal();
       toast("تم تحديث بيانات حسابك بنجاح");
       render();
     }
 
-    // نافذة تغيير كلمة المرور
     function openChangePasswordModal() {
       document.getElementById("modal-root").innerHTML = `
         <div class="modal-backdrop">
@@ -634,7 +747,6 @@
       toast("تم تغيير كلمة المرور بنجاح");
     }
 
-    // نافذة حذف الحساب نهائياً
     function openDeleteAccountModal() {
       const me = currentUser();
       if (me.id === 1 && me.role === "admin") {
@@ -673,11 +785,12 @@
 
     function renderAuth() {
       const regOpen = db.settings.registrationOpen;
-      const presets = PRESET_AVATARS.filter((a) => db.settings.enabledAvatars.includes(a.id));
+      window.__regPhotoData = window.__regPhotoData || null;
+
       return `
-        <div class="card" style="max-width:520px;margin:40px auto;">
+        <div class="card" style="max-width:520px;margin:30px auto;">
           <div style="text-align:center;margin-bottom:20px">
-            <span class="brand-mark" style="width:48px;height:48px;font-size:24px;margin-bottom:8px">
+            <span class="brand-mark" style="width:48px;height:48px;margin-bottom:8px">
               <svg viewBox="0 0 24 24" style="width:24px;height:24px"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
             </span>
             <h2 style="font-size:22px">مرحباً بك في منصة بحر</h2>
@@ -702,18 +815,38 @@
                   <input id="auth-p" type="password" class="input" required minlength="6" placeholder="••••••" />
                 </div>
                 ${ui.authMode === "register" ? `
+                  <div class="row">
+                    <div style="flex:1">
+                      <label class="muted">الجنس</label>
+                      <select id="reg-gender" class="input" required>
+                        <option value="">اختر الجنس...</option>
+                        <option value="رجل">رجل</option>
+                        <option value="امرأة">امرأة</option>
+                      </select>
+                    </div>
+                    <div style="flex:1">
+                      <label class="muted">تاريخ الميلاد</label>
+                      <input id="reg-birth" type="date" class="input" required max="${new Date().toISOString().split('T')[0]}" />
+                    </div>
+                  </div>
                   <div>
-                    <div class="row-between"><span class="muted">اختر صورتك الشخصية (أفاتار مهني)</span></div>
-                    <div class="avatar-grid" style="margin-top:6px">
-                      <button type="button" class="avatar-pick ${!window.__pickAv ? "selected" : ""}" onclick="window.__pickAv=null;render()">
-                        <span class="avatar av-sm" style="background:#0d63a5">أ</span>
-                        <span style="font-size:10px">الحرف الأول</span>
-                      </button>
-                      ${presets.map((p) => `
-                        <button type="button" class="avatar-pick ${window.__pickAv === p.id ? "selected" : ""}" onclick="window.__pickAv='${p.id}';render()">
-                          <span class="avatar av-sm" style="background:${p.bg}">${p.svg}</span>
-                          <span style="font-size:10px">${p.name}</span>
-                        </button>`).join("")}
+                    <label class="muted">البلد / الجنسية</label>
+                    <select id="reg-country" class="input" required>
+                      <option value="">اختر البلد...</option>
+                      ${COUNTRIES.map((c) => `<option value="${c}">${c}</option>`).join("")}
+                    </select>
+                  </div>
+                  <div>
+                    <label class="muted">الصورة الشخصية (اختياري — إن لم تضع صورة يظهر أول حرف من اسمك)</label>
+                    <div class="photo-upload-box" style="margin-top:6px">
+                      <div id="reg-photo-preview">
+                        ${avatarHtml({ username: "ب", photoData: window.__regPhotoData }, "av-md")}
+                      </div>
+                      <div class="row">
+                        <input type="file" id="reg-photo-input" accept="image/*" style="display:none" onchange="handleRegPhotoUpload(event)" />
+                        <button type="button" class="btn btn-soft" style="padding:6px 12px;font-size:12px" onclick="document.getElementById('reg-photo-input').click()">رفع صورة شخصية</button>
+                        ${window.__regPhotoData ? `<button type="button" class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="window.__regPhotoData=null;render()">إزالة</button>` : ""}
+                      </div>
                     </div>
                   </div>` : ""}
                 <button type="submit" class="btn btn-primary" style="padding:12px;font-size:15px">${ui.authMode === "login" ? "دخول إلى بحر" : "إنشاء حساب جديد"}</button>
@@ -726,10 +859,25 @@
         </div>`;
     }
 
+    function handleRegPhotoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      compressImageFile(file, (dataUrl) => {
+        window.__regPhotoData = dataUrl;
+        const prev = document.getElementById("reg-photo-preview");
+        const uVal = document.getElementById("auth-u")?.value || "ب";
+        if (prev) prev.innerHTML = avatarHtml({ username: uVal, photoData: dataUrl }, "av-md");
+      });
+    }
+
     function checkUsernameLive(val) {
       const box = document.getElementById("u-suggest");
       if (!box || ui.authMode !== "register") return;
       const trimmed = val.trim();
+      if (!window.__regPhotoData) {
+        const prev = document.getElementById("reg-photo-preview");
+        if (prev) prev.innerHTML = avatarHtml({ username: trimmed || "ب", photoData: null }, "av-md");
+      }
       if (trimmed.length < 3) { box.innerHTML = ""; return; }
       const taken = db.users.some((u) => u.username.toLowerCase() === trimmed.toLowerCase());
       if (!taken) { box.innerHTML = `<span style="font-size:12px;color:var(--teal)">اسم المستخدم متاح ✓</span>`; return; }
@@ -756,15 +904,22 @@
           checkUsernameLive(u);
           return toast("اسم المستخدم محجوز، اختر بديلاً");
         }
+        const gender = document.getElementById("reg-gender").value;
+        const birthDate = document.getElementById("reg-birth").value;
+        const country = document.getElementById("reg-country").value;
+        if (!gender || !birthDate || !country) return toast("يرجى إكمال بيانات الجنس وتاريخ الميلاد والبلد");
+
         const newUser = {
           id: uid(), username: u, password: p, role: "user", verified: false,
-          avatarId: window.__pickAv || null, bio: "", dailyPostLimit: 1,
+          photoData: window.__regPhotoData || null,
+          gender, birthDate, country,
+          bio: "", dailyPostLimit: 1,
           autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: Date.now(),
           blockedUsers: [], mutedUsers: []
         };
         db.users.push(newUser);
         db.currentUserId = newUser.id;
-        window.__pickAv = null;
+        window.__regPhotoData = null;
         save();
         if (!ui.profileUserId) ui.view = "feed";
         toast("تم إنشاء الحساب بنجاح");
@@ -830,7 +985,6 @@
           </div>` : ""}
       </div>`;
 
-      // استبدال زر المتابعون بزر حسابي الذي ينقل المستخدم لملفه الشخصي وبوستاته وعدد متابعيه
       const modeTabs = `<div class="tabs">
         <button class="tab-btn" onclick="openProfile(${me.id})">حسابي</button>
         <button class="tab-btn active" onclick="ui.feedMode='all';render()">كل البوستات</button>
@@ -872,7 +1026,7 @@
         </div>`;
     }
 
-    function renderDiscover() {
+    function getDiscoverPostsHtml() {
       const me = currentUser();
       const blocked = me.blockedUsers || [];
       let posts = db.posts.filter((p) => !blocked.includes(p.userId));
@@ -885,17 +1039,38 @@
         posts = posts.filter((p) => p.content.toLowerCase().includes(q) || getUser(p.userId)?.username.toLowerCase().includes(q));
       }
 
+      const matchingUsers = ui.searchQuery
+        ? db.users.filter((u) => !blocked.includes(u.id) && u.username.toLowerCase().includes(ui.searchQuery.toLowerCase()))
+        : [];
+
+      let usersHtml = "";
+      if (matchingUsers.length) {
+        usersHtml = `<div class="card stack" style="gap:10px">
+          <div class="muted">حسابات مطابقة لبحثك:</div>
+          <div class="row" style="flex-wrap:wrap;gap:12px">
+            ${matchingUsers.map((u) => `
+              <button class="btn btn-ghost" onclick="openProfile(${u.id})">
+                ${avatarHtml(u, "av-xs")} <span>${esc(u.username)}</span> ${badgeHtml(u)}
+              </button>`).join("")}
+          </div>
+        </div>`;
+      }
+
+      return usersHtml + (posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد بوستات مطابقة للبحث أو التصنيف.</div>`);
+    }
+
+    function renderDiscover() {
       return `
         <div class="stack">
           <div class="card row-between">
-            <input class="input" style="max-width:320px" placeholder="ابحث عن فكرة أو كاتب..." value="${esc(ui.searchQuery)}" oninput="ui.searchQuery=this.value;render()" />
             <div class="tabs">
               <button class="tab-btn ${!ui.filterCategory ? "active" : ""}" onclick="ui.filterCategory='';render()">الكل</button>
               ${CATEGORIES.map((c) => `<button class="tab-btn ${ui.filterCategory === c ? "active" : ""}" onclick="ui.filterCategory='${c}';render()">${c}</button>`).join("")}
             </div>
+            ${ui.searchQuery ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="ui.searchQuery='';render()">مسح البحث ✕</button>` : ""}
           </div>
-          <div class="stack">
-            ${posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد بوستات مطابقة للبحث أو التصنيف.</div>`}
+          <div id="discover-results" class="stack">
+            ${getDiscoverPostsHtml()}
           </div>
         </div>`;
     }
@@ -1132,6 +1307,8 @@
       render();
     }
 
+    // حسابي (عرض فقط: الاسم، الصورة، معلومات الجنس/تاريخ الميلاد/البلد، المتابعون، البوستات، ومشاركة الرابط)
+    // التعديل يتم حصراً من قائمة الثلاث شرط
     function renderProfile() {
       const u = getUser(ui.profileUserId);
       if (!u) return `<div class="card">المستخدم غير موجود</div>`;
@@ -1143,18 +1320,22 @@
       const following = db.follows.filter((f) => f.followerId === u.id).length;
       const userPosts = db.posts.filter((p) => p.userId === u.id).sort((a, b) => b.createdAt - a.createdAt);
       const canChat = !isOwn && u.role !== "admin" && me.role !== "admin" && !isBlocked;
-      const presets = PRESET_AVATARS.filter((a) => db.settings.enabledAvatars.includes(a.id));
 
       return `
         <div class="stack">
           <div class="card">
             <div class="row-between">
-              <div class="row" style="gap:16px">
+              <div class="row" style="gap:16px;align-items:flex-start">
                 ${avatarHtml(u, "av-lg")}
                 <div>
                   <div class="row"><h2>${esc(u.username)}</h2>${badgeHtml(u)}</div>
                   ${u.bio ? `<p style="margin:6px 0 0;font-size:14px">${esc(u.bio)}</p>` : ""}
-                  <div class="muted tabular" style="margin-top:8px"><strong>${followers}</strong> متابِع · <strong>${following}</strong> يتابِع · <strong>${userPosts.length}</strong> بوست</div>
+                  <div class="info-chips">
+                    ${u.gender ? `<span class="info-chip">👤 ${esc(u.gender)}</span>` : ""}
+                    ${u.country ? `<span class="info-chip">🌍 ${esc(u.country)}</span>` : ""}
+                    ${u.birthDate ? `<span class="info-chip tabular">🎂 ${esc(u.birthDate)}</span>` : ""}
+                  </div>
+                  <div class="muted tabular" style="margin-top:10px"><strong>${followers}</strong> متابِع · <strong>${following}</strong> يتابِع · <strong>${userPosts.length}</strong> بوست</div>
                 </div>
               </div>
               <div class="row" style="flex-wrap:wrap">
@@ -1169,43 +1350,10 @@
                 ` : ""}
               </div>
             </div>
-            ${isOwn ? `
-              <div class="divider"></div>
-              <form onsubmit="saveProfile(event)" class="stack">
-                <input id="prof-bio" class="input" maxlength="160" value="${esc(u.bio)}" placeholder="نبذة قصيرة..." />
-                <div class="avatar-grid">
-                  <button type="button" class="avatar-pick ${!u.avatarId ? "selected" : ""}" onclick="setMyAvatar(null)">
-                    <span class="avatar av-sm" style="background:#0d63a5">${esc(u.username[0])}</span>
-                    <span style="font-size:10px">أول حرف</span>
-                  </button>
-                  ${presets.map((p) => `
-                    <button type="button" class="avatar-pick ${u.avatarId === p.id ? "selected" : ""}" onclick="setMyAvatar('${p.id}')">
-                      <span class="avatar av-sm" style="background:${p.bg}">${p.svg}</span>
-                      <span style="font-size:10px">${p.name}</span>
-                    </button>`).join("")}
-                </div>
-                <div><button type="submit" class="btn btn-primary">حفظ النبذة والصورة الشخصية</button></div>
-              </form>` : ""}
           </div>
           <h3 style="font-size:16px">البوستات المنشورة (${userPosts.length})</h3>
           ${userPosts.map(renderPostCard).join("") || `<div class="card muted" style="text-align:center">لا توجد بوستات منشورة في هذا الحساب بعد.</div>`}
         </div>`;
-    }
-
-    function setMyAvatar(avId) {
-      const me = currentUser();
-      me.avatarId = avId;
-      save();
-      render();
-    }
-
-    function saveProfile(e) {
-      e.preventDefault();
-      const me = currentUser();
-      me.bio = document.getElementById("prof-bio").value.trim().slice(0, 160);
-      save();
-      toast("تم تحديث الملف الشخصي");
-      render();
     }
 
     function startChat(targetId) {
@@ -1377,7 +1525,7 @@
             </div>
             <div class="tabs">
               <button class="tab-btn ${ui.adminTab === "users" ? "active" : ""}" onclick="ui.adminTab='users';render()">المستخدمون</button>
-              <button class="tab-btn ${ui.adminTab === "settings" ? "active" : ""}" onclick="ui.adminTab='settings';render()">الإعدادات والأفاتار</button>
+              <button class="tab-btn ${ui.adminTab === "settings" ? "active" : ""}" onclick="ui.adminTab='settings';render()">إعدادات المنصة</button>
               <button class="tab-btn ${ui.adminTab === "mod" ? "active" : ""}" onclick="ui.adminTab='mod';render()">المحادثات والبلاغات</button>
               <button class="tab-btn ${ui.adminTab === "notify" ? "active" : ""}" onclick="ui.adminTab='notify';render()">إشعارات إدارية</button>
             </div>
@@ -1387,7 +1535,13 @@
             <div class="card stack">
               ${db.users.map((u) => `
                 <div class="row-between" style="padding:10px 0;border-bottom:1px solid var(--border)">
-                  <div class="row">${avatarHtml(u, "av-sm")} <strong>${esc(u.username)}</strong> ${badgeHtml(u)}</div>
+                  <div class="row">
+                    ${avatarHtml(u, "av-sm")}
+                    <div>
+                      <div class="row"><strong>${esc(u.username)}</strong> ${badgeHtml(u)}</div>
+                      <div class="muted">${esc(u.gender || "-")} · ${esc(u.country || "-")} · ${esc(u.birthDate || "-")}</div>
+                    </div>
+                  </div>
                   <div class="row" style="flex-wrap:wrap">
                     <label class="muted">حد البوست/24س:
                       <input type="number" min="1" max="100" value="${u.dailyPostLimit}" style="width:55px;padding:4px" onchange="adminUserLimit(${u.id}, this.value)" />
@@ -1417,17 +1571,6 @@
                   <input type="number" min="1" value="${s.autoDeleteHours}" style="width:70px" onchange="db.settings.autoDeleteHours=Math.max(1,Number(this.value)||24);save();render()" />
                   <button class="btn ${s.autoDeleteEnabled ? "btn-primary" : "btn-ghost"}" onclick="db.settings.autoDeleteEnabled=!db.settings.autoDeleteEnabled;save();render()">${s.autoDeleteEnabled ? "مفعل" : "مقفول"}</button>
                 </div>
-              </div>
-              <div class="divider"></div>
-              <strong>أيقونات الأفاتار الشخصية المتاحة للتسجيل</strong>
-              <div class="avatar-grid">
-                ${PRESET_AVATARS.map((p) => {
-                  const on = s.enabledAvatars.includes(p.id);
-                  return `<button type="button" class="avatar-pick ${on ? "selected" : ""}" style="opacity:${on ? 1 : 0.4}" onclick="toggleAvatarPool('${p.id}')">
-                    <span class="avatar av-sm" style="background:${p.bg}">${p.svg}</span>
-                    <span style="font-size:10px">${p.name}</span>
-                  </button>`;
-                }).join("")}
               </div>
             </div>` : ""}
 
@@ -1508,12 +1651,6 @@
       const pw = document.getElementById("new-pw").value;
       if (u && pw.length >= 6) { u.password = pw; save(); closeModal(); toast("تم تغيير كلمة المرور"); }
       else toast("كلمة المرور 6 أحرف على الأقل");
-    }
-    function toggleAvatarPool(avId) {
-      const list = db.settings.enabledAvatars;
-      const i = list.indexOf(avId);
-      if (i >= 0) list.splice(i, 1); else list.push(avId);
-      save(); render();
     }
     function toggleRep(id) {
       const r = db.reports.find((x) => x.id === id);
