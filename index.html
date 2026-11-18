@@ -172,8 +172,24 @@
     
     .tag-badge {
       display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
-      background: var(--surface-tint); color: var(--blue); border: 1px solid var(--border);
+      background: var(--surface-tint); color: var(--blue); border: 1px solid var(--border); cursor: pointer;
     }
+    .tag-badge:hover { opacity: 0.85; }
+
+    .hashtag-link {
+      color: var(--blue); text-decoration: none; font-weight: 600;
+    }
+    .hashtag-link:hover { text-decoration: underline; }
+
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px;
+    }
+    @media (min-width: 600px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+    .stat-box {
+      background: var(--surface-soft); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; text-align: center;
+    }
+    .stat-num { font-size: 18px; font-weight: 700; color: var(--blue); }
+    .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
     .info-chips {
       display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
@@ -256,7 +272,7 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_complete_standalone_v23";
+    const STORAGE_KEY = "bahr_complete_standalone_v24";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     
@@ -269,8 +285,8 @@
         chat: "الرسائل",
         notifications: "الإشعارات",
         adminPanel: "لوحة الإدارة الشاملة",
-        searchPlaceholder: "ابحث عن أشخاص أو بوستات...",
-        menuAccount: "إعدادات الحساب (الاسم والثنائي والنبذة)",
+        searchPlaceholder: "ابحث عن أشخاص أو بوستات أو #هاشتاج...",
+        menuAccount: "إعدادات الحساب (الاسم والنبذة والصورة)",
         menuPass: "تغيير كلمة المرور",
         menuVerifyRequest: "طلب توثيق الحساب",
         menuLang: "English / العربية",
@@ -287,7 +303,7 @@
         charLimitZero: "استهلكت حد النشر المتاح خلال 24 ساعة",
         charLimitNext: "يمكنك النشر مجدداً بعد",
         noPostsFeed: "لا توجد بوستات منشورة بعد.",
-        char500: "اكتب ما يدور في ذهنك (حد أقصى 500 حرف)...",
+        char500: "اكتب ما يدور في ذهنك (مثال: #بحر #تقنية)...",
         charShare: "مشاركة رابط الحساب",
         followers: "متابِع",
         following: "يتابِع",
@@ -308,7 +324,7 @@
         postShareSuccess: "تم نسخ رابط البوست",
         profileShareSuccess: "تم نسخ رابط الحساب",
         bahrCharter: "ميثاق منصة بحر",
-        bahrCharterText: "بوست نصي واحد كل 24 ساعة (500 حرف) مع تصنيف إلزامي، ومحادثات مؤقتة تُحذف تلقائياً بعد 24 ساعة.",
+        bahrCharterText: "بوست نصي واحد كل 24 ساعة (500 حرف) مع إمكانية استخدام #الوسوم والتصنيفات الاختيارية، ومحادثات مؤقتة تُحذف تلقائياً.",
       },
       en: {
         brandName: "Bahr",
@@ -318,7 +334,7 @@
         chat: "Messages",
         notifications: "Notifications",
         adminPanel: "Admin Panel",
-        searchPlaceholder: "Search people or posts...",
+        searchPlaceholder: "Search people, posts or #hashtags...",
         menuAccount: "Account Settings (Name & Photo)",
         menuPass: "Change Password",
         menuVerifyRequest: "Request Verification",
@@ -336,7 +352,7 @@
         charLimitZero: "You have used your daily post quota (24h)",
         charLimitNext: "You can post again after",
         noPostsFeed: "No posts published yet.",
-        char500: "What's on your mind (max 500 chars)...",
+        char500: "What's on your mind (e.g. #bahr #tech)...",
         charShare: "Share Profile Link",
         followers: "Follower",
         following: "Following",
@@ -357,11 +373,11 @@
         postShareSuccess: "Post link copied",
         profileShareSuccess: "Profile link copied",
         bahrCharter: "Bahr Charter",
-        bahrCharterText: "One text post every 24 hours (500 chars) with required category, and temporary chats deleted after 24 hours.",
+        bahrCharterText: "One text post every 24 hours (500 chars) with #hashtags and optional categories, and temporary chats deleted after 24 hours.",
       }
     };
 
-    const CATEGORIES = ["تقنية", "خواطر", "طب وصحة", "ريادة أعمال", "كتب"];
+    const DEFAULT_CATEGORIES = ["تقنية", "خواطر", "طب وصحة", "ريادة أعمال", "كتب"];
     const COUNTRIES = [
       "مصر", "السعودية", "الإمارات", "الأردن", "فلسطين", "لبنان", "سوريا", "العراق",
       "الكويت", "قطر", "البحرين", "عُمان", "اليمن", "المغرب", "الجزائر", "تونس", "ليبيا", "السودان", "أخرى"
@@ -400,7 +416,6 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          // Migrate older users who might lack firstName/secondName
           parsed.users.forEach(u => {
             if (!u.firstName) u.firstName = u.username;
             if (!u.secondName) u.secondName = "";
@@ -425,6 +440,7 @@
       openComments: {},
       searchQuery: "",
       filterCategory: "",
+      filterTag: "",
       theme: localStorage.getItem("bahr_theme") || "light",
       lang: localStorage.getItem("bahr_lang") || "ar"
     };
@@ -572,6 +588,18 @@
       return String(str || "").replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
+    function formatPostTextWithHashtags(text) {
+      const safe = esc(text);
+      // Replace hashtags with clickable links
+      return safe.replace(/(#[a-zA-Z0-9_\u0600-\u06FF]+)/g, '<a href="javascript:void(0)" class="hashtag-link" onclick="filterByTag(\'$1\')">$1</a>');
+    }
+
+    function filterByTag(tag) {
+      ui.filterTag = tag.trim();
+      ui.view = "discover";
+      render();
+    }
+
     function avatarHtml(user, size = "av-md") {
       if (!user) return "";
       if (user.photoData) {
@@ -637,6 +665,11 @@
 
     function handleHeaderSearch(val) {
       ui.searchQuery = val;
+      if (val.startsWith("#")) {
+        ui.filterTag = val.trim();
+      } else {
+        ui.filterTag = "";
+      }
       if (ui.view !== "discover") {
         ui.view = "discover";
         render();
@@ -887,7 +920,7 @@
                 </div>
               </div>
               <div>
-                <label class="muted">${ui.lang === 'en' ? 'Username' : 'اسم المستخدم (للتسجيل والرابط)'}</label>
+                <label class="muted">اسم المستخدم (للتسجيل والرابط)</label>
                 <input id="acc-username" class="input" required minlength="3" maxlength="24" value="${esc(me.username)}" />
               </div>
               <div class="row">
@@ -1236,11 +1269,13 @@
         <form onsubmit="publishPost(event)">
           <textarea id="post-input" rows="3" maxlength="500" placeholder="${t("char500")}" oninput="document.getElementById('char-c').textContent=this.value.length"></textarea>
           <div class="row-between" style="margin-top:10px">
-            <div class="row">
-              <select id="post-cat" class="input" style="width:auto;padding:6px 10px;font-size:12px" required>
-                <option value="">-- اختر التصنيف --</option>
-                ${CATEGORIES.map((c) => `<option value="${c}">${c}</option>`).join("")}
+            <div class="row" style="flex-wrap:wrap">
+              <select id="post-cat" class="input" style="width:auto;padding:6px 10px;font-size:12px" onchange="handleCatSelectChange(this.value)">
+                <option value="">-- التصنيف (اختياري) --</option>
+                ${DEFAULT_CATEGORIES.map((c) => `<option value="${c}">${c}</option>`).join("")}
+                <option value="other">+ تصنيف آخر...</option>
               </select>
+              <input id="post-cat-custom" class="input" style="display:none;width:130px;padding:6px 10px;font-size:12px" placeholder="اسم التصنيف..." maxlength="20" />
               <button type="button" class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="saveAsDraft()">${t("saveDraft")}</button>
             </div>
             <button type="submit" class="btn btn-primary" ${q.remaining <= 0 ? "disabled" : ""}>${t("publishPost")}</button>
@@ -1253,7 +1288,7 @@
           <div class="stack" style="gap:6px">
             ${myDrafts.map((d) => `
               <div class="row-between" style="background:var(--surface-soft);padding:8px 12px;border-radius:10px">
-                <span style="font-size:13px;max-width:65%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><strong>[${esc(d.category)}]</strong> ${esc(d.content)}</span>
+                <span style="font-size:13px;max-width:65%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><strong>[${esc(d.category || 'عام' )}]</strong> ${esc(d.content)}</span>
                 <div class="row">
                   <button class="btn btn-soft" style="padding:4px 8px;font-size:11px" onclick="loadDraft(${d.id})">نشر</button>
                   <button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deleteDraft(${d.id})">حذف</button>
@@ -1295,6 +1330,18 @@
         </div>`;
     }
 
+    function handleCatSelectChange(val) {
+      const customInp = document.getElementById("post-cat-custom");
+      if (!customInp) return;
+      if (val === "other") {
+        customInp.style.display = "block";
+        customInp.focus();
+      } else {
+        customInp.style.display = "none";
+        customInp.value = "";
+      }
+    }
+
     function getDiscoverHtml() {
       const me = currentUser();
       const blocked = me.blockedUsers || [];
@@ -1306,12 +1353,16 @@
       if (ui.filterCategory) {
         posts = posts.filter((p) => p.category === ui.filterCategory);
       }
-      if (ui.searchQuery) {
+      if (ui.filterTag) {
+        const tagLower = ui.filterTag.toLowerCase();
+        posts = posts.filter((p) => p.content.toLowerCase().includes(tagLower));
+      }
+      if (ui.searchQuery && !ui.searchQuery.startsWith("#")) {
         const q = ui.searchQuery.toLowerCase();
         posts = posts.filter((p) => p.content.toLowerCase().includes(q) || getDisplayName(getUser(p.userId)).toLowerCase().includes(q));
       }
 
-      const matchingUsers = ui.searchQuery
+      const matchingUsers = ui.searchQuery && !ui.searchQuery.startsWith("#")
         ? db.users.filter((u) => !u.disabled && !blocked.includes(u.id) && (u.username.toLowerCase().includes(ui.searchQuery.toLowerCase()) || getDisplayName(u).toLowerCase().includes(ui.searchQuery.toLowerCase())))
         : [];
 
@@ -1328,7 +1379,9 @@
         </div>`;
       }
 
-      return usersHtml + (posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد نتائج مطابقة لبحثك.</div>`);
+      const activeFilterInfo = ui.filterTag ? `<div class="card" style="background:var(--surface-tint);padding:10px 14px"><div class="row-between"><span>عرض المنشورات المرتبطة بالوسم: <strong>${esc(ui.filterTag)}</strong></span><button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="ui.filterTag='';render()">إلغاء الوسم</button></div></div>` : "";
+
+      return activeFilterInfo + usersHtml + (posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد نتائج مطابقة لبحثك.</div>`);
     }
 
     function renderDiscover() {
@@ -1336,10 +1389,10 @@
         <div class="stack">
           <div class="card row-between">
             <div class="tabs">
-              <button class="tab-btn ${!ui.filterCategory ? "active" : ""}" onclick="ui.filterCategory='';render()">الكل</button>
-              ${CATEGORIES.map((c) => `<button class="tab-btn ${ui.filterCategory === c ? "active" : ""}" onclick="ui.filterCategory='${c}';render()">${c}</button>`).join("")}
+              <button class="tab-btn ${!ui.filterCategory && !ui.filterTag ? "active" : ""}" onclick="ui.filterCategory='';ui.filterTag='';render()">الكل</button>
+              ${DEFAULT_CATEGORIES.map((c) => `<button class="tab-btn ${ui.filterCategory === c ? "active" : ""}" onclick="ui.filterCategory='${c}';render()">${c}</button>`).join("")}
             </div>
-            ${ui.searchQuery ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="ui.searchQuery='';render()">إلغاء البحث</button>` : ""}
+            ${ui.searchQuery || ui.filterTag ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="ui.searchQuery='';ui.filterTag='';render()">إلغاء الفلترة</button>` : ""}
           </div>
           <div id="discover-results" class="stack">
             ${getDiscoverHtml()}
@@ -1363,7 +1416,7 @@
               ${avatarHtml(author, "av-md")}
               <div style="text-align:start">
                 <div class="row" style="gap:5px"><span>${esc(getDisplayName(author))}</span>${badgeHtml(author)}</div>
-                <div class="muted tabular">${relTime(p.createdAt)} · <span class="tag-badge">${esc(p.category || "عام")}</span></div>
+                <div class="muted tabular">${relTime(p.createdAt)}${p.category ? ` · <span class="tag-badge" onclick="ui.filterCategory='${esc(p.category)}';setView('discover')">${esc(p.category)}</span>` : ""}</div>
               </div>
             </button>
             <div class="row">
@@ -1372,7 +1425,7 @@
               ${me.id !== author.id ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="reportPostPrompt(${p.id})">${t("report")}</button>` : ""}
             </div>
           </div>
-          <p class="post-text">${esc(p.content)}</p>
+          <p class="post-text">${formatPostTextWithHashtags(p.content)}</p>
           <div class="divider"></div>
           <div class="row" style="gap:12px">
             <button class="btn ${liked ? "btn-soft" : "btn-ghost"}" style="padding:6px 12px;font-size:12px" onclick="toggleLike(${p.id})">♥ ${p.likes.length}</button>
@@ -1399,9 +1452,11 @@
 
     function saveAsDraft() {
       const text = document.getElementById("post-input").value.trim();
-      const cat = document.getElementById("post-cat").value;
+      const catSelect = document.getElementById("post-cat").value;
+      const catCustom = document.getElementById("post-cat-custom")?.value.trim();
+      const cat = catSelect === "other" ? (catCustom || "عام") : catSelect;
+
       if (!text) return toast("المسودة فارغة");
-      if (!cat) return toast("يرجى اختيار التصنيف");
       const me = currentUser();
       db.drafts.push({ id: uid(), userId: me.id, content: text, category: cat, createdAt: Date.now() });
       save();
@@ -1418,7 +1473,7 @@
       save();
       const me = currentUser();
       const now = Date.now();
-      const post = { id: uid(), userId: me.id, content: d.content, category: d.category, likes: [], comments: [], createdAt: now };
+      const post = { id: uid(), userId: me.id, content: d.content, category: d.category || "", likes: [], comments: [], createdAt: now };
       db.posts.unshift(post);
       db.postLogs.push({ userId: me.id, createdAt: now });
       save();
@@ -1486,9 +1541,11 @@
       e.preventDefault();
       const me = currentUser();
       const text = document.getElementById("post-input").value.trim();
-      const cat = document.getElementById("post-cat").value;
+      const catSelect = document.getElementById("post-cat").value;
+      const catCustom = document.getElementById("post-cat-custom")?.value.trim();
+      const cat = catSelect === "other" ? (catCustom || "") : catSelect;
+
       if (!text || text.length > 500) return;
-      if (!cat) return toast("يرجى اختيار التصنيف");
       if (getQuota(me).remaining <= 0) return toast("لقد استنفذت حد النشر المسموح اليوم");
       const now = Date.now();
       const post = { id: uid(), userId: me.id, content: text, category: cat, likes: [], comments: [], createdAt: now };
@@ -1584,9 +1641,18 @@
       const isOwn = me.id === u.id;
       const isF = db.follows.some((f) => f.followerId === me.id && f.followingId === u.id);
       const isBlocked = (me.blockedUsers || []).includes(u.id);
-      const followers = db.follows.filter((f) => f.followingId === u.id).length;
-      const following = db.follows.filter((f) => f.followerId === u.id).length;
+      
+      const followersCount = db.follows.filter((f) => f.followingId === u.id).length;
+      const followingCount = db.follows.filter((f) => f.followerId === u.id).length;
       const userPosts = db.posts.filter((p) => p.userId === u.id).sort((a, b) => b.createdAt - a.createdAt);
+      
+      // Calculate total likes received
+      const totalLikes = userPosts.reduce((acc, p) => acc + (p.likes ? p.likes.length : 0), 0);
+      
+      // Calculate posts in the last 30 days
+      const thirtyDaysAgo = Date.now() - (30 * DAY_MS);
+      const postsLastMonth = userPosts.filter((p) => p.createdAt > thirtyDaysAgo).length;
+
       const canChat = !isOwn && u.role !== "admin" && me.role !== "admin" && !isBlocked;
 
       return `
@@ -1604,7 +1670,6 @@
                     ${u.country ? `<span class="info-chip"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>${esc(u.country)}</span>` : ""}
                     ${u.birthDate ? `<span class="info-chip tabular"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>${esc(u.birthDate)}</span>` : ""}
                   </div>
-                  <div class="muted tabular" style="margin-top:10px"><strong>${followers}</strong> ${t("followers")} · <strong>${following}</strong> ${t("following")} · <strong>${userPosts.length}</strong> ${t("postsCount")}</div>
                 </div>
               </div>
               <div class="row" style="flex-wrap:wrap">
@@ -1617,6 +1682,24 @@
                   ${canChat ? `<button class="btn btn-ghost" onclick="startChat(${u.id})">${t("messageBtn")}</button>` : ""}
                   <button class="btn ${isBlocked ? "btn-primary" : "btn-danger"}" onclick="toggleBlockUser(${u.id})">${isBlocked ? t("unblock") : t("block")}</button>
                 ` : ""}
+              </div>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-box">
+                <div class="stat-num tabular">${followersCount}</div>
+                <div class="stat-lbl">${t("followers")}</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-num tabular">${followingCount}</div>
+                <div class="stat-lbl">${t("following")}</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-num tabular">${totalLikes}</div>
+                <div class="stat-lbl">إجمالي الإعجابات</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-num tabular">${postsLastMonth}</div>
+                <div class="stat-lbl">بوستات الشهر الأخير</div>
               </div>
             </div>
           </div>
@@ -1879,7 +1962,7 @@
                   <div style="max-width:70%">
                     <div class="row" style="font-size:12px;margin-bottom:4px">
                       <strong>${esc(author ? getDisplayName(author) : "مستخدم محذوف")}</strong>
-                      <span class="tag-badge">${esc(p.category || "عام")}</span>
+                      ${p.category ? `<span class="tag-badge">${esc(p.category)}</span>` : ""}
                       <span class="muted">${relTime(p.createdAt)}</span>
                     </div>
                     <div style="font-size:14px">${esc(p.content)}</div>
