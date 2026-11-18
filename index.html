@@ -46,7 +46,7 @@
       color: var(--ink);
       line-height: 1.6;
       transition: background 0.2s, color 0.2s;
-      padding-bottom: 80px; /* مسافة إضافية لتجنب تداخل المحتوى مع الشريط السفلي الثابت */
+      padding-bottom: 80px;
     }
     h1, h2, h3, .brand { font-family: "Readex Pro", "IBM Plex Sans Arabic", sans-serif; margin: 0; }
     button, input, textarea, select { font-family: inherit; }
@@ -74,7 +74,6 @@
     }
     .brand-mark svg { width: 18px; height: 18px; fill: currentColor; }
     
-    /* الشريط السفلي الثابت بالكامل */
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
       background: var(--surface);
@@ -247,14 +246,13 @@
 
   <main class="container" id="app"></main>
   
-  <!-- الشريط السفلي الثابت يظهر عند تسجيل الدخول -->
   <div id="bottom-nav-container"></div>
 
   <div id="modal-root"></div>
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_standalone_v9";
+    const STORAGE_KEY = "bahr_standalone_v10";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     
@@ -672,8 +670,7 @@
 
       const unread = db.notifications.filter((n) => n.userId === me.id && !n.isRead).length;
 
-      // بناء الشريط السفلي الثابت بالترتيب المطلوب: [الصفحة الرئيسية] ، [حسابي] ، [اكتشف] ، [الرسائل] ، [الإشعارات]
-      const isHomeActive = ui.view === 'feed' && ui.feedMode === 'home';
+      const isHomeActive = ui.view === 'feed';
       const isMyAccountActive = ui.view === 'profile' && ui.profileUserId === me.id;
       const isDiscoverActive = ui.view === 'discover';
       const isChatActive = ui.view === 'chat';
@@ -735,7 +732,7 @@
               ${t("menuTheme")}
             </button>
             <button class="dropdown-item" onclick="setView('admin')" style="${me.role === 'admin' ? '' : 'display:none'}">
-              <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c-.5.38 1.03.7 1.62.94l.36 2.54c-.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c-.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
               ${t("adminPanel")}
             </button>
             <div class="divider" style="margin:4px 0"></div>
@@ -1131,18 +1128,12 @@
           </div>` : ""}
       </div>`;
 
-      const modeTabs = `<div class="tabs">
-        <button class="tab-btn ${ui.feedMode === 'home' ? 'active' : ''}" onclick="ui.feedMode='home';render()">${t("home")}</button>
-        <button class="tab-btn ${ui.feedMode === 'all' ? 'active' : ''}" onclick="ui.feedMode='all';render()">${t("allPosts")}</button>
-      </div>`;
-
       const followingIds = db.follows.filter((f) => f.followerId === me.id).map((f) => f.followingId);
       const suggestions = db.users.filter((u) => u.id !== me.id && !blocked.includes(u.id) && !followingIds.includes(u.id) && u.role !== 'admin').slice(0, 5);
 
       return `
         <div class="grid-2">
           <div class="stack">
-            ${modeTabs}
             ${q.remaining > 0 ? composerHtml : `<div class="card"><div style="font-size:14px;font-weight:600">${t("charLimitZero")}</div><div class="muted tabular" style="margin-top:4px">${t("charLimitNext")} ${q.nextAt ? remTime(q.nextAt) : "24h"}</div></div>`}
             ${posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">${t("noPostsFeed")}</div>`}
           </div>
