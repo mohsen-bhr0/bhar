@@ -54,6 +54,8 @@
       width: 32px; height: 32px; border-radius: 10px; background: var(--blue); color: #fff;
       display: inline-flex; align-items: center; justify-content: center;
     }
+    .brand-mark svg { width: 18px; height: 18px; fill: currentColor; }
+    
     nav { display: flex; align-items: center; gap: 20px; overflow-x: auto; }
     .nav-link {
       background: none; border: none; border-bottom: 2px solid transparent;
@@ -95,10 +97,12 @@
       border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center;
       flex-shrink: 0; font-weight: 700; color: #fff; user-select: none; overflow: hidden;
     }
+    .avatar svg { width: 55%; height: 55%; fill: currentColor; }
     .av-xs { width: 28px; height: 28px; font-size: 12px; }
     .av-sm { width: 36px; height: 36px; font-size: 14px; }
     .av-md { width: 44px; height: 44px; font-size: 16px; }
     .av-lg { width: 68px; height: 68px; font-size: 26px; }
+    
     .verified {
       width: 16px; height: 16px; border-radius: 9999px; background: var(--blue); color: #fff;
       display: inline-flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0;
@@ -117,16 +121,18 @@
     .muted { color: var(--muted); font-size: 12px; }
     .divider { border-top: 1px solid #edf3f9; margin: 14px 0; }
     .post-text { font-size: 15.5px; line-height: 1.85; white-space: pre-wrap; word-break: break-word; margin: 14px 0 0; }
+    
     .avatar-grid {
-      display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
       padding: 10px; background: var(--surface-soft); border: 1px solid var(--border);
-      border-radius: 12px; max-height: 170px; overflow-y: auto;
+      border-radius: 12px; max-height: 220px; overflow-y: auto;
     }
     .avatar-pick {
       background: #fff; border: 1px solid transparent; border-radius: 10px;
-      padding: 5px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 8px 5px; display: flex; flex-direction: column; align-items: center; gap: 5px;
     }
     .avatar-pick.selected { border-color: var(--blue); background: var(--surface-tint); }
+    
     .chat-box { display: grid; grid-template-columns: 1fr; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; background: #fff; min-height: 520px; }
     @media (min-width: 820px) { .chat-box { grid-template-columns: 300px 1fr; } }
     .chat-list { border-left: 1px solid #e6eef6; display: flex; flex-direction: column; }
@@ -151,7 +157,9 @@
   <header>
     <div class="container topbar">
       <button class="brand-btn" onclick="goHome()">
-        <span class="brand-mark">⚓</span>
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </span>
         <span>بحر</span>
       </button>
       <nav id="nav"></nav>
@@ -164,33 +172,72 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_standalone_v1";
+    const STORAGE_KEY = "bahr_standalone_v2";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
 
+    // أيقونات SVG للمهن والتخصصات بدلاً من الإيموجي
     const PRESET_AVATARS = [
-      { id: "wave", name: "موجة", bg: "#0d63a5", icon: "🌊" },
-      { id: "lighthouse", name: "منارة", bg: "#1e3a5f", icon: "🗼" },
-      { id: "sailboat", name: "شراع", bg: "#0369a1", icon: "⛵" },
-      { id: "compass", name: "بوصلة", bg: "#0f2942", icon: "🧭" },
-      { id: "anchor", name: "مرساة", bg: "#1e40af", icon: "⚓" },
-      { id: "shell", name: "صدفة", bg: "#0f766e", icon: "🐚" },
-      { id: "star", name: "نجمة", bg: "#0284c7", icon: "⭐" },
-      { id: "crescent", name: "هلال", bg: "#0b1d3a", icon: "🌙" },
-      { id: "sun", name: "شروق", bg: "#0369a1", icon: "🌅" },
-      { id: "whale", name: "حوت", bg: "#0c4a6e", icon: "🐋" },
-      { id: "coral", name: "مرجان", bg: "#115e59", icon: "🪸" },
-      { id: "palm", name: "نخلة", bg: "#0d9488", icon: "🏝️" },
-      { id: "drop", name: "قطرة", bg: "#2563eb", icon: "💧" },
-      { id: "pearl", name: "لؤلؤة", bg: "#334155", icon: "🫧" },
-      { id: "fish", name: "سمكة", bg: "#0e7490", icon: "🐟" },
-      { id: "turtle", name: "سلحفاة", bg: "#0f766e", icon: "🐢" },
-      { id: "bird", name: "نورس", bg: "#0ea5e9", icon: "🕊️" },
-      { id: "lantern", name: "فانوس", bg: "#1e293b", icon: "🏮" },
-      { id: "cloud", name: "غيمة", bg: "#0284c7", icon: "☁️" },
-      { id: "quill", name: "ريشة", bg: "#0f172a", icon: "🪶" },
-      { id: "ship", name: "سفينة", bg: "#1d4ed8", icon: "🚢" },
-      { id: "dolphin", name: "دلفين", bg: "#0369a1", icon: "🐬" },
+      { 
+        id: "student", 
+        name: "طالب", 
+        bg: "#2563eb", 
+        svg: '<svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>' 
+      },
+      { 
+        id: "doctor", 
+        name: "طبيب", 
+        bg: "#059669", 
+        svg: '<svg viewBox="0 0 24 24"><path d="M19 10.5h-5.5V5h-3v5.5H5v3h5.5V19h3v-5.5H19v-3z"/></svg>' 
+      },
+      { 
+        id: "engineer", 
+        name: "مهندس", 
+        bg: "#d97706", 
+        svg: '<svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.5-7.4-1.6l3.5 3.5-2.8 2.8-3.5-3.5C.9 9 1.4 12 3.4 14c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l1.9-1.9c.5-.4.5-1.1 0-1.5z"/></svg>' 
+      },
+      { 
+        id: "programmer", 
+        name: "مبرمج", 
+        bg: "#4f46e5", 
+        svg: '<svg viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>' 
+      },
+      { 
+        id: "teacher", 
+        name: "معلم", 
+        bg: "#0891b2", 
+        svg: '<svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>' 
+      },
+      { 
+        id: "designer", 
+        name: "مصمم", 
+        bg: "#db2777", 
+        svg: '<svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.45.56.2 1.39-.5 1.63l-1.93.68c-.85.3-1.63-.48-1.33-1.33l.68-1.93c.24-.7 1.07-.95 1.63-.5C5.93 20.26 8.8 21 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 5c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/></svg>' 
+      },
+      { 
+        id: "writer", 
+        name: "كاتب", 
+        bg: "#7c3aed", 
+        svg: '<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>' 
+      },
+      { 
+        id: "lawyer", 
+        name: "محامي", 
+        bg: "#b45309", 
+        svg: '<svg viewBox="0 0 24 24"><path d="M10 2h4v2h-4V2zm5.5 5.5l1.4-1.4 1.4 1.4-1.4 1.4-1.4-1.4zM5.5 7.5L4.1 6.1 5.5 4.7l1.4 1.4-1.4 1.4zM12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/></svg>' 
+      },
+      { 
+        id: "business", 
+        name: "رائد أعمال", 
+        bg: "#374151", 
+        svg: '<svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM10 4h4v2h-4V4zm10 15H4V8h16v11z"/></svg>' 
+      },
+      { 
+        id: "researcher", 
+        name: "باحث", 
+        bg: "#0284c7", 
+        svg: '<svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>' 
+      }
     ];
 
     const LETTER_COLORS = ["#0d63a5", "#0e7490", "#1e40af", "#0f766e", "#0369a1", "#1d4ed8", "#155e75"];
@@ -209,62 +256,16 @@
         users: [
           {
             id: 1, username: "admin", password: "BahrAdmin123", role: "admin", verified: true,
-            avatarId: "lighthouse", bio: "الحساب الإداري الرسمي لمنصة بحر.",
-            dailyPostLimit: 10, autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: now - 5 * DAY_MS,
-          },
-          {
-            id: 2, username: "سارة_البحرية", password: "BahrUser123", role: "user", verified: true,
-            avatarId: "wave", bio: "أدوّن خواطر الساحل والكتب الهادئة كل مساء.",
-            dailyPostLimit: 1, autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: now - 4 * DAY_MS,
-          },
-          {
-            id: 3, username: "طارق_الملاح", password: "BahrUser123", role: "user", verified: false,
-            avatarId: "compass", bio: "فكرة واحدة واضحة تغني عن ضجيج كثير.",
-            dailyPostLimit: 1, autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: now - 3 * DAY_MS,
-          },
-          {
-            id: 4, username: "ليلى_نور", password: "BahrUser123", role: "user", verified: false,
-            avatarId: null, bio: "قهوة الصباح وفكرة عابرة في أقل من خمسمائة حرف.",
-            dailyPostLimit: 1, autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: now - 2 * DAY_MS,
+            avatarId: "engineer", bio: "الحساب الإداري الرسمي لمنصة بحر.",
+            dailyPostLimit: 10, autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: now,
           },
         ],
-        follows: [
-          { followerId: 2, followingId: 3 },
-          { followerId: 3, followingId: 2 },
-          { followerId: 4, followingId: 2 },
-        ],
-        posts: [
-          {
-            id: 10, userId: 2, createdAt: now - 2 * HOUR_MS,
-            content: "أجمل ما في كتابة فكرة واحدة في اليوم هو أنك تختار كلماتك كما يختار المسافر حقيبته: لا تحمل معك إلا ما يستحق البقاء.",
-            likes: [3, 4],
-            comments: [{ id: 20, userId: 3, content: "أتفق تماماً، بوست واحد يومياً يعيد قيمة الكلمة.", createdAt: now - HOUR_MS }],
-          },
-          {
-            id: 11, userId: 3, createdAt: now - 7 * HOUR_MS,
-            content: "الهدوء ليس غياب الأصوات، بل غياب العجلة. حين نجلس أمام البحر دقائق معدودة، يعود الإيقاع الطبيعي لأفكارنا.",
-            likes: [2], comments: [],
-          },
-          {
-            id: 12, userId: 4, createdAt: now - 12 * HOUR_MS,
-            content: "فنجان قهوة بجانب النافذة، وبوست واحد قبل أن يبدأ زحام النهار.",
-            likes: [], comments: [],
-          },
-        ],
-        postLogs: [
-          { userId: 2, createdAt: now - 2 * HOUR_MS },
-          { userId: 3, createdAt: now - 7 * HOUR_MS },
-          { userId: 4, createdAt: now - 12 * HOUR_MS },
-        ],
+        follows: [],
+        posts: [],
+        postLogs: [],
         conversations: [],
         reports: [],
-        notifications: [
-          {
-            id: 50, userId: 2, type: "admin", actorId: 1, postId: null,
-            title: "مرحباً بك في بحر", message: "يمكنك نشر بوست نصي واحد كل 24 ساعة بحد أقصى 500 حرف.",
-            isRead: false, createdAt: now - DAY_MS,
-          },
-        ],
+        notifications: [],
       };
     }
 
@@ -364,7 +365,7 @@
         ? PRESET_AVATARS.find((a) => a.id === user.avatarId)
         : null;
       if (preset) {
-        return `<span class="avatar ${size}" style="background:${preset.bg}" title="${esc(preset.name)}">${preset.icon}</span>`;
+        return `<span class="avatar ${size}" style="background:${preset.bg}" title="${esc(preset.name)}">${preset.svg}</span>`;
       }
       let hash = 0;
       for (let i = 0; i < user.username.length; i++) hash = (hash * 31 + user.username.charCodeAt(i)) >>> 0;
@@ -473,7 +474,7 @@
                 </div>
                 ${ui.authMode === "register" ? `
                   <div>
-                    <div class="row-between"><span class="muted">اختر صورة رمزية أو اتركه للحرف الأول</span></div>
+                    <div class="row-between"><span class="muted">اختر تخصصك أو مهنتك كصورة رمزية</span></div>
                     <div class="avatar-grid" style="margin-top:6px">
                       <button type="button" class="avatar-pick ${!window.__pickAv ? "selected" : ""}" onclick="window.__pickAv=null;render()">
                         <span class="avatar av-sm" style="background:#0d63a5">أ</span>
@@ -481,7 +482,7 @@
                       </button>
                       ${presets.map((p) => `
                         <button type="button" class="avatar-pick ${window.__pickAv === p.id ? "selected" : ""}" onclick="window.__pickAv='${p.id}';render()">
-                          <span class="avatar av-sm" style="background:${p.bg}">${p.icon}</span>
+                          <span class="avatar av-sm" style="background:${p.bg}">${p.svg}</span>
                           <span style="font-size:10px">${p.name}</span>
                         </button>`).join("")}
                     </div>
@@ -489,9 +490,8 @@
                 <button type="submit" class="btn btn-primary">${ui.authMode === "login" ? "دخول إلى بحر" : "إنشاء حساب"}</button>
               </form>`}
           <div class="divider"></div>
-          <div class="muted" style="margin-bottom:8px">دخول سريع للمعاينة:</div>
+          <div class="muted" style="margin-bottom:8px">دخول سريع للإدارة:</div>
           <div class="row" style="flex-wrap:wrap">
-            <button class="btn btn-ghost" onclick="quickLogin('سارة_البحرية','BahrUser123')">عضو: سارة_البحرية</button>
             <button class="btn btn-soft" onclick="quickLogin('admin','BahrAdmin123')">الإدارة: admin</button>
           </div>
         </div>`;
@@ -600,13 +600,13 @@
           <div class="stack">
             ${modeTabs}
             ${composerHtml}
-            ${posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد بوستات في هذا المسار بعد.</div>`}
+            ${posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد بوستات حتى الآن. كن أول المشاركين!</div>`}
           </div>
           <aside class="stack">
             <div class="card">
               <h3 style="font-size:15px;margin-bottom:12px">كتّاب في بحر</h3>
               <div class="stack" style="gap:10px">
-                ${writers.map((u) => {
+                ${writers.length ? writers.map((u) => {
                   const isF = me && db.follows.some((f) => f.followerId === me.id && f.followingId === u.id);
                   const fc = db.follows.filter((f) => f.followingId === u.id).length;
                   return `<div class="row-between">
@@ -618,7 +618,7 @@
                       <button class="btn ${isF ? "btn-soft" : "btn-primary"}" style="padding:5px 10px;font-size:11px" onclick="toggleFollow(${u.id})">${isF ? "متابَع" : "متابعة"}</button>
                     </div>
                   </div>`;
-                }).join("")}
+                }).join("") : `<div class="muted" style="text-align:center">لا توجد حسابات أخرى مسجلة حالياً.</div>`}
               </div>
             </div>
             <div class="card muted" style="line-height:1.8">
@@ -789,11 +789,11 @@
                   </button>
                   ${presets.map((p) => `
                     <button type="button" class="avatar-pick ${u.avatarId === p.id ? "selected" : ""}" onclick="setMyAvatar('${p.id}')">
-                      <span class="avatar av-sm" style="background:${p.bg}">${p.icon}</span>
+                      <span class="avatar av-sm" style="background:${p.bg}">${p.svg}</span>
                       <span style="font-size:10px">${p.name}</span>
                     </button>`).join("")}
                 </div>
-                <div><button type="submit" class="btn btn-primary">حفظ النبذة</button></div>
+                <div><button type="submit" class="btn btn-primary">حفظ النبذة والصورة</button></div>
               </form>` : ""}
           </div>
           ${userPosts.map(renderPostCard).join("") || `<div class="card muted" style="text-align:center">لا توجد بوستات بعد.</div>`}
@@ -984,7 +984,7 @@
             </div>
             <div class="tabs">
               <button class="tab-btn ${ui.adminTab === "users" ? "active" : ""}" onclick="ui.adminTab='users';render()">المستخدمون</button>
-              <button class="tab-btn ${ui.adminTab === "settings" ? "active" : ""}" onclick="ui.adminTab='settings';render()">الإعدادات والصور</button>
+              <button class="tab-btn ${ui.adminTab === "settings" ? "active" : ""}" onclick="ui.adminTab='settings';render()">الإعدادات والأفاتار</button>
               <button class="tab-btn ${ui.adminTab === "mod" ? "active" : ""}" onclick="ui.adminTab='mod';render()">المحادثات والبلاغات</button>
               <button class="tab-btn ${ui.adminTab === "notify" ? "active" : ""}" onclick="ui.adminTab='notify';render()">إشعارات إدارية</button>
             </div>
@@ -1026,12 +1026,12 @@
                 </div>
               </div>
               <div class="divider"></div>
-              <strong>الصور الرمزية المتاحة</strong>
+              <strong>أيقونات الأفاتار المهنية المتاحة للتسجيل</strong>
               <div class="avatar-grid">
                 ${PRESET_AVATARS.map((p) => {
                   const on = s.enabledAvatars.includes(p.id);
                   return `<button type="button" class="avatar-pick ${on ? "selected" : ""}" style="opacity:${on ? 1 : 0.4}" onclick="toggleAvatarPool('${p.id}')">
-                    <span class="avatar av-sm" style="background:${p.bg}">${p.icon}</span>
+                    <span class="avatar av-sm" style="background:${p.bg}">${p.svg}</span>
                     <span style="font-size:10px">${p.name}</span>
                   </button>`;
                 }).join("")}
