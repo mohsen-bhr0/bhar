@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl" data-theme="light">
+<html lang="ar" dir="rtl" data-theme="light" data-lang="ar">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -36,6 +36,8 @@
       --danger: #f87171;
       --danger-bg: #451a03;
     }
+    [data-lang="en"] { direction: ltr; font-family: system-ui, -apple-system, sans-serif; }
+    
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -71,7 +73,7 @@
     }
     .brand-mark svg { width: 18px; height: 18px; fill: currentColor; }
     
-    nav { display: flex; align-items: center; gap: 16px; overflow-x: auto; }
+    nav { display: flex; align-items: center; gap: 14px; overflow-x: auto; }
     .nav-link {
       background: none; border: none; border-bottom: 2px solid transparent;
       padding: 6px 2px; font-size: 14px; font-weight: 500; color: var(--muted); white-space: nowrap;
@@ -79,18 +81,20 @@
     .nav-link.active { color: var(--blue); border-bottom-color: var(--blue); }
 
     .header-search {
-      position: relative; width: 210px; max-width: 36vw;
+      position: relative; width: 200px; max-width: 32vw;
     }
     .header-search input {
       width: 100%; padding: 7px 32px 7px 12px; font-size: 13px; color: var(--ink);
       background: var(--surface-soft); border: 1px solid var(--border); border-radius: 20px;
       outline: none;
     }
+    [data-lang="en"] .header-search input { padding: 7px 12px 7px 32px; }
     .header-search input:focus { border-color: var(--blue); }
     .header-search svg {
       position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
       width: 15px; height: 15px; fill: var(--muted); pointer-events: none;
     }
+    [data-lang="en"] .header-search svg { right: auto; left: 10px; }
 
     main { padding: 26px 0 60px; }
     .grid-2 { display: grid; grid-template-columns: 1fr; gap: 22px; align-items: start; }
@@ -160,10 +164,11 @@
       display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
     }
     .info-chip {
-      display: inline-flex; align-items: center; gap: 5px;
+      display: inline-flex; align-items: center; gap: 6px;
       padding: 4px 10px; border-radius: 8px; font-size: 12px;
       background: var(--surface-soft); border: 1px solid var(--border); color: var(--ink);
     }
+    .info-chip svg { width: 14px; height: 14px; fill: currentColor; }
 
     .photo-upload-box {
       display: flex; align-items: center; gap: 14px; padding: 12px;
@@ -178,13 +183,14 @@
     .menu-btn:hover { background: var(--surface-tint); }
     .menu-btn svg { width: 18px; height: 18px; fill: currentColor; }
     .dropdown-content {
-      position: absolute; left: 0; top: 48px; background: var(--surface); min-width: 215px;
+      position: absolute; left: 0; top: 48px; background: var(--surface); min-width: 220px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid var(--border);
       border-radius: 12px; z-index: 40; display: none; overflow: hidden;
     }
+    [data-lang="en"] .dropdown-content { left: auto; right: 0; }
     .dropdown-content.show { display: block; }
     .dropdown-item {
-      width: 100%; text-align: right; background: none; border: none; padding: 11px 16px;
+      width: 100%; text-align: start; background: none; border: none; padding: 11px 16px;
       font-size: 13px; font-weight: 500; color: var(--ink); display: flex; align-items: center; gap: 9px;
     }
     .dropdown-item:hover { background: var(--surface-soft); }
@@ -192,17 +198,21 @@
 
     .chat-box { display: grid; grid-template-columns: 1fr; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; background: var(--surface); min-height: 520px; }
     @media (min-width: 820px) { .chat-box { grid-template-columns: 300px 1fr; } }
-    .chat-list { border-left: 1px solid var(--border); display: flex; flex-direction: column; }
+    .chat-list { border-inline-end: 1px solid var(--border); display: flex; flex-direction: column; }
     .chat-thread { display: flex; flex-direction: column; background: var(--surface-soft); }
     .chat-msgs { flex: 1; padding: 16px; overflow-y: auto; max-height: 380px; display: flex; flex-direction: column; gap: 10px; }
     .bubble { max-width: 78%; padding: 10px 14px; border-radius: 14px; font-size: 14px; }
     .bubble.mine { align-self: flex-start; background: var(--blue); color: #fff; }
+    [data-lang="en"] .bubble.mine { align-self: flex-end; }
     .bubble.theirs { align-self: flex-end; background: var(--surface); border: 1px solid var(--border); color: var(--ink); }
+    [data-lang="en"] .bubble.theirs { align-self: flex-start; }
+    
     .toast {
       position: fixed; bottom: 20px; left: 20px; z-index: 60;
       background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 11px; font-size: 12px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.3); border: 1px solid var(--border);
     }
+    [data-lang="en"] .toast { left: auto; right: 20px; }
     .modal-backdrop {
       position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.6);
       display: flex; align-items: center; justify-content: center; padding: 16px;
@@ -217,7 +227,7 @@
         <span class="brand-mark">
           <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
         </span>
-        <span>بحر</span>
+        <span data-i18n="brandName">بحر</span>
       </button>
       <nav id="nav"></nav>
       <div id="auth-actions" class="row"></div>
@@ -229,9 +239,113 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_standalone_v6";
+    const STORAGE_KEY = "bahr_standalone_v7";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
+    
+    const I18N = {
+      ar: {
+        brandName: "بحر",
+        home: "الصفحة الرئيسية",
+        myAccount: "حسابي",
+        allPosts: "كل البوستات",
+        discover: "اكتشف",
+        chat: "الرسائل",
+        notifications: "الإشعارات",
+        adminPanel: "لوحة الإدارة",
+        searchPlaceholder: "ابحث عن أشخاص أو بوستات...",
+        menuAccount: "حسابي (الاسم والصورة)",
+        menuPass: "تغيير كلمة المرور",
+        menuLang: "English / العربية",
+        menuTheme: "تبديل الوضع الليلي/النهاري",
+        menuDelete: "حذف الحساب",
+        menuLogout: "تسجيل الخروج",
+        writersInBahr: "مقترح متابعات",
+        noWriters: "لا توجد اقتراحات حالياً",
+        charCount: "حرف",
+        remainingToday: "المتبقي اليوم",
+        publishPost: "نشر البوست",
+        saveDraft: "حفظ كمسودة",
+        myDrafts: "مسوداتك المحفوظة:",
+        charLimitExceeded: "تم تجاوز الحد الأقصى",
+        charLimitZero: "استهلكت حد النشر المتاح خلال 24 ساعة",
+        charLimitNext: "يمكنك النشر مجدداً بعد",
+        noPostsFeed: "لا توجد بوستات منشورة بعد.",
+        char500: "حد أقصى 500 حرف",
+        charShare: "مشاركة رابط الحساب",
+        followers: "متابِع",
+        following: "يتابِع",
+        postsCount: "بوست",
+        follow: "متابعة",
+        followingState: "متابَع",
+        messageBtn: "مراسلة",
+        block: "حظر",
+        unblock: "إلغاء الحظر",
+        edit: "تعديل",
+        delete: "حذف",
+        report: "إبلاغ",
+        like: "إعجاب",
+        comment: "تعليق",
+        share: "مشاركة",
+        noComments: "لا توجد تعليقات بعد.",
+        commentPlaceholder: "اكتب تعليقاً نصياً...",
+        postShareSuccess: "تم نسخ رابط البوست",
+        profileShareSuccess: "تم نسخ رابط الحساب",
+        bahrCharter: "ميثاق بحر",
+        bahrCharterText: "بوست نصي واحد كل 24 ساعة (500 حرف) مع تصنيف إلزامي، ومحادثات مؤقتة تُحذف بعد 24 ساعة.",
+      },
+      en: {
+        brandName: "Bahr",
+        home: "Home",
+        myAccount: "My Account",
+        allPosts: "All Posts",
+        discover: "Discover",
+        chat: "Messages",
+        notifications: "Notifications",
+        adminPanel: "Admin Panel",
+        searchPlaceholder: "Search people or posts...",
+        menuAccount: "My Account (Name & Photo)",
+        menuPass: "Change Password",
+        menuLang: "العربية / English",
+        menuTheme: "Toggle Dark/Light Mode",
+        menuDelete: "Delete Account",
+        menuLogout: "Logout",
+        writersInBahr: "Suggested to Follow",
+        noWriters: "No suggestions available",
+        charCount: "chars",
+        remainingToday: "Remaining today",
+        publishPost: "Publish Post",
+        saveDraft: "Save Draft",
+        myDrafts: "Your Drafts:",
+        charLimitExceeded: "Limit exceeded",
+        charLimitZero: "You have used your daily post quota (24h)",
+        charLimitNext: "You can post again after",
+        noPostsFeed: "No posts published yet.",
+        char500: "Max 500 characters",
+        charShare: "Share Profile Link",
+        followers: "Follower",
+        following: "Following",
+        postsCount: "Post",
+        follow: "Follow",
+        followingState: "Following",
+        messageBtn: "Message",
+        block: "Block",
+        unblock: "Unblock",
+        edit: "Edit",
+        delete: "Delete",
+        report: "Report",
+        like: "Like",
+        comment: "Comment",
+        share: "Share",
+        noComments: "No comments yet.",
+        commentPlaceholder: "Write a text comment...",
+        postShareSuccess: "Post link copied",
+        profileShareSuccess: "Profile link copied",
+        bahrCharter: "Bahr Charter",
+        bahrCharterText: "One text post every 24 hours (500 chars) with required category, and temporary chats deleted after 24 hours.",
+      }
+    };
+
     const CATEGORIES = ["تقنية", "خواطر", "طب وصحة", "ريادة أعمال", "كتب"];
     const COUNTRIES = [
       "مصر", "السعودية", "الإمارات", "الأردن", "فلسطين", "لبنان", "سوريا", "العراق",
@@ -282,7 +396,7 @@
     let db = loadState();
     let ui = {
       view: "feed",
-      feedMode: "all",
+      feedMode: "home",
       authMode: "login",
       profileUserId: null,
       activeChatId: null,
@@ -291,8 +405,21 @@
       openComments: {},
       searchQuery: "",
       filterCategory: "",
-      theme: localStorage.getItem("bahr_theme") || "light"
+      theme: localStorage.getItem("bahr_theme") || "light",
+      lang: localStorage.getItem("bahr_lang") || "ar"
     };
+
+    function t(key) {
+      return (I18N[ui.lang] && I18N[ui.lang][key]) || I18N["ar"][key] || key;
+    }
+
+    function switchLanguage() {
+      ui.lang = ui.lang === "ar" ? "en" : "ar";
+      localStorage.setItem("bahr_lang", ui.lang);
+      document.documentElement.setAttribute("data-lang", ui.lang);
+      document.documentElement.setAttribute("dir", ui.lang === "en" ? "ltr" : "rtl");
+      render();
+    }
 
     function checkInitialHash() {
       const h = location.hash || "";
@@ -307,6 +434,8 @@
     checkInitialHash();
 
     document.documentElement.setAttribute("data-theme", ui.theme);
+    document.documentElement.setAttribute("data-lang", ui.lang);
+    document.documentElement.setAttribute("dir", ui.lang === "en" ? "ltr" : "rtl");
 
     function toggleTheme() {
       ui.theme = ui.theme === "light" ? "dark" : "light";
@@ -319,19 +448,13 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
       } catch (err) {
-        toast("مساحة التخزين ممتلئة، جرب صورة أصغر حجماً");
+        toast("Storage quota exceeded");
       }
     }
 
     function uid() {
       db.nextId += 1;
       return db.nextId;
-    }
-
-    function esc(str) {
-      return String(str ?? "")
-        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 
     function currentUser() {
@@ -373,24 +496,23 @@
 
     function relTime(ts) {
       const m = Math.floor((Date.now() - ts) / 60000);
-      if (m < 1) return "الآن";
-      if (m < 60) return `منذ ${m} د`;
+      if (m < 1) return ui.lang === "en" ? "Just now" : "الآن";
+      if (m < 60) return ui.lang === "en" ? `${m}m ago` : `منذ ${m} د`;
       const h = Math.floor(m / 60);
-      if (h < 24) return `منذ ${h} س`;
-      return `منذ ${Math.floor(h / 24)} يوم`;
+      if (h < 24) return ui.lang === "en" ? `${h}h ago` : `منذ ${h} س`;
+      return ui.lang === "en" ? `${Math.floor(h / 24)}d ago` : `منذ ${Math.floor(h / 24)} يوم`;
     }
 
     function remTime(targetTs) {
       const mins = Math.max(1, Math.ceil((targetTs - Date.now()) / 60000));
       const h = Math.floor(mins / 60);
       const m = mins % 60;
-      return h > 0 ? `${h} س و ${m} د` : `${m} د`;
+      return h > 0 ? `${h}h ${m}m` : `${m}m`;
     }
 
-    // ضغط الصورة الشخصية المرفوعة لحجم خفيف يناسب التخزين
     function compressImageFile(file, callback) {
       if (!file || !file.type.startsWith("image/")) {
-        toast("يرجى اختيار ملف صورة صالح");
+        toast("Invalid image file");
         return;
       }
       const reader = new FileReader();
@@ -409,15 +531,13 @@
           canvas.height = h;
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, w, h);
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-          callback(dataUrl);
+          callback(canvas.toDataURL("image/jpeg", 0.8));
         };
         img.src = ev.target.result;
       };
       reader.readAsDataURL(file);
     }
 
-    // عرض الصورة الشخصية للمستخدم، وإن لم يضع صورة يظهر أول حرف من اسمه
     function avatarHtml(user, size = "av-md") {
       if (!user) return "";
       if (user.photoData) {
@@ -431,7 +551,7 @@
     }
 
     function badgeHtml(user) {
-      return user && user.verified ? `<span class="verified" title="حساب موثق">✓</span>` : "";
+      return user && user.verified ? `<span class="verified" title="Verified">✓</span>` : "";
     }
 
     function getQuota(user) {
@@ -443,8 +563,8 @@
     }
 
     function suggestUsernames(name) {
-      const base = name.trim().replace(/\s+/g, "_").slice(0, 16) || "عضو";
-      const pool = [`${base}_1`, `${base}_بحر`, `${base}_26`, `${base}_نور`, `${base}_${Math.floor(10 + Math.random() * 89)}`];
+      const base = name.trim().replace(/\s+/g, "_").slice(0, 16) || "user";
+      const pool = [`${base}_1`, `${base}_bahr`, `${base}_26`, `${base}_vip`, `${base}_${Math.floor(10 + Math.random() * 89)}`];
       return pool.filter((c) => !db.users.some((u) => u.username.toLowerCase() === c.toLowerCase())).slice(0, 4);
     }
 
@@ -458,7 +578,7 @@
       const me = currentUser();
       if (!me) { ui.view = "auth"; render(); return; }
       ui.view = "feed";
-      ui.feedMode = "all";
+      ui.feedMode = "home";
       render();
     }
 
@@ -499,7 +619,7 @@
     function renderDiscoverAreaOnly() {
       const container = document.getElementById("discover-results");
       if (!container) { render(); return; }
-      container.innerHTML = getDiscoverPostsHtml();
+      container.innerHTML = getDiscoverHtml();
     }
 
     function toggleUserMenu(e) {
@@ -523,12 +643,13 @@
         document.getElementById("nav").innerHTML = "";
         document.getElementById("auth-actions").innerHTML = `
           <div class="dropdown">
-            <button class="menu-btn" onclick="toggleUserMenu(event)" title="القائمة">
+            <button class="menu-btn" onclick="toggleUserMenu(event)" title="Menu">
               <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
             </button>
             <div id="user-dropdown-menu" class="dropdown-content">
-              <button class="dropdown-item" onclick="toggleTheme()">
-                ${ui.theme === "light" ? "🌙 الوضع الليلي" : "☀️ الوضع النهاري"}
+              <button class="dropdown-item" onclick="switchLanguage()">
+                <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
+                ${t("menuLang")}
               </button>
             </div>
           </div>`;
@@ -538,55 +659,59 @@
 
       const unread = db.notifications.filter((n) => n.userId === me.id && !n.isRead).length;
       const navLinks = [
-        ["feed", "الرئيسية"],
-        ["discover", "اكتشف"],
+        ["feed", t("home")],
+        ["discover", t("discover")],
       ];
-      if (me.role !== "admin") navLinks.push(["chat", "الرسائل"]);
-      navLinks.push(["notifications", `الإشعارات${unread ? ` (${unread})` : ""}`]);
-      if (me.role === "admin") navLinks.push(["admin", "لوحة الإدارة"]);
+      if (me.role !== "admin") navLinks.push(["chat", t("chat")]);
+      navLinks.push(["notifications", `${t("notifications")}${unread ? ` (${unread})` : ""}`]);
+      if (me.role === "admin") navLinks.push(["admin", t("adminPanel")]);
 
       document.getElementById("nav").innerHTML = navLinks
-        .map(([id, label]) => `<button class="nav-link ${ui.view === id ? "active" : ""}" onclick="setView('${id}')">${label}</button>`)
+        .map(([id, label]) => `<button class="nav-link ${ui.view === id && (id !== 'feed' || ui.feedMode === 'home') ? "active" : ""}" onclick="ui.feedMode='home'; setView('${id}')">${label}</button>`)
         .join("");
 
-      // شريط البحث في المكان العلوي بدلاً من زر الوضع، ونقل الوضع الليلي إلى الثلاث شرط
+      // إزالة اسم المستخدم من بجانب الثلاث نقاط تماماً كما طلبت
       document.getElementById("auth-actions").innerHTML = `
         <div class="header-search">
           <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-          <input id="header-search-input" type="search" placeholder="بحث في بحر..." value="${esc(ui.searchQuery)}" oninput="handleHeaderSearch(this.value)" />
+          <input id="header-search-input" type="search" placeholder="${t("searchPlaceholder")}" value="${esc(ui.searchQuery)}" oninput="handleHeaderSearch(this.value)" />
         </div>
-        <button class="brand-btn" style="font-size:14px" onclick="openProfile(${me.id})">
-          ${avatarHtml(me, "av-xs")} <span style="max-width:90px;overflow:hidden;text-overflow:ellipsis">${esc(me.username)}</span> ${badgeHtml(me)}
+        <button class="brand-btn" style="padding:0;background:none" onclick="openProfile(${me.id})" title="${esc(me.username)}">
+          ${avatarHtml(me, "av-sm")}
         </button>
         <div class="dropdown">
-          <button class="menu-btn" onclick="toggleUserMenu(event)" title="القائمة">
+          <button class="menu-btn" onclick="toggleUserMenu(event)" title="Menu">
             <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
           </button>
           <div id="user-dropdown-menu" class="dropdown-content">
             <button class="dropdown-item" onclick="openAccountSettingsModal()">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-              حسابي (الاسم والصورة)
+              ${t("menuAccount")}
             </button>
             <button class="dropdown-item" onclick="openChangePasswordModal()">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-              تغيير كلمة المرور
+              ${t("menuPass")}
+            </button>
+            <button class="dropdown-item" onclick="switchLanguage()">
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
+              ${t("menuLang")}
             </button>
             <button class="dropdown-item" onclick="toggleTheme()">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="${ui.theme === 'light' ? 'M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z' : 'M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z'}"/></svg>
-              ${ui.theme === "light" ? "الوضع الليلي" : "الوضع النهاري"}
+              ${t("menuTheme")}
             </button>
             <button class="dropdown-item" onclick="setView('admin')" style="${me.role === 'admin' ? '' : 'display:none'}">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-              لوحة الإدارة
+              ${t("adminPanel")}
             </button>
             <div class="divider" style="margin:4px 0"></div>
             <button class="dropdown-item danger" onclick="openDeleteAccountModal()">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-              حذف الحساب
+              ${t("menuDelete")}
             </button>
             <button class="dropdown-item danger" onclick="logout()">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.1 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
-              تسجيل الخروج
+              ${t("menuLogout")}
             </button>
           </div>
         </div>`;
@@ -601,7 +726,6 @@
       else app.innerHTML = renderFeed();
     }
 
-    // نافذة "حسابي" داخل الثلاث شرط لتغيير الاسم والصورة الشخصية والبيانات
     function openAccountSettingsModal() {
       const me = currentUser();
       if (!me) return;
@@ -611,12 +735,12 @@
         <div class="modal-backdrop">
           <div class="modal-card stack">
             <div class="row-between">
-              <h3>إعدادات حسابي</h3>
+              <h3>${t("menuAccount")}</h3>
               <button class="btn btn-ghost" style="padding:4px 10px" onclick="closeModal()">✕</button>
             </div>
             <form onsubmit="saveAccountSettings(event)" class="stack">
               <div>
-                <label class="muted">الصورة الشخصية (إن لم تضع صورة يظهر أول حرف من اسمك)</label>
+                <label class="muted">${ui.lang === 'en' ? 'Profile Photo' : 'الصورة الشخصية'}</label>
                 <div class="photo-upload-box" style="margin-top:6px">
                   <div id="edit-photo-preview">
                     ${avatarHtml({ username: me.username, photoData: window.__editPhotoData }, "av-md")}
@@ -624,42 +748,42 @@
                   <div class="stack" style="gap:6px;flex:1">
                     <input type="file" id="edit-photo-input" accept="image/*" style="display:none" onchange="handleEditPhotoUpload(event)" />
                     <div class="row">
-                      <button type="button" class="btn btn-soft" style="padding:6px 12px;font-size:12px" onclick="document.getElementById('edit-photo-input').click()">اختيار صورة</button>
-                      <button type="button" class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="removeEditPhoto()">إزالة الصورة</button>
+                      <button type="button" class="btn btn-soft" style="padding:6px 12px;font-size:12px" onclick="document.getElementById('edit-photo-input').click()">${ui.lang === 'en' ? 'Choose Image' : 'اختيار صورة'}</button>
+                      <button type="button" class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="removeEditPhoto()">${ui.lang === 'en' ? 'Remove' : 'إزالة'}</button>
                     </div>
                   </div>
                 </div>
               </div>
               <div>
-                <label class="muted">اسم المستخدم</label>
+                <label class="muted">${ui.lang === 'en' ? 'Username' : 'اسم المستخدم'}</label>
                 <input id="acc-username" class="input" required minlength="3" maxlength="24" value="${esc(me.username)}" />
               </div>
               <div>
-                <label class="muted">النبذة التعريفية</label>
-                <input id="acc-bio" class="input" maxlength="160" value="${esc(me.bio)}" placeholder="اكتب نبذة قصيرة..." />
+                <label class="muted">${ui.lang === 'en' ? 'Bio' : 'النبذة التعريفية'}</label>
+                <input id="acc-bio" class="input" maxlength="160" value="${esc(me.bio)}" placeholder="..." />
               </div>
               <div class="row">
                 <div style="flex:1">
-                  <label class="muted">الجنس</label>
+                  <label class="muted">${ui.lang === 'en' ? 'Gender' : 'الجنس'}</label>
                   <select id="acc-gender" class="input">
                     <option value="رجل" ${me.gender === "رجل" ? "selected" : ""}>رجل</option>
                     <option value="امرأة" ${me.gender === "امرأة" ? "selected" : ""}>امرأة</option>
                   </select>
                 </div>
                 <div style="flex:1">
-                  <label class="muted">البلد / الجنسية</label>
+                  <label class="muted">${ui.lang === 'en' ? 'Country' : 'البلد'}</label>
                   <select id="acc-country" class="input">
                     ${COUNTRIES.map((c) => `<option value="${c}" ${me.country === c ? "selected" : ""}>${c}</option>`).join("")}
                   </select>
                 </div>
               </div>
               <div>
-                <label class="muted">تاريخ الميلاد</label>
+                <label class="muted">${ui.lang === 'en' ? 'Birth Date' : 'تاريخ الميلاد'}</label>
                 <input id="acc-birth" type="date" class="input" value="${esc(me.birthDate || "")}" />
               </div>
               <div class="row" style="justify-content:flex-end">
                 <button type="button" class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
-                <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                <button type="submit" class="btn btn-primary">${ui.lang === 'en' ? 'Save' : 'حفظ التغييرات'}</button>
               </div>
             </form>
           </div>
@@ -694,10 +818,9 @@
       const newCountry = document.getElementById("acc-country").value;
       const newBirth = document.getElementById("acc-birth").value;
 
-      if (newName.length < 3) return toast("الاسم يجب أن يكون 3 أحرف على الأقل");
-
+      if (newName.length < 3) return toast("Name must be at least 3 chars");
       const exists = db.users.some((u) => u.id !== me.id && u.username.toLowerCase() === newName.toLowerCase());
-      if (exists) return toast("اسم المستخدم مستخدم بالفعل، اختر اسماً آخر");
+      if (exists) return toast("Username taken");
 
       me.username = newName;
       me.bio = newBio;
@@ -707,7 +830,7 @@
       me.photoData = window.__editPhotoData || null;
       save();
       closeModal();
-      toast("تم تحديث بيانات حسابك بنجاح");
+      toast("Updated successfully");
       render();
     }
 
@@ -715,19 +838,19 @@
       document.getElementById("modal-root").innerHTML = `
         <div class="modal-backdrop">
           <div class="modal-card stack">
-            <h3>تغيير كلمة المرور</h3>
+            <h3>${t("menuPass")}</h3>
             <form onsubmit="submitChangePassword(event)" class="stack">
               <div>
-                <label class="muted">كلمة المرور الحالية</label>
+                <label class="muted">${ui.lang === 'en' ? 'Current Password' : 'كلمة المرور الحالية'}</label>
                 <input id="old-pass" type="password" class="input" required />
               </div>
               <div>
-                <label class="muted">كلمة المرور الجديدة (6 أحرف على الأقل)</label>
+                <label class="muted">${ui.lang === 'en' ? 'New Password' : 'كلمة المرور الجديدة'}</label>
                 <input id="new-pass" type="password" class="input" required minlength="6" />
               </div>
               <div class="row" style="justify-content:flex-end">
                 <button type="button" class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
-                <button type="submit" class="btn btn-primary">تحديث كلمة المرور</button>
+                <button type="submit" class="btn btn-primary">${ui.lang === 'en' ? 'Update' : 'تحديث كلمة المرور'}</button>
               </div>
             </form>
           </div>
@@ -739,28 +862,26 @@
       const me = currentUser();
       const oldP = document.getElementById("old-pass").value;
       const newP = document.getElementById("new-pass").value;
-      if (me.password !== oldP) return toast("كلمة المرور الحالية غير صحيحة");
-      if (newP.length < 6) return toast("كلمة المرور الجديدة قصيرة جداً");
+      if (me.password !== oldP) return toast("Current password incorrect");
+      if (newP.length < 6) return toast("Password too short");
       me.password = newP;
       save();
       closeModal();
-      toast("تم تغيير كلمة المرور بنجاح");
+      toast("Password changed successfully");
     }
 
     function openDeleteAccountModal() {
       const me = currentUser();
-      if (me.id === 1 && me.role === "admin") {
-        return toast("لا يمكن حذف حساب الإدارة الرئيسي");
-      }
+      if (me.id === 1 && me.role === "admin") return toast("Cannot delete admin");
       document.getElementById("modal-root").innerHTML = `
         <div class="modal-backdrop">
           <div class="modal-card stack">
-            <h3 style="color:var(--danger)">حذف الحساب نهائياً</h3>
-            <p style="font-size:14px;margin:0">هل أنت متأكد من رغبتك في حذف حسابك؟ سيتم مسح جميع بوستاتك ومتابعاتك ورسائلك ولا يمكن التراجع عن هذا الإجراء.</p>
-            <input id="del-confirm-pw" type="password" class="input" placeholder="أدخل كلمة المرور للتأكيد..." />
+            <h3 style="color:var(--danger)">${t("menuDelete")}</h3>
+            <p style="font-size:14px;margin:0">Are you sure? This will delete your posts, follows, and messages.</p>
+            <input id="del-confirm-pw" type="password" class="input" placeholder="Password confirmation..." />
             <div class="row" style="justify-content:flex-end">
-              <button type="button" class="btn btn-ghost" onclick="closeModal()">تراجع</button>
-              <button type="button" class="btn btn-danger" onclick="confirmDeleteMyAccount()">تأكيد حذف الحساب</button>
+              <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+              <button type="button" class="btn btn-danger" onclick="confirmDeleteMyAccount()">Delete</button>
             </div>
           </div>
         </div>`;
@@ -769,7 +890,7 @@
     function confirmDeleteMyAccount() {
       const me = currentUser();
       const pw = document.getElementById("del-confirm-pw").value;
-      if (me.password !== pw) return toast("كلمة المرور غير صحيحة");
+      if (me.password !== pw) return toast("Incorrect password");
       const myId = me.id;
       db.users = db.users.filter((u) => u.id !== myId);
       db.posts = db.posts.filter((p) => p.userId !== myId);
@@ -779,7 +900,7 @@
       save();
       closeModal();
       ui.view = "auth";
-      toast("تم حذف حسابك نهائياً");
+      toast("Account deleted");
       render();
     }
 
@@ -793,69 +914,64 @@
             <span class="brand-mark" style="width:48px;height:48px;margin-bottom:8px">
               <svg viewBox="0 0 24 24" style="width:24px;height:24px"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
             </span>
-            <h2 style="font-size:22px">مرحباً بك في منصة بحر</h2>
-            <div class="muted" style="margin-top:4px">يجب تسجيل الدخول أو إنشاء حساب جديد للوصول إلى المنصة</div>
+            <h2 style="font-size:22px">بحر</h2>
+            <div class="muted" style="margin-top:4px">${ui.lang === 'en' ? 'Sign in or create account' : 'يجب تسجيل الدخول أو إنشاء حساب جديد للوصول إلى المنصة'}</div>
           </div>
           <div class="row-between" style="margin-bottom:16px">
             <div class="tabs" style="width:100%">
-              <button class="tab-btn ${ui.authMode === "login" ? "active" : ""}" style="flex:1" onclick="ui.authMode='login';render()">تسجيل الدخول</button>
-              <button class="tab-btn ${ui.authMode === "register" ? "active" : ""}" style="flex:1" onclick="ui.authMode='register';render()">حساب جديد</button>
+              <button class="tab-btn ${ui.authMode === "login" ? "active" : ""}" style="flex:1" onclick="ui.authMode='login';render()">${ui.lang === 'en' ? 'Login' : 'تسجيل الدخول'}</button>
+              <button class="tab-btn ${ui.authMode === "register" ? "active" : ""}" style="flex:1" onclick="ui.authMode='register';render()">${ui.lang === 'en' ? 'Register' : 'حساب جديد'}</button>
             </div>
           </div>
           ${ui.authMode === "register" && !regOpen
-            ? `<div style="padding:14px;background:#fef7ec;border:1px solid #f5d0a9;border-radius:12px;font-size:13px;color:#8a4b08">التسجيل الجديد مغلق حالياً من قبل الإدارة.</div>`
+            ? `<div style="padding:14px;background:#fef7ec;border:1px solid #f5d0a9;border-radius:12px;font-size:13px;color:#8a4b08">Registration closed.</div>`
             : `<form onsubmit="submitAuth(event)" class="stack">
                 <div>
-                  <label class="muted">اسم المستخدم</label>
-                  <input id="auth-u" class="input" required minlength="3" maxlength="24" placeholder="مثال: نادر_الساحل" oninput="checkUsernameLive(this.value)" />
+                  <label class="muted">${ui.lang === 'en' ? 'Username' : 'اسم المستخدم'}</label>
+                  <input id="auth-u" class="input" required minlength="3" maxlength="24" placeholder="username" oninput="checkUsernameLive(this.value)" />
                   <div id="u-suggest" style="margin-top:6px"></div>
                 </div>
                 <div>
-                  <label class="muted">كلمة المرور</label>
-                  <input id="auth-p" type="password" class="input" required minlength="6" placeholder="••••••" />
+                  <label class="muted">${ui.lang === 'en' ? 'Password' : 'كلمة المرور'}</label>
+                  <input id="auth-p" type="password" class="input" required minlength="6" placeholder="******" />
                 </div>
                 ${ui.authMode === "register" ? `
                   <div class="row">
                     <div style="flex:1">
-                      <label class="muted">الجنس</label>
+                      <label class="muted">${ui.lang === 'en' ? 'Gender' : 'الجنس'}</label>
                       <select id="reg-gender" class="input" required>
-                        <option value="">اختر الجنس...</option>
-                        <option value="رجل">رجل</option>
-                        <option value="امرأة">امرأة</option>
+                        <option value="">--</option>
+                        <option value="رجل">${ui.lang === 'en' ? 'Male' : 'رجل'}</option>
+                        <option value="امرأة">${ui.lang === 'en' ? 'Female' : 'امرأة'}</option>
                       </select>
                     </div>
                     <div style="flex:1">
-                      <label class="muted">تاريخ الميلاد</label>
+                      <label class="muted">${ui.lang === 'en' ? 'Birth Date' : 'تاريخ الميلاد'}</label>
                       <input id="reg-birth" type="date" class="input" required max="${new Date().toISOString().split('T')[0]}" />
                     </div>
                   </div>
                   <div>
-                    <label class="muted">البلد / الجنسية</label>
+                    <label class="muted">${ui.lang === 'en' ? 'Country' : 'البلد'}</label>
                     <select id="reg-country" class="input" required>
-                      <option value="">اختر البلد...</option>
+                      <option value="">--</option>
                       ${COUNTRIES.map((c) => `<option value="${c}">${c}</option>`).join("")}
                     </select>
                   </div>
                   <div>
-                    <label class="muted">الصورة الشخصية (اختياري — إن لم تضع صورة يظهر أول حرف من اسمك)</label>
+                    <label class="muted">${ui.lang === 'en' ? 'Profile Photo (Optional)' : 'الصورة الشخصية (اختياري)'}</label>
                     <div class="photo-upload-box" style="margin-top:6px">
                       <div id="reg-photo-preview">
-                        ${avatarHtml({ username: "ب", photoData: window.__regPhotoData }, "av-md")}
+                        ${avatarHtml({ username: "B", photoData: window.__regPhotoData }, "av-md")}
                       </div>
                       <div class="row">
                         <input type="file" id="reg-photo-input" accept="image/*" style="display:none" onchange="handleRegPhotoUpload(event)" />
-                        <button type="button" class="btn btn-soft" style="padding:6px 12px;font-size:12px" onclick="document.getElementById('reg-photo-input').click()">رفع صورة شخصية</button>
-                        ${window.__regPhotoData ? `<button type="button" class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="window.__regPhotoData=null;render()">إزالة</button>` : ""}
+                        <button type="button" class="btn btn-soft" style="padding:6px 12px;font-size:12px" onclick="document.getElementById('reg-photo-input').click()">${ui.lang === 'en' ? 'Upload Photo' : 'رفع صورة'}</button>
+                        ${window.__regPhotoData ? `<button type="button" class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="window.__regPhotoData=null;render()">X</button>` : ""}
                       </div>
                     </div>
                   </div>` : ""}
-                <button type="submit" class="btn btn-primary" style="padding:12px;font-size:15px">${ui.authMode === "login" ? "دخول إلى بحر" : "إنشاء حساب جديد"}</button>
+                <button type="submit" class="btn btn-primary" style="padding:12px;font-size:15px">${ui.authMode === "login" ? (ui.lang === 'en' ? 'Login' : 'دخول') : (ui.lang === 'en' ? 'Create Account' : 'إنشاء حساب جديد')}</button>
               </form>`}
-          <div class="divider"></div>
-          <div class="muted" style="margin-bottom:8px">دخول تجريبي سريع للإدارة:</div>
-          <div class="row" style="flex-wrap:wrap">
-            <button class="btn btn-soft" onclick="quickLogin('admin','BahrAdmin123')">دخول كـ الإدارة (admin)</button>
-          </div>
         </div>`;
     }
 
@@ -865,7 +981,7 @@
       compressImageFile(file, (dataUrl) => {
         window.__regPhotoData = dataUrl;
         const prev = document.getElementById("reg-photo-preview");
-        const uVal = document.getElementById("auth-u")?.value || "ب";
+        const uVal = document.getElementById("auth-u")?.value || "B";
         if (prev) prev.innerHTML = avatarHtml({ username: uVal, photoData: dataUrl }, "av-md");
       });
     }
@@ -876,14 +992,14 @@
       const trimmed = val.trim();
       if (!window.__regPhotoData) {
         const prev = document.getElementById("reg-photo-preview");
-        if (prev) prev.innerHTML = avatarHtml({ username: trimmed || "ب", photoData: null }, "av-md");
+        if (prev) prev.innerHTML = avatarHtml({ username: trimmed || "B", photoData: null }, "av-md");
       }
       if (trimmed.length < 3) { box.innerHTML = ""; return; }
       const taken = db.users.some((u) => u.username.toLowerCase() === trimmed.toLowerCase());
-      if (!taken) { box.innerHTML = `<span style="font-size:12px;color:var(--teal)">اسم المستخدم متاح ✓</span>`; return; }
+      if (!taken) { box.innerHTML = `<span style="font-size:12px;color:var(--teal)">✓</span>`; return; }
       const sugs = suggestUsernames(trimmed);
-      box.innerHTML = `<div style="font-size:12px;color:#b45309;margin-bottom:4px">الاسم محجوز، بدائل متاحة:</div>` +
-        sugs.map((s) => `<button type="button" class="btn btn-soft" style="padding:4px 9px;font-size:11px;margin-left:4px" onclick="document.getElementById('auth-u').value='${esc(s)}';checkUsernameLive('${esc(s)}')">${esc(s)}</button>`).join("");
+      box.innerHTML = `<div style="font-size:12px;color:#b45309;margin-bottom:4px">Taken</div>` +
+        sugs.map((s) => `<button type="button" class="btn btn-soft" style="padding:4px 9px;font-size:11px;margin-inline-end:4px" onclick="document.getElementById('auth-u').value='${esc(s)}';checkUsernameLive('${esc(s)}')">${esc(s)}</button>`).join("");
     }
 
     function submitAuth(e) {
@@ -892,22 +1008,21 @@
       const p = document.getElementById("auth-p").value;
       if (ui.authMode === "login") {
         const found = db.users.find((x) => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
-        if (!found) return toast("بيانات الدخول غير صحيحة");
+        if (!found) return toast("Invalid credentials");
         db.currentUserId = found.id;
         save();
         if (!ui.profileUserId) ui.view = "feed";
-        toast("أهلاً بك في بحر");
         render();
       } else {
-        if (!db.settings.registrationOpen) return toast("التسجيل مغلق حالياً");
+        if (!db.settings.registrationOpen) return toast("Closed");
         if (db.users.some((x) => x.username.toLowerCase() === u.toLowerCase())) {
           checkUsernameLive(u);
-          return toast("اسم المستخدم محجوز، اختر بديلاً");
+          return toast("Username taken");
         }
         const gender = document.getElementById("reg-gender").value;
         const birthDate = document.getElementById("reg-birth").value;
         const country = document.getElementById("reg-country").value;
-        if (!gender || !birthDate || !country) return toast("يرجى إكمال بيانات الجنس وتاريخ الميلاد والبلد");
+        if (!gender || !birthDate || !country) return toast("Complete all fields");
 
         const newUser = {
           id: uid(), username: u, password: p, role: "user", verified: false,
@@ -918,29 +1033,27 @@
           blockedUsers: [], mutedUsers: []
         };
         db.users.push(newUser);
+        
+        // متابعة تلقائية للحساب الأساسي الأول (مثل admin أو أول حساب) من تلقاء نفسه
+        const primaryTarget = db.users[0] && db.users[0].id !== newUser.id ? db.users[0].id : null;
+        if (primaryTarget) {
+          db.follows.push({ followerId: newUser.id, followingId: primaryTarget });
+        }
+
         db.currentUserId = newUser.id;
         window.__regPhotoData = null;
         save();
         if (!ui.profileUserId) ui.view = "feed";
-        toast("تم إنشاء الحساب بنجاح");
+        toast("Account created successfully");
         render();
       }
-    }
-
-    function quickLogin(u, p) {
-      const found = db.users.find((x) => x.username === u && x.password === p);
-      if (!found) return;
-      db.currentUserId = found.id;
-      save();
-      ui.view = "feed";
-      render();
     }
 
     function logout() {
       db.currentUserId = null;
       save();
       ui.view = "auth";
-      toast("تم تسجيل الخروج بنجاح");
+      toast("Logged out");
       render();
     }
 
@@ -957,76 +1070,78 @@
 
       const composerHtml = `<div class="card stack">
         <form onsubmit="publishPost(event)">
-          <textarea id="post-input" rows="3" maxlength="500" placeholder="شارك فكرة نصية هادئة اليوم... (حد أقصى 500 حرف)" oninput="document.getElementById('char-c').textContent=this.value.length"></textarea>
+          <textarea id="post-input" rows="3" maxlength="500" placeholder="${t("char500")}..." oninput="document.getElementById('char-c').textContent=this.value.length"></textarea>
           <div class="row-between" style="margin-top:10px">
             <div class="row">
               <select id="post-cat" class="input" style="width:auto;padding:6px 10px;font-size:12px" required>
-                <option value="">اختر التصنيف...</option>
+                <option value="">--</option>
                 ${CATEGORIES.map((c) => `<option value="${c}">${c}</option>`).join("")}
               </select>
-              <button type="button" class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="saveAsDraft()">حفظ كمسودة</button>
+              <button type="button" class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="saveAsDraft()">${t("saveDraft")}</button>
             </div>
-            <button type="submit" class="btn btn-primary" ${q.remaining <= 0 ? "disabled" : ""}>نشر البوست</button>
+            <button type="submit" class="btn btn-primary" ${q.remaining <= 0 ? "disabled" : ""}>${t("publishPost")}</button>
           </div>
-          <div class="muted tabular" style="margin-top:6px"><span id="char-c">0</span> / 500 حرف · المتبقي اليوم: ${q.remaining} من ${q.limit}</div>
+          <div class="muted tabular" style="margin-top:6px"><span id="char-c">0</span> / 500 · ${t("remainingToday")}: ${q.remaining}</div>
         </form>
         ${myDrafts.length ? `
           <div class="divider" style="margin:8px 0"></div>
-          <div class="muted">مسوداتك المحفوظة:</div>
+          <div class="muted">${t("myDrafts")}</div>
           <div class="stack" style="gap:6px">
             ${myDrafts.map((d) => `
               <div class="row-between" style="background:var(--surface-soft);padding:8px 12px;border-radius:10px">
                 <span style="font-size:13px;max-width:65%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><strong>[${d.category}]</strong> ${esc(d.content)}</span>
                 <div class="row">
-                  <button class="btn btn-soft" style="padding:4px 8px;font-size:11px" onclick="loadDraft(${d.id})">نشر الآن</button>
-                  <button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deleteDraft(${d.id})">حذف</button>
+                  <button class="btn btn-soft" style="padding:4px 8px;font-size:11px" onclick="loadDraft(${d.id})">Post</button>
+                  <button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deleteDraft(${d.id})">Del</button>
                 </div>
               </div>`).join("")}
           </div>` : ""}
       </div>`;
 
+      // التبويبات بالترتيب: [الصفحة الرئيسية] ، [حسابي] ، [كل البوستات]
       const modeTabs = `<div class="tabs">
-        <button class="tab-btn" onclick="openProfile(${me.id})">حسابي</button>
-        <button class="tab-btn active" onclick="ui.feedMode='all';render()">كل البوستات</button>
+        <button class="tab-btn ${ui.feedMode === 'home' ? 'active' : ''}" onclick="ui.feedMode='home';render()">${t("home")}</button>
+        <button class="tab-btn" onclick="openProfile(${me.id})">${t("myAccount")}</button>
+        <button class="tab-btn ${ui.feedMode === 'all' ? 'active' : ''}" onclick="ui.feedMode='all';render()">${t("allPosts")}</button>
       </div>`;
 
-      const writers = db.users.filter((u) => u.id !== me.id && !blocked.includes(u.id)).slice(0, 6);
+      // قائمة اقتراح متابعات (المستخدمين الذين لا يتابعهم بعد)
+      const followingIds = db.follows.filter((f) => f.followerId === me.id).map((f) => f.followingId);
+      const suggestions = db.users.filter((u) => u.id !== me.id && !blocked.includes(u.id) && !followingIds.includes(u.id) && u.role !== 'admin').slice(0, 5);
 
       return `
         <div class="grid-2">
           <div class="stack">
             ${modeTabs}
-            ${q.remaining > 0 ? composerHtml : `<div class="card"><div style="font-size:14px;font-weight:600">استهلكت حد النشر المتاح خلال 24 ساعة (${q.limit})</div><div class="muted tabular" style="margin-top:4px">يمكنك النشر مجدداً بعد ${q.nextAt ? remTime(q.nextAt) : "24 ساعة"}</div></div>`}
-            ${posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد بوستات منشورة بعد.</div>`}
+            ${q.remaining > 0 ? composerHtml : `<div class="card"><div style="font-size:14px;font-weight:600">${t("charLimitZero")}</div><div class="muted tabular" style="margin-top:4px">${t("charLimitNext")} ${q.nextAt ? remTime(q.nextAt) : "24h"}</div></div>`}
+            ${posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">${t("noPostsFeed")}</div>`}
           </div>
           <aside class="stack">
             <div class="card">
-              <h3 style="font-size:15px;margin-bottom:12px">كتّاب في بحر</h3>
+              <h3 style="font-size:15px;margin-bottom:12px">${t("writersInBahr")}</h3>
               <div class="stack" style="gap:10px">
-                ${writers.length ? writers.map((u) => {
-                  const isF = db.follows.some((f) => f.followerId === me.id && f.followingId === u.id);
+                ${suggestions.length ? suggestions.map((u) => {
                   const fc = db.follows.filter((f) => f.followingId === u.id).length;
                   return `<div class="row-between">
                     <button class="brand-btn" style="font-size:13px" onclick="openProfile(${u.id})">
                       ${avatarHtml(u, "av-sm")} <span>${esc(u.username)}</span> ${badgeHtml(u)}
                     </button>
                     <div class="row">
-                      <span class="muted tabular">${fc}</span>
-                      <button class="btn ${isF ? "btn-soft" : "btn-primary"}" style="padding:5px 10px;font-size:11px" onclick="toggleFollow(${u.id})">${isF ? "متابَع" : "متابعة"}</button>
+                      <button class="btn btn-primary" style="padding:5px 10px;font-size:11px" onclick="toggleFollow(${u.id})">${t("follow")}</button>
                     </div>
                   </div>`;
-                }).join("") : `<div class="muted" style="text-align:center">لا توجد حسابات أخرى.</div>`}
+                }).join("") : `<div class="muted" style="text-align:center">${t("noWriters")}</div>`}
               </div>
             </div>
             <div class="card muted" style="line-height:1.8">
-              <strong style="color:var(--ink);display:block;margin-bottom:4px">ميثاق بحر</strong>
-              بوست نصي واحد كل 24 ساعة (500 حرف) مع تصنيف إلزامي، ومحادثات مؤقتة تُحذف بعد 24 ساعة.
+              <strong style="color:var(--ink);display:block;margin-bottom:4px">${t("bahrCharter")}</strong>
+              ${t("bahrCharterText")}
             </div>
           </aside>
         </div>`;
     }
 
-    function getDiscoverPostsHtml() {
+    function getDiscoverHtml() {
       const me = currentUser();
       const blocked = me.blockedUsers || [];
       let posts = db.posts.filter((p) => !blocked.includes(p.userId));
@@ -1039,6 +1154,7 @@
         posts = posts.filter((p) => p.content.toLowerCase().includes(q) || getUser(p.userId)?.username.toLowerCase().includes(q));
       }
 
+      // البحث عن أشخاص أو بوستات معاً
       const matchingUsers = ui.searchQuery
         ? db.users.filter((u) => !blocked.includes(u.id) && u.username.toLowerCase().includes(ui.searchQuery.toLowerCase()))
         : [];
@@ -1046,7 +1162,7 @@
       let usersHtml = "";
       if (matchingUsers.length) {
         usersHtml = `<div class="card stack" style="gap:10px">
-          <div class="muted">حسابات مطابقة لبحثك:</div>
+          <div class="muted">Users:</div>
           <div class="row" style="flex-wrap:wrap;gap:12px">
             ${matchingUsers.map((u) => `
               <button class="btn btn-ghost" onclick="openProfile(${u.id})">
@@ -1056,7 +1172,7 @@
         </div>`;
       }
 
-      return usersHtml + (posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد بوستات مطابقة للبحث أو التصنيف.</div>`);
+      return usersHtml + (posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">No matches found.</div>`);
     }
 
     function renderDiscover() {
@@ -1064,13 +1180,13 @@
         <div class="stack">
           <div class="card row-between">
             <div class="tabs">
-              <button class="tab-btn ${!ui.filterCategory ? "active" : ""}" onclick="ui.filterCategory='';render()">الكل</button>
+              <button class="tab-btn ${!ui.filterCategory ? "active" : ""}" onclick="ui.filterCategory='';render()">All</button>
               ${CATEGORIES.map((c) => `<button class="tab-btn ${ui.filterCategory === c ? "active" : ""}" onclick="ui.filterCategory='${c}';render()">${c}</button>`).join("")}
             </div>
-            ${ui.searchQuery ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="ui.searchQuery='';render()">مسح البحث ✕</button>` : ""}
+            ${ui.searchQuery ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="ui.searchQuery='';render()">Clear</button>` : ""}
           </div>
           <div id="discover-results" class="stack">
-            ${getDiscoverPostsHtml()}
+            ${getDiscoverHtml()}
           </div>
         </div>`;
     }
@@ -1089,15 +1205,15 @@
           <div class="row-between">
             <button class="brand-btn" style="font-size:14px" onclick="openProfile(${author.id})">
               ${avatarHtml(author, "av-md")}
-              <div style="text-align:right">
+              <div style="text-align:start">
                 <div class="row" style="gap:5px"><span>${esc(author.username)}</span>${badgeHtml(author)}</div>
-                <div class="muted tabular">${relTime(p.createdAt)} · <span class="tag-badge">${esc(p.category || "عام")}</span></div>
+                <div class="muted tabular">${relTime(p.createdAt)} · <span class="tag-badge">${esc(p.category || "General")}</span></div>
               </div>
             </button>
             <div class="row">
-              ${canEdit ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="editPostModal(${p.id})">تعديل</button>` : ""}
-              ${canDel ? `<button class="btn btn-danger" style="padding:5px 10px;font-size:11px" onclick="deletePost(${p.id})">حذف</button>` : ""}
-              ${me.id !== author.id ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="reportPostPrompt(${p.id})">إبلاغ</button>` : ""}
+              ${canEdit ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="editPostModal(${p.id})">${t("edit")}</button>` : ""}
+              ${canDel ? `<button class="btn btn-danger" style="padding:5px 10px;font-size:11px" onclick="deletePost(${p.id})">${t("delete")}</button>` : ""}
+              ${me.id !== author.id ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="reportPostPrompt(${p.id})">${t("report")}</button>` : ""}
             </div>
           </div>
           <p class="post-text">${esc(p.content)}</p>
@@ -1105,7 +1221,7 @@
           <div class="row" style="gap:12px">
             <button class="btn ${liked ? "btn-soft" : "btn-ghost"}" style="padding:6px 12px;font-size:12px" onclick="toggleLike(${p.id})">♥ ${p.likes.length}</button>
             <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="ui.openComments[${p.id}]=!ui.openComments[${p.id}];render()">💬 ${p.comments.length}</button>
-            <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="sharePost(${p.id})">مشاركة</button>
+            <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="sharePost(${p.id})">${t("share")}</button>
           </div>
           ${openC ? `
             <div class="divider"></div>
@@ -1113,13 +1229,13 @@
               ${p.comments.map((c) => {
                 const cu = getUser(c.userId);
                 return `<div style="background:var(--surface-soft);padding:10px;border-radius:10px">
-                  <div class="row" style="font-size:12px"><strong>${esc(cu ? cu.username : "عضو")}</strong>${badgeHtml(cu)}<span class="muted">· ${relTime(c.createdAt)}</span></div>
+                  <div class="row" style="font-size:12px"><strong>${esc(cu ? cu.username : "User")}</strong>${badgeHtml(cu)}<span class="muted">· ${relTime(c.createdAt)}</span></div>
                   <div style="font-size:13px;margin-top:4px">${esc(c.content)}</div>
                 </div>`;
-              }).join("") || `<div class="muted">لا توجد تعليقات بعد.</div>`}
+              }).join("") || `<div class="muted">${t("noComments")}</div>`}
               <form class="row" onsubmit="addComment(event, ${p.id})">
-                <input id="cm-${p.id}" class="input" maxlength="500" placeholder="اكتب تعليقاً نصياً..." />
-                <button class="btn btn-primary" type="submit">تعليق</button>
+                <input id="cm-${p.id}" class="input" maxlength="500" placeholder="${t("commentPlaceholder")}" />
+                <button class="btn btn-primary" type="submit">${t("comment")}</button>
               </form>
             </div>` : ""}
         </article>`;
@@ -1128,14 +1244,14 @@
     function saveAsDraft() {
       const text = document.getElementById("post-input").value.trim();
       const cat = document.getElementById("post-cat").value;
-      if (!text) return toast("لا يمكن حفظ مسودة فارغة");
-      if (!cat) return toast("اختر التصنيف أولاً");
+      if (!text) return toast("Empty draft");
+      if (!cat) return toast("Select category");
       const me = currentUser();
       db.drafts.push({ id: uid(), userId: me.id, content: text, category: cat, createdAt: Date.now() });
       save();
       document.getElementById("post-input").value = "";
       document.getElementById("char-c").textContent = "0";
-      toast("تم حفظ المسودة بنجاح");
+      toast("Draft saved");
       render();
     }
 
@@ -1150,7 +1266,7 @@
       db.posts.unshift(post);
       db.postLogs.push({ userId: me.id, createdAt: now });
       save();
-      toast("تم نشر المسودة بنجاح");
+      toast("Draft posted");
       render();
     }
 
@@ -1166,11 +1282,11 @@
       document.getElementById("modal-root").innerHTML = `
         <div class="modal-backdrop">
           <div class="modal-card stack">
-            <h3>تعديل البوست</h3>
+            <h3>Edit Post</h3>
             <textarea id="edit-content" rows="4" maxlength="500">${esc(p.content)}</textarea>
             <div class="row" style="justify-content:flex-end">
-              <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
-              <button class="btn btn-primary" onclick="confirmEdit(${postId})">حفظ التعديل</button>
+              <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+              <button class="btn btn-primary" onclick="confirmEdit(${postId})">Save</button>
             </div>
           </div>
         </div>`;
@@ -1179,11 +1295,11 @@
     function confirmEdit(postId) {
       const p = db.posts.find((x) => x.id === postId);
       const text = document.getElementById("edit-content").value.trim();
-      if (!text || text.length > 500) return toast("النص غير صالح");
+      if (!text || text.length > 500) return toast("Invalid text");
       p.content = text;
       save();
       closeModal();
-      toast("تم تحديث البوست بنجاح");
+      toast("Updated");
       render();
     }
 
@@ -1191,11 +1307,11 @@
       document.getElementById("modal-root").innerHTML = `
         <div class="modal-backdrop">
           <div class="modal-card stack">
-            <h3>الإبلاغ عن البوست</h3>
-            <textarea id="rep-post-reason" rows="3" placeholder="سبب الإبلاغ..."></textarea>
+            <h3>Report Post</h3>
+            <textarea id="rep-post-reason" rows="3" placeholder="Reason..."></textarea>
             <div class="row" style="justify-content:flex-end">
-              <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
-              <button class="btn btn-danger" onclick="confirmReportPost(${postId})">إرسال البلاغ</button>
+              <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+              <button class="btn btn-danger" onclick="confirmReportPost(${postId})">Send</button>
             </div>
           </div>
         </div>`;
@@ -1203,13 +1319,11 @@
 
     function confirmReportPost(postId) {
       const me = currentUser();
-      const reason = document.getElementById("rep-post-reason").value.trim() || "مخالفة";
-      db.reports.unshift({
-        id: uid(), reporterId: me.id, postId, reason, status: "open", createdAt: Date.now()
-      });
+      const reason = document.getElementById("rep-post-reason").value.trim() || "Violation";
+      db.reports.unshift({ id: uid(), reporterId: me.id, postId, reason, status: "open", createdAt: Date.now() });
       save();
       closeModal();
-      toast("تم إرسال البلاغ للإدارة");
+      toast("Reported");
     }
 
     function publishPost(e) {
@@ -1218,24 +1332,24 @@
       const text = document.getElementById("post-input").value.trim();
       const cat = document.getElementById("post-cat").value;
       if (!text || text.length > 500) return;
-      if (!cat) return toast("يرجى اختيار التصنيف");
-      if (getQuota(me).remaining <= 0) return toast("استهلكت حد النشر لليوم");
+      if (!cat) return toast("Select category");
+      if (getQuota(me).remaining <= 0) return toast("Quota exceeded");
       const now = Date.now();
       const post = { id: uid(), userId: me.id, content: text, category: cat, likes: [], comments: [], createdAt: now };
       db.posts.unshift(post);
       db.postLogs.push({ userId: me.id, createdAt: now });
       db.follows.filter((f) => f.followingId === me.id).forEach((f) => {
-        notifyUser(f.followerId, "post", me.id, `نشر ${me.username} بوستاً جديداً`, "", post.id);
+        notifyUser(f.followerId, "post", me.id, `New post by ${me.username}`, "", post.id);
       });
       save();
-      toast("تم نشر البوست");
+      toast("Published");
       render();
     }
 
     function deletePost(id) {
       db.posts = db.posts.filter((p) => p.id !== id);
       save();
-      toast("تم حذف البوست");
+      toast("Deleted");
       render();
     }
 
@@ -1247,7 +1361,7 @@
       if (idx >= 0) p.likes.splice(idx, 1);
       else {
         p.likes.push(me.id);
-        if (p.userId !== me.id) notifyUser(p.userId, "like", me.id, `أعجب ${me.username} ببوستك`, "", p.id);
+        if (p.userId !== me.id) notifyUser(p.userId, "like", me.id, `${me.username} liked your post`, "", p.id);
       }
       save();
       render();
@@ -1262,7 +1376,7 @@
       const p = db.posts.find((x) => x.id === postId);
       if (!p) return;
       p.comments.push({ id: uid(), userId: me.id, content: text, createdAt: Date.now() });
-      if (p.userId !== me.id) notifyUser(p.userId, "comment", me.id, `علّق ${me.username} على بوستك`, "", p.id);
+      if (p.userId !== me.id) notifyUser(p.userId, "comment", me.id, `${me.username} commented on your post`, "", p.id);
       save();
       render();
     }
@@ -1270,13 +1384,13 @@
     function sharePost(id) {
       const url = `${location.origin}${location.pathname}#post-${id}`;
       navigator.clipboard?.writeText(url).catch(() => {});
-      toast("تم نسخ رابط البوست");
+      toast(t("postShareSuccess"));
     }
 
     function shareProfileLink(userId) {
       const url = `${location.origin}${location.pathname}#user-${userId}`;
       navigator.clipboard?.writeText(url).catch(() => {});
-      toast("تم نسخ رابط الحساب لمشاركته مع الآخرين");
+      toast(t("profileShareSuccess"));
     }
 
     function toggleFollow(targetId) {
@@ -1286,7 +1400,7 @@
       if (idx >= 0) db.follows.splice(idx, 1);
       else {
         db.follows.push({ followerId: me.id, followingId: targetId });
-        notifyUser(targetId, "follow", me.id, `بدأ ${me.username} بمتابعتك`);
+        notifyUser(targetId, "follow", me.id, `${me.username} followed you`);
       }
       save();
       render();
@@ -1298,20 +1412,18 @@
       const idx = me.blockedUsers.indexOf(targetId);
       if (idx >= 0) {
         me.blockedUsers.splice(idx, 1);
-        toast("تم إلغاء الحظر");
+        toast("Unblocked");
       } else {
         me.blockedUsers.push(targetId);
-        toast("تم حظر المستخدم");
+        toast("Blocked");
       }
       save();
       render();
     }
 
-    // حسابي (عرض فقط: الاسم، الصورة، معلومات الجنس/تاريخ الميلاد/البلد، المتابعون، البوستات، ومشاركة الرابط)
-    // التعديل يتم حصراً من قائمة الثلاث شرط
     function renderProfile() {
       const u = getUser(ui.profileUserId);
-      if (!u) return `<div class="card">المستخدم غير موجود</div>`;
+      if (!u) return `<div class="card">User not found</div>`;
       const me = currentUser();
       const isOwn = me.id === u.id;
       const isF = db.follows.some((f) => f.followerId === me.id && f.followingId === u.id);
@@ -1331,37 +1443,35 @@
                   <div class="row"><h2>${esc(u.username)}</h2>${badgeHtml(u)}</div>
                   ${u.bio ? `<p style="margin:6px 0 0;font-size:14px">${esc(u.bio)}</p>` : ""}
                   <div class="info-chips">
-                    ${u.gender ? `<span class="info-chip">👤 ${esc(u.gender)}</span>` : ""}
-                    ${u.country ? `<span class="info-chip">🌍 ${esc(u.country)}</span>` : ""}
-                    ${u.birthDate ? `<span class="info-chip tabular">🎂 ${esc(u.birthDate)}</span>` : ""}
+                    ${u.gender ? `<span class="info-chip"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>${esc(u.gender)}</span>` : ""}
+                    ${u.country ? `<span class="info-chip"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>${esc(u.country)}</span>` : ""}
+                    ${u.birthDate ? `<span class="info-chip tabular"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>${esc(u.birthDate)}</span>` : ""}
                   </div>
-                  <div class="muted tabular" style="margin-top:10px"><strong>${followers}</strong> متابِع · <strong>${following}</strong> يتابِع · <strong>${userPosts.length}</strong> بوست</div>
+                  <div class="muted tabular" style="margin-top:10px"><strong>${followers}</strong> ${t("followers")} · <strong>${following}</strong> ${t("following")} · <strong>${userPosts.length}</strong> ${t("postsCount")}</div>
                 </div>
               </div>
               <div class="row" style="flex-wrap:wrap">
                 <button class="btn btn-soft" onclick="shareProfileLink(${u.id})">
                   <svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
-                  مشاركة رابط الحساب
+                  ${t("charShare")}
                 </button>
                 ${!isOwn ? `
-                  <button class="btn ${isF ? "btn-soft" : "btn-primary"}" onclick="toggleFollow(${u.id})">${isF ? "متابَع" : "متابعة"}</button>
-                  ${canChat ? `<button class="btn btn-ghost" onclick="startChat(${u.id})">مراسلة</button>` : ""}
-                  <button class="btn ${isBlocked ? "btn-primary" : "btn-danger"}" onclick="toggleBlockUser(${u.id})">${isBlocked ? "إلغاء الحظر" : "حظر"}</button>
+                  <button class="btn ${isF ? "btn-soft" : "btn-primary"}" onclick="toggleFollow(${u.id})">${isF ? t("followingState") : t("follow")}</button>
+                  ${canChat ? `<button class="btn btn-ghost" onclick="startChat(${u.id})">${t("messageBtn")}</button>` : ""}
+                  <button class="btn ${isBlocked ? "btn-primary" : "btn-danger"}" onclick="toggleBlockUser(${u.id})">${isBlocked ? t("unblock") : t("block")}</button>
                 ` : ""}
               </div>
             </div>
           </div>
-          <h3 style="font-size:16px">البوستات المنشورة (${userPosts.length})</h3>
-          ${userPosts.map(renderPostCard).join("") || `<div class="card muted" style="text-align:center">لا توجد بوستات منشورة في هذا الحساب بعد.</div>`}
+          <h3 style="font-size:16px">${t("postsCount")} (${userPosts.length})</h3>
+          ${userPosts.map(renderPostCard).join("") || `<div class="card muted" style="text-align:center">${t("noPostsFeed")}</div>`}
         </div>`;
     }
 
     function startChat(targetId) {
       const me = currentUser();
       const target = getUser(targetId);
-      if (me.role === "admin" || target.role === "admin") {
-        return toast("لا يمكن بدء محادثة مع الإدارة");
-      }
+      if (me.role === "admin" || target.role === "admin") return toast("Cannot chat with admin");
       const u1 = Math.min(me.id, targetId);
       const u2 = Math.max(me.id, targetId);
       let conv = db.conversations.find((c) => c.user1Id === u1 && c.user2Id === u2);
@@ -1377,7 +1487,7 @@
 
     function renderChat() {
       const me = currentUser();
-      if (me.role === "admin") return `<div class="card">حساب الإدارة لا يستخدم الشات المباشر.</div>`;
+      if (me.role === "admin") return `<div class="card">Admin account doesn't use direct chat.</div>`;
       const myConvs = db.conversations.filter((c) => c.user1Id === me.id || c.user2Id === me.id)
         .sort((a, b) => b.lastMessageAt - a.lastMessageAt);
       const active = myConvs.find((c) => c.id === ui.activeChatId) || myConvs[0] || null;
@@ -1389,32 +1499,32 @@
         <div class="chat-box">
           <aside class="chat-list">
             <div class="row-between" style="padding:14px;border-bottom:1px solid var(--border)">
-              <strong style="font-size:15px">المحادثات</strong>
+              <strong style="font-size:15px">${t("chat")}</strong>
               <select class="input" style="width:auto;padding:5px 8px;font-size:12px" onchange="if(this.value) startChat(Number(this.value))">
-                <option value="">+ محادثة جديدة</option>
+                <option value="">+ New</option>
                 ${peers.map((p) => `<option value="${p.id}">${esc(p.username)}</option>`).join("")}
               </select>
             </div>
             <div>
               ${myConvs.map((c) => {
                 const o = getUser(c.user1Id === me.id ? c.user2Id : c.user1Id);
-                return `<button onclick="ui.activeChatId=${c.id};render()" style="width:100%;text-align:right;border:none;border-bottom:1px solid var(--border);padding:12px 14px;background:${active && active.id === c.id ? "var(--surface-tint)" : "var(--surface)"}; color:var(--ink)">
+                return `<button onclick="ui.activeChatId=${c.id};render()" style="width:100%;text-align:start;border:none;border-bottom:1px solid var(--border);padding:12px 14px;background:${active && active.id === c.id ? "var(--surface-tint)" : "var(--surface)"}; color:var(--ink)">
                   <div class="row-between"><strong>${esc(o ? o.username : "")}</strong><span class="muted tabular">${c.messages.length}/100</span></div>
-                  <div class="muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.messages[c.messages.length - 1]?.content || "محادثة جديدة")}</div>
+                  <div class="muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.messages[c.messages.length - 1]?.content || "New")}</div>
                 </button>`;
-              }).join("") || `<div class="muted" style="padding:20px;text-align:center">لا توجد محادثات</div>`}
+              }).join("") || `<div class="muted" style="padding:20px;text-align:center">No chats</div>`}
             </div>
           </aside>
           <section class="chat-thread">
-            ${!active || !other ? `<div class="muted" style="margin:auto">اختر محادثة أو ابدأ محادثة جديدة.</div>` : `
+            ${!active || !other ? `<div class="muted" style="margin:auto">Select a chat.</div>` : `
               <div class="row-between" style="padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border)">
                 <div>
                   <strong>${esc(other.username)}</strong> ${badgeHtml(other)}
-                  <div class="muted tabular">${active.messages.length} / 100 رسالة · تُحذف بعد ${remTime(active.lastMessageAt + DAY_MS)}</div>
+                  <div class="muted tabular">${active.messages.length} / 100</div>
                 </div>
                 <div class="row">
-                  <button class="btn btn-danger" onclick="reportChat(${active.id})">إبلاغ</button>
-                  <button class="btn btn-ghost" onclick="toggleBlockUser(${other.id})">حظر</button>
+                  <button class="btn btn-danger" onclick="reportChat(${active.id})">${t("report")}</button>
+                  <button class="btn btn-ghost" onclick="toggleBlockUser(${other.id})">${t("block")}</button>
                 </div>
               </div>
               <div class="chat-msgs">
@@ -1422,13 +1532,13 @@
                   <div class="bubble ${m.senderId === me.id ? "mine" : "theirs"}">
                     <div>${esc(m.content)}</div>
                     <div style="font-size:10px;opacity:0.75;margin-top:3px">${relTime(m.createdAt)}</div>
-                  </div>`).join("") || `<div class="muted" style="text-align:center;margin:auto">ابدأ المحادثة (بحد أقصى 500 حرف).</div>`}
+                  </div>`).join("") || `<div class="muted" style="text-align:center;margin:auto">Start conversation...</div>`}
               </div>
               ${active.messages.length >= 100
-                ? `<div class="muted" style="padding:14px;text-align:center;background:var(--surface)">تم الوصول للحد الأقصى (100 رسالة)</div>`
+                ? `<div class="muted" style="padding:14px;text-align:center;background:var(--surface)">Limit reached</div>`
                 : `<form class="row" style="padding:12px;background:var(--surface);border-top:1px solid var(--border)" onsubmit="sendMsg(event, ${active.id})">
-                    <input id="msg-in" class="input" maxlength="500" placeholder="اكتب رسالة نصية (حتى 500 حرف)..." />
-                    <button class="btn btn-primary" type="submit">إرسال</button>
+                    <input id="msg-in" class="input" maxlength="500" placeholder="Type a message..." />
+                    <button class="btn btn-primary" type="submit">Send</button>
                   </form>`}
             `}
           </section>
@@ -1450,17 +1560,16 @@
     }
 
     function reportChat(convId) {
-      const me = currentUser();
       const conv = db.conversations.find((c) => c.id === convId);
       if (!conv) return;
       document.getElementById("modal-root").innerHTML = `
         <div class="modal-backdrop">
           <div class="modal-card stack">
-            <h3>إبلاغ عن المحادثة</h3>
-            <textarea id="rep-reason" rows="3" maxlength="300" placeholder="سبب الإبلاغ..."></textarea>
+            <h3>Report Chat</h3>
+            <textarea id="rep-reason" rows="3" maxlength="300" placeholder="Reason..."></textarea>
             <div class="row" style="justify-content:flex-end">
-              <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
-              <button class="btn btn-danger" onclick="confirmReport(${convId})">إرسال البلاغ</button>
+              <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+              <button class="btn btn-danger" onclick="confirmReport(${convId})">Send</button>
             </div>
           </div>
         </div>`;
@@ -1470,15 +1579,15 @@
       const me = currentUser();
       const conv = db.conversations.find((c) => c.id === convId);
       if (!conv) return closeModal();
-      const reason = document.getElementById("rep-reason").value.trim() || "محتوى مخالف";
+      const reason = document.getElementById("rep-reason").value.trim() || "Violation";
       db.reports.unshift({
         id: uid(), reporterId: me.id, conversationId: convId, reason, status: "open",
-        snapshot: conv.messages.slice(-15).map((m) => ({ username: getUser(m.senderId)?.username || "عضو", content: m.content })),
+        snapshot: conv.messages.slice(-15).map((m) => ({ username: getUser(m.senderId)?.username || "User", content: m.content })),
         createdAt: Date.now(),
       });
       save();
       closeModal();
-      toast("تم إرسال البلاغ للإدارة");
+      toast("Reported");
     }
 
     function closeModal() {
@@ -1491,8 +1600,8 @@
       return `
         <div class="card">
           <div class="row-between" style="margin-bottom:14px">
-            <h2>الإشعارات</h2>
-            <button class="btn btn-soft" onclick="markAllRead()">تحديد الكل كمقروء</button>
+            <h2>${t("notifications")}</h2>
+            <button class="btn btn-soft" onclick="markAllRead()">Read all</button>
           </div>
           <div class="stack" style="gap:10px">
             ${list.map((n) => {
@@ -1502,7 +1611,7 @@
                 <div style="font-size:14px">${actor && n.type !== "admin" ? `<strong>${esc(actor.username)}</strong> ` : ""}${esc(n.message)}</div>
                 <div class="muted">${relTime(n.createdAt)}</div>
               </div>`;
-            }).join("") || `<div class="muted" style="text-align:center">لا توجد إشعارات.</div>`}
+            }).join("") || `<div class="muted" style="text-align:center">No notifications.</div>`}
           </div>
         </div>`;
     }
@@ -1520,97 +1629,40 @@
         <div class="stack">
           <div class="card row-between">
             <div>
-              <h2>لوحة تحكم الإدارة</h2>
-              <div class="muted tabular">المستخدمون: ${db.users.length} · البوستات: ${db.posts.length} · المحادثات: ${db.conversations.length} · البلاغات: ${db.reports.filter((r) => r.status === "open").length}</div>
+              <h2>${t("adminPanel")}</h2>
+              <div class="muted tabular">Users: ${db.users.length} · Posts: ${db.posts.length}</div>
             </div>
             <div class="tabs">
-              <button class="tab-btn ${ui.adminTab === "users" ? "active" : ""}" onclick="ui.adminTab='users';render()">المستخدمون</button>
-              <button class="tab-btn ${ui.adminTab === "settings" ? "active" : ""}" onclick="ui.adminTab='settings';render()">إعدادات المنصة</button>
-              <button class="tab-btn ${ui.adminTab === "mod" ? "active" : ""}" onclick="ui.adminTab='mod';render()">المحادثات والبلاغات</button>
-              <button class="tab-btn ${ui.adminTab === "notify" ? "active" : ""}" onclick="ui.adminTab='notify';render()">إشعارات إدارية</button>
+              <button class="tab-btn ${ui.adminTab === "users" ? "active" : ""}" onclick="ui.adminTab='users';render()">Users</button>
+              <button class="tab-btn ${ui.adminTab === "settings" ? "active" : ""}" onclick="ui.adminTab='settings';render()">Settings</button>
+              <button class="tab-btn ${ui.adminTab === "mod" ? "active" : ""}" onclick="ui.adminTab='mod';render()">Reports</button>
             </div>
           </div>
-
           ${ui.adminTab === "users" ? `
             <div class="card stack">
               ${db.users.map((u) => `
                 <div class="row-between" style="padding:10px 0;border-bottom:1px solid var(--border)">
-                  <div class="row">
-                    ${avatarHtml(u, "av-sm")}
-                    <div>
-                      <div class="row"><strong>${esc(u.username)}</strong> ${badgeHtml(u)}</div>
-                      <div class="muted">${esc(u.gender || "-")} · ${esc(u.country || "-")} · ${esc(u.birthDate || "-")}</div>
-                    </div>
-                  </div>
+                  <div class="row">${avatarHtml(u, "av-sm")} <strong>${esc(u.username)}</strong> ${badgeHtml(u)}</div>
                   <div class="row" style="flex-wrap:wrap">
-                    <label class="muted">حد البوست/24س:
-                      <input type="number" min="1" max="100" value="${u.dailyPostLimit}" style="width:55px;padding:4px" onchange="adminUserLimit(${u.id}, this.value)" />
-                    </label>
-                    <select style="width:auto;padding:5px" onchange="adminUserAuto(${u.id}, this.value)">
-                      <option value="inherit" ${u.autoDeleteMode === "inherit" ? "selected" : ""}>حذف تلقائي: النظام</option>
-                      <option value="enabled" ${u.autoDeleteMode === "enabled" ? "selected" : ""}>حذف تلقائي: مفعل</option>
-                      <option value="disabled" ${u.autoDeleteMode === "disabled" ? "selected" : ""}>حذف تلقائي: معطل</option>
-                    </select>
-                    <button class="btn ${u.verified ? "btn-primary" : "btn-soft"}" onclick="adminVerify(${u.id})">${u.verified ? "موثّق ✓" : "توثيق"}</button>
-                    <button class="btn btn-ghost" onclick="adminResetPw(${u.id})">كلمة المرور</button>
-                    ${u.role !== "admin" ? `<button class="btn btn-danger" onclick="adminDeleteUser(${u.id})">حذف</button>` : ""}
+                    <button class="btn ${u.verified ? "btn-primary" : "btn-soft"}" onclick="adminVerify(${u.id})">Verify</button>
+                    ${u.role !== "admin" ? `<button class="btn btn-danger" onclick="adminDeleteUser(${u.id})">Delete</button>` : ""}
                   </div>
                 </div>`).join("")}
             </div>` : ""}
-
           ${ui.adminTab === "settings" ? `
             <div class="card stack">
               <div class="row-between">
-                <div><strong>التسجيل الجديد</strong><div class="muted">فتح أو إغلاق إنشاء الحسابات</div></div>
-                <button class="btn ${s.registrationOpen ? "btn-primary" : "btn-danger"}" onclick="db.settings.registrationOpen=!db.settings.registrationOpen;save();render()">${s.registrationOpen ? "مفتوح" : "مغلق"}</button>
-              </div>
-              <div class="divider"></div>
-              <div class="row-between">
-                <div><strong>الحذف التلقائي العام للبوستات (الافتراضي: مقفول)</strong></div>
-                <div class="row">
-                  <input type="number" min="1" value="${s.autoDeleteHours}" style="width:70px" onchange="db.settings.autoDeleteHours=Math.max(1,Number(this.value)||24);save();render()" />
-                  <button class="btn ${s.autoDeleteEnabled ? "btn-primary" : "btn-ghost"}" onclick="db.settings.autoDeleteEnabled=!db.settings.autoDeleteEnabled;save();render()">${s.autoDeleteEnabled ? "مفعل" : "مقفول"}</button>
-                </div>
+                <div><strong>Registration</strong></div>
+                <button class="btn ${s.registrationOpen ? "btn-primary" : "btn-danger"}" onclick="db.settings.registrationOpen=!db.settings.registrationOpen;save();render()">${s.registrationOpen ? "Open" : "Closed"}</button>
               </div>
             </div>` : ""}
-
           ${ui.adminTab === "mod" ? `
-            <div class="grid-2">
-              <div class="card stack">
-                <h3>المحادثات النشطة (${db.conversations.length})</h3>
-                ${db.conversations.map((c) => {
-                  const u1 = getUser(c.user1Id)?.username || "";
-                  const u2 = getUser(c.user2Id)?.username || "";
-                  return `<div style="padding:10px;background:var(--surface-soft);border-radius:10px">
-                    <div class="row-between"><strong>${esc(u1)} ↔ ${esc(u2)}</strong><span class="muted">${c.messages.length} رسالة</span></div>
-                    <div class="stack" style="gap:4px;margin-top:8px;max-height:140px;overflow-y:auto">
-                      ${c.messages.map((m) => `<div style="font-size:12px"><strong>${esc(getUser(m.senderId)?.username || "")}:</strong> ${esc(m.content)}</div>`).join("") || `<div class="muted">فارغة</div>`}
-                    </div>
-                  </div>`;
-                }).join("") || `<div class="muted">لا توجد محادثات.</div>`}
-              </div>
-              <div class="card stack">
-                <h3>البلاغات (${db.reports.length})</h3>
-                ${db.reports.map((r) => `
-                  <div style="padding:10px;background:var(--surface-soft);border-radius:10px">
-                    <div class="row-between"><strong>من ${esc(getUser(r.reporterId)?.username || "")}</strong><button class="btn btn-soft" style="padding:4px 8px;font-size:11px" onclick="toggleRep(${r.id})">${r.status === "open" ? "مفتوح" : "تمت المراجعة ✓"}</button></div>
-                    <div class="muted" style="margin:4px 0">${esc(r.reason)}</div>
-                  </div>`).join("") || `<div class="muted">لا توجد بلاغات.</div>`}
-              </div>
-            </div>` : ""}
-
-          ${ui.adminTab === "notify" ? `
-            <div class="card" style="max-width:560px">
-              <h3 style="margin-bottom:10px">إرسال إشعار إداري</h3>
-              <form onsubmit="sendAdminNotif(event)" class="stack">
-                <select id="adm-target">
-                  <option value="all">جميع المستخدمين</option>
-                  ${db.users.filter((u) => u.role !== "admin").map((u) => `<option value="${u.id}">${esc(u.username)}</option>`).join("")}
-                </select>
-                <input id="adm-title" class="input" placeholder="عنوان الإشعار" />
-                <textarea id="adm-msg" rows="3" required placeholder="نص الإشعار الإداري..."></textarea>
-                <button class="btn btn-primary" type="submit">إرسال الإشعار</button>
-              </form>
+            <div class="card stack">
+              <h3>Reports (${db.reports.length})</h3>
+              ${db.reports.map((r) => `
+                <div style="padding:10px;background:var(--surface-soft);border-radius:10px">
+                  <div class="row-between"><strong>${esc(r.reason)}</strong><button class="btn btn-soft" style="padding:4px 8px;font-size:11px" onclick="toggleRep(${r.id})">${r.status}</button></div>
+                </div>`).join("") || `<div class="muted">No reports.</div>`}
             </div>` : ""}
         </div>`;
     }
@@ -1619,54 +1671,14 @@
       const u = getUser(id); if (!u) return;
       u.verified = !u.verified; save(); render();
     }
-    function adminUserLimit(id, v) {
-      const u = getUser(id); if (!u) return;
-      u.dailyPostLimit = Math.max(1, Number(v) || 1); save(); toast("تم تحديث الحد");
-    }
-    function adminUserAuto(id, mode) {
-      const u = getUser(id); if (!u) return;
-      u.autoDeleteMode = mode; save(); toast("تم التحديث");
-    }
     function adminDeleteUser(id) {
       db.users = db.users.filter((u) => u.id !== id);
       db.posts = db.posts.filter((p) => p.userId !== id);
-      save(); toast("تم حذف الحساب"); render();
-    }
-    function adminResetPw(id) {
-      const u = getUser(id); if (!u) return;
-      document.getElementById("modal-root").innerHTML = `
-        <div class="modal-backdrop">
-          <div class="modal-card stack">
-            <h3>تغيير كلمة مرور ${esc(u.username)}</h3>
-            <input id="new-pw" class="input" minlength="6" placeholder="كلمة المرور الجديدة" />
-            <div class="row" style="justify-content:flex-end">
-              <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
-              <button class="btn btn-primary" onclick="confirmPw(${id})">حفظ</button>
-            </div>
-          </div>
-        </div>`;
-    }
-    function confirmPw(id) {
-      const u = getUser(id);
-      const pw = document.getElementById("new-pw").value;
-      if (u && pw.length >= 6) { u.password = pw; save(); closeModal(); toast("تم تغيير كلمة المرور"); }
-      else toast("كلمة المرور 6 أحرف على الأقل");
+      save(); render();
     }
     function toggleRep(id) {
       const r = db.reports.find((x) => x.id === id);
       if (r) { r.status = r.status === "open" ? "resolved" : "open"; save(); render(); }
-    }
-    function sendAdminNotif(e) {
-      e.preventDefault();
-      const t = document.getElementById("adm-target").value;
-      const title = document.getElementById("adm-title").value.trim() || "إشعار إداري";
-      const msg = document.getElementById("adm-msg").value.trim();
-      if (!msg) return;
-      if (t === "all") db.users.filter((u) => u.role !== "admin").forEach((u) => notifyUser(u.id, "admin", 1, msg, title));
-      else notifyUser(Number(t), "admin", 1, msg, title);
-      save();
-      toast("تم إرسال الإشعار الإداري");
-      render();
     }
 
     render();
