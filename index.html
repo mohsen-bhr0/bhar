@@ -256,7 +256,7 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_complete_standalone_v22";
+    const STORAGE_KEY = "bahr_complete_standalone_v23";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     
@@ -270,7 +270,7 @@
         notifications: "الإشعارات",
         adminPanel: "لوحة الإدارة الشاملة",
         searchPlaceholder: "ابحث عن أشخاص أو بوستات...",
-        menuAccount: "إعدادات الحساب (الاسم والصورة والنبذة)",
+        menuAccount: "إعدادات الحساب (الاسم والثنائي والنبذة)",
         menuPass: "تغيير كلمة المرور",
         menuVerifyRequest: "طلب توثيق الحساب",
         menuLang: "English / العربية",
@@ -377,7 +377,7 @@
         nextId: 100,
         users: [
           {
-            id: 1, username: "admin", password: "BahrAdmin123", role: "admin", verified: true, disabled: false,
+            id: 1, username: "admin", firstName: "مدير", secondName: "النظام", password: "BahrAdmin123", role: "admin", verified: true, disabled: false,
             photoData: null, gender: "رجل", birthDate: "1995-01-01", country: "مصر",
             bio: "الحساب الإداري الرسمي لمنصة بحر.",
             dailyPostLimit: 10, autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: now,
@@ -398,7 +398,15 @@
     function loadState() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          // Migrate older users who might lack firstName/secondName
+          parsed.users.forEach(u => {
+            if (!u.firstName) u.firstName = u.username;
+            if (!u.secondName) u.secondName = "";
+          });
+          return parsed;
+        }
       } catch {}
       const fresh = initialData();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
@@ -410,7 +418,7 @@
       view: "feed",
       feedMode: "home",
       authMode: "login",
-      profileUserId: null,
+      profileUsername: null,
       activeChatId: null,
       adminTab: "users",
       highlightPostId: null,
@@ -425,6 +433,11 @@
       return (I18N[ui.lang] && I18N[ui.lang][key]) || I18N["ar"][key] || key;
     }
 
+    function getDisplayName(user) {
+      if (!user) return "";
+      return `${user.firstName || ""} ${user.secondName || ""}`.trim() || user.username;
+    }
+
     function switchLanguage() {
       ui.lang = ui.lang === "ar" ? "en" : "ar";
       localStorage.setItem("bahr_lang", ui.lang);
@@ -435,10 +448,10 @@
 
     function checkInitialHash() {
       const h = location.hash || "";
-      if (h.startsWith("#user-")) {
-        const id = Number(h.replace("#user-", ""));
-        if (id && db.users.some((u) => u.id === id)) {
-          ui.profileUserId = id;
+      if (h.startsWith("#u-")) {
+        const uname = h.replace("#u-", "").trim();
+        if (uname && db.users.some((u) => u.username.toLowerCase() === uname.toLowerCase())) {
+          ui.profileUsername = uname;
           ui.view = "profile";
         }
       }
@@ -475,6 +488,11 @@
 
     function getUser(id) {
       return db.users.find((u) => u.id === id) || null;
+    }
+
+    function getUserByUsername(uname) {
+      if (!uname) return null;
+      return db.users.find((u) => u.username.toLowerCase() === uname.toLowerCase()) || null;
     }
 
     function cleanupSweep() {
@@ -562,7 +580,7 @@
       let hash = 0;
       for (let i = 0; i < user.username.length; i++) hash = (hash * 31 + user.username.charCodeAt(i)) >>> 0;
       const color = LETTER_COLORS[hash % LETTER_COLORS.length];
-      const letter = (user.username.trim()[0] || "ب").toUpperCase();
+      const letter = (user.firstName ? user.firstName.trim()[0] : user.username.trim()[0] || "ب").toUpperCase();
       return `<span class="avatar ${size}" style="background:${color}">${esc(letter)}</span>`;
     }
 
@@ -609,10 +627,10 @@
       render();
     }
 
-    function openProfile(userId) {
+    function openProfileByUsername(uname) {
       const me = currentUser();
       if (!me) { ui.view = "auth"; render(); return; }
-      ui.profileUserId = userId;
+      ui.profileUsername = uname;
       ui.view = "profile";
       render();
     }
@@ -676,7 +694,7 @@
       const unread = db.notifications.filter((n) => n.userId === me.id && !n.isRead).length;
 
       const isHomeActive = ui.view === 'feed';
-      const isMyAccountActive = ui.view === 'profile' && ui.profileUserId === me.id;
+      const isMyAccountActive = ui.view === 'profile' && ui.profileUsername === me.username;
       const isDiscoverActive = ui.view === 'discover';
       const isChatActive = ui.view === 'chat';
       const isNotifActive = ui.view === 'notifications';
@@ -687,7 +705,7 @@
             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
             <span>${t("home")}</span>
           </button>
-          <button class="bottom-nav-item ${isMyAccountActive ? 'active' : ''}" onclick="openProfile(${me.id})">
+          <button class="bottom-nav-item ${isMyAccountActive ? 'active' : ''}" onclick="openProfileByUsername('${esc(me.username)}')">
             <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
             <span>${t("myAccount")}</span>
           </button>
@@ -712,7 +730,7 @@
           <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
           <input id="header-search-input" type="search" placeholder="${t("searchPlaceholder")}" value="${esc(ui.searchQuery)}" oninput="handleHeaderSearch(this.value)" />
         </div>
-        <button class="brand-btn" style="padding:0;background:none" onclick="openProfile(${me.id})" title="${esc(me.username)}">
+        <button class="brand-btn" style="padding:0;background:none" onclick="openProfileByUsername('${esc(me.username)}')" title="${esc(getDisplayName(me))}">
           ${avatarHtml(me, "av-sm")}
         </button>
         <div class="dropdown">
@@ -831,7 +849,7 @@
 
       const adminUser = db.users.find(u => u.role === "admin");
       if (adminUser) {
-        notifyUser(adminUser.id, "admin", me.id, `قام المستخدم ${me.username} بتقديم طلب توثيق حساب جديد (الاسم: ${fullname})`, "طلب توثيق جديد");
+        notifyUser(adminUser.id, "admin", me.id, `قام المستخدم ${getDisplayName(me)} بتقديم طلب توثيق حساب جديد (الاسم: ${fullname})`, "طلب توثيق جديد");
       }
 
       save();
@@ -857,7 +875,7 @@
                 <label class="muted">${ui.lang === 'en' ? 'Profile Photo' : 'الصورة الشخصية'}</label>
                 <div class="photo-upload-box" style="margin-top:6px">
                   <div id="edit-photo-preview">
-                    ${avatarHtml({ username: me.username, photoData: window.__editPhotoData }, "av-md")}
+                    ${avatarHtml(me, "av-md")}
                   </div>
                   <div class="stack" style="gap:6px;flex:1">
                     <input type="file" id="edit-photo-input" accept="image/*" style="display:none" onchange="handleEditPhotoUpload(event)" />
@@ -869,8 +887,18 @@
                 </div>
               </div>
               <div>
-                <label class="muted">${ui.lang === 'en' ? 'Username' : 'اسم المستخدم'}</label>
+                <label class="muted">${ui.lang === 'en' ? 'Username' : 'اسم المستخدم (للتسجيل والرابط)'}</label>
                 <input id="acc-username" class="input" required minlength="3" maxlength="24" value="${esc(me.username)}" />
+              </div>
+              <div class="row">
+                <div style="flex:1">
+                  <label class="muted">الاسم الأول</label>
+                  <input id="acc-first" class="input" required value="${esc(me.firstName || "")}" />
+                </div>
+                <div style="flex:1">
+                  <label class="muted">الاسم الثاني</label>
+                  <input id="acc-second" class="input" required value="${esc(me.secondName || "")}" />
+                </div>
               </div>
               <div>
                 <label class="muted">${ui.lang === 'en' ? 'Bio' : 'النبذة التعريفية'}</label>
@@ -909,34 +937,38 @@
       if (!file) return;
       compressImageFile(file, (dataUrl) => {
         window.__editPhotoData = dataUrl;
-        const name = document.getElementById("acc-username")?.value || currentUser().username;
+        const me = currentUser();
         const prev = document.getElementById("edit-photo-preview");
-        if (prev) prev.innerHTML = avatarHtml({ username: name, photoData: dataUrl }, "av-md");
+        if (prev) prev.innerHTML = avatarHtml({ ...me, photoData: dataUrl }, "av-md");
       });
     }
 
     function removeEditPhoto() {
       window.__editPhotoData = null;
-      const name = document.getElementById("acc-username")?.value || currentUser().username;
+      const me = currentUser();
       const prev = document.getElementById("edit-photo-preview");
-      if (prev) prev.innerHTML = avatarHtml({ username: name, photoData: null }, "av-md");
+      if (prev) prev.innerHTML = avatarHtml({ ...me, photoData: null }, "av-md");
     }
 
     function saveAccountSettings(e) {
       e.preventDefault();
       const me = currentUser();
       if (!me) return;
-      const newName = document.getElementById("acc-username").value.trim();
+      const newUname = document.getElementById("acc-username").value.trim().toLowerCase();
+      const newFirst = document.getElementById("acc-first").value.trim();
+      const newSecond = document.getElementById("acc-second").value.trim();
       const newBio = document.getElementById("acc-bio").value.trim().slice(0, 160);
       const newGender = document.getElementById("acc-gender").value;
       const newCountry = document.getElementById("acc-country").value;
       const newBirth = document.getElementById("acc-birth").value;
 
-      if (newName.length < 3) return toast("Name must be at least 3 chars");
-      const exists = db.users.some((u) => u.id !== me.id && u.username.toLowerCase() === newName.toLowerCase());
-      if (exists) return toast("Username taken");
+      if (newUname.length < 3) return toast("اسم المستخدم يجب ألا يقل عن 3 أحرف");
+      const exists = db.users.some((u) => u.id !== me.id && u.username.toLowerCase() === newUname);
+      if (exists) return toast("اسم المستخدم مستخدم مسبقاً");
 
-      me.username = newName;
+      me.username = newUname;
+      me.firstName = newFirst;
+      me.secondName = newSecond;
       me.bio = newBio;
       me.gender = newGender;
       me.country = newCountry;
@@ -944,7 +976,7 @@
       me.photoData = window.__editPhotoData || null;
       save();
       closeModal();
-      toast("Updated successfully");
+      toast("تم التحديث بنجاح");
       render();
     }
 
@@ -976,17 +1008,17 @@
       const me = currentUser();
       const oldP = document.getElementById("old-pass").value;
       const newP = document.getElementById("new-pass").value;
-      if (me.password !== oldP) return toast("Current password incorrect");
-      if (newP.length < 6) return toast("Password too short");
+      if (me.password !== oldP) return toast("كلمة المرور الحالية غير صحيحة");
+      if (newP.length < 6) return toast("كلمة المرور قصيرة جداً");
       me.password = newP;
       save();
       closeModal();
-      toast("Password changed successfully");
+      toast("تم تغيير كلمة المرور بنجاح");
     }
 
     function openDeleteAccountModal() {
       const me = currentUser();
-      if (me.id === 1 && me.role === "admin") return toast("Cannot delete admin");
+      if (me.id === 1 && me.role === "admin") return toast("لا يمكن حذف حساب الإدارة الرئيسي");
       document.getElementById("modal-root").innerHTML = `
         <div class="modal-backdrop">
           <div class="modal-card stack">
@@ -1004,7 +1036,7 @@
     function confirmDeleteMyAccount() {
       const me = currentUser();
       const pw = document.getElementById("del-confirm-pw").value;
-      if (me.password !== pw) return toast("Incorrect password");
+      if (me.password !== pw) return toast("كلمة المرور غير صحيحة");
       const myId = me.id;
       db.users = db.users.filter((u) => u.id !== myId);
       db.posts = db.posts.filter((p) => p.userId !== myId);
@@ -1014,7 +1046,7 @@
       save();
       closeModal();
       ui.view = "auth";
-      toast("Account deleted");
+      toast("تم حذف الحساب");
       render();
     }
 
@@ -1041,10 +1073,21 @@
             ? `<div style="padding:14px;background:#fef7ec;border:1px solid #f5d0a9;border-radius:12px;font-size:13px;color:#8a4b08">عذراً، التسجيل مغلق حالياً من قِبل الإدارة.</div>`
             : `<form onsubmit="submitAuth(event)" class="stack">
                 <div>
-                  <label class="muted">${ui.lang === 'en' ? 'Username' : 'اسم المستخدم'}</label>
-                  <input id="auth-u" class="input" required minlength="3" maxlength="24" placeholder="اسم المستخدم" oninput="checkUsernameLive(this.value)" />
+                  <label class="muted">اسم المستخدم (للتسجيل ورابط الحساب - بالإنجليزية وبدون مسافات)</label>
+                  <input id="auth-u" class="input" required minlength="3" maxlength="24" placeholder="username" oninput="checkUsernameLive(this.value)" />
                   <div id="u-suggest" style="margin-top:6px"></div>
                 </div>
+                ${ui.authMode === "register" ? `
+                  <div class="row">
+                    <div style="flex:1">
+                      <label class="muted">الاسم الأول</label>
+                      <input id="reg-first" class="input" required placeholder="الاسم الأول..." />
+                    </div>
+                    <div style="flex:1">
+                      <label class="muted">الاسم الثاني</label>
+                      <input id="reg-second" class="input" required placeholder="الاسم الثاني..." />
+                    </div>
+                  </div>` : ""}
                 <div>
                   <label class="muted">${ui.lang === 'en' ? 'Password' : 'كلمة المرور'}</label>
                   <input id="auth-p" type="password" class="input" required minlength="6" placeholder="******" />
@@ -1075,7 +1118,7 @@
                     <label class="muted">${ui.lang === 'en' ? 'Profile Photo (Optional)' : 'الصورة الشخصية (اختياري)'}</label>
                     <div class="photo-upload-box" style="margin-top:6px">
                       <div id="reg-photo-preview">
-                        ${avatarHtml({ username: "B", photoData: window.__regPhotoData }, "av-md")}
+                        ${avatarHtml({ username: "B", firstName: "ب" }, "av-md")}
                       </div>
                       <div class="row">
                         <input type="file" id="reg-photo-input" accept="image/*" style="display:none" onchange="handleRegPhotoUpload(event)" />
@@ -1096,20 +1139,22 @@
         window.__regPhotoData = dataUrl;
         const prev = document.getElementById("reg-photo-preview");
         const uVal = document.getElementById("auth-u")?.value || "B";
-        if (prev) prev.innerHTML = avatarHtml({ username: uVal, photoData: dataUrl }, "av-md");
+        const fVal = document.getElementById("reg-first")?.value || uVal;
+        if (prev) prev.innerHTML = avatarHtml({ username: uVal, firstName: fVal, photoData: dataUrl }, "av-md");
       });
     }
 
     function checkUsernameLive(val) {
       const box = document.getElementById("u-suggest");
       if (!box || ui.authMode !== "register") return;
-      const trimmed = val.trim();
+      const trimmed = val.trim().toLowerCase();
       if (!window.__regPhotoData) {
         const prev = document.getElementById("reg-photo-preview");
-        if (prev) prev.innerHTML = avatarHtml({ username: trimmed || "B", photoData: null }, "av-md");
+        const fVal = document.getElementById("reg-first")?.value || trimmed;
+        if (prev) prev.innerHTML = avatarHtml({ username: trimmed || "B", firstName: fVal, photoData: null }, "av-md");
       }
       if (trimmed.length < 3) { box.innerHTML = ""; return; }
-      const taken = db.users.some((u) => u.username.toLowerCase() === trimmed.toLowerCase());
+      const taken = db.users.some((u) => u.username.toLowerCase() === trimmed);
       if (!taken) { box.innerHTML = `<span style="font-size:12px;color:var(--teal)">✓ اسم المستخدم متاح</span>`; return; }
       const sugs = suggestUsernames(trimmed);
       box.innerHTML = `<div style="font-size:12px;color:#b45309;margin-bottom:4px">اسم المستخدم مستخدم مسبقاً، اقتراحات:</div>` +
@@ -1118,29 +1163,31 @@
 
     function submitAuth(e) {
       e.preventDefault();
-      const u = document.getElementById("auth-u").value.trim();
+      const u = document.getElementById("auth-u").value.trim().toLowerCase();
       const p = document.getElementById("auth-p").value;
       if (ui.authMode === "login") {
-        const found = db.users.find((x) => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
+        const found = db.users.find((x) => x.username.toLowerCase() === u && x.password === p);
         if (!found) return toast("بيانات تسجيل الدخول غير صحيحة");
         if (found.disabled) return toast("عذراً، هذا الحساب معطل من قِبل الإدارة");
         db.currentUserId = found.id;
         save();
-        if (!ui.profileUserId) ui.view = "feed";
+        if (!ui.profileUsername) ui.view = "feed";
         render();
       } else {
         if (!db.settings.registrationOpen) return toast("التسجيل مغلق حالياً");
-        if (db.users.some((x) => x.username.toLowerCase() === u.toLowerCase())) {
+        if (db.users.some((x) => x.username.toLowerCase() === u)) {
           checkUsernameLive(u);
           return toast("اسم المستخدم مستخدم مسبقاً");
         }
+        const firstName = document.getElementById("reg-first").value.trim();
+        const secondName = document.getElementById("reg-second").value.trim();
         const gender = document.getElementById("reg-gender").value;
         const birthDate = document.getElementById("reg-birth").value;
         const country = document.getElementById("reg-country").value;
-        if (!gender || !birthDate || !country) return toast("يرجى إكمال كافة الحقول المطلوبة");
+        if (!firstName || !secondName || !gender || !birthDate || !country) return toast("يرجى إكمال كافة الحقول المطلوبة");
 
         const newUser = {
-          id: uid(), username: u, password: p, role: "user", verified: false, disabled: false,
+          id: uid(), username: u, firstName, secondName, password: p, role: "user", verified: false, disabled: false,
           photoData: window.__regPhotoData || null,
           gender, birthDate, country,
           bio: "", dailyPostLimit: 1,
@@ -1157,7 +1204,7 @@
         db.currentUserId = newUser.id;
         window.__regPhotoData = null;
         save();
-        if (!ui.profileUserId) ui.view = "feed";
+        if (!ui.profileUsername) ui.view = "feed";
         toast("تم إنشاء الحساب وتسجيل الدخول بنجاح");
         render();
       }
@@ -1230,8 +1277,8 @@
               <div class="stack" style="gap:10px">
                 ${suggestions.length ? suggestions.map((u) => {
                   return `<div class="row-between">
-                    <button class="brand-btn" style="font-size:13px" onclick="openProfile(${u.id})">
-                      ${avatarHtml(u, "av-sm")} <span>${esc(u.username)}</span> ${badgeHtml(u)}
+                    <button class="brand-btn" style="font-size:13px" onclick="openProfileByUsername('${esc(u.username)}')">
+                      ${avatarHtml(u, "av-sm")} <span>${esc(getDisplayName(u))}</span> ${badgeHtml(u)}
                     </button>
                     <div class="row">
                       <button class="btn btn-primary" style="padding:5px 10px;font-size:11px" onclick="toggleFollow(${u.id})">${t("follow")}</button>
@@ -1261,11 +1308,11 @@
       }
       if (ui.searchQuery) {
         const q = ui.searchQuery.toLowerCase();
-        posts = posts.filter((p) => p.content.toLowerCase().includes(q) || getUser(p.userId)?.username.toLowerCase().includes(q));
+        posts = posts.filter((p) => p.content.toLowerCase().includes(q) || getDisplayName(getUser(p.userId)).toLowerCase().includes(q));
       }
 
       const matchingUsers = ui.searchQuery
-        ? db.users.filter((u) => !u.disabled && !blocked.includes(u.id) && u.username.toLowerCase().includes(ui.searchQuery.toLowerCase()))
+        ? db.users.filter((u) => !u.disabled && !blocked.includes(u.id) && (u.username.toLowerCase().includes(ui.searchQuery.toLowerCase()) || getDisplayName(u).toLowerCase().includes(ui.searchQuery.toLowerCase())))
         : [];
 
       let usersHtml = "";
@@ -1274,8 +1321,8 @@
           <div class="muted">مستخدمون مطابقون:</div>
           <div class="row" style="flex-wrap:wrap;gap:12px">
             ${matchingUsers.map((u) => `
-              <button class="btn btn-ghost" onclick="openProfile(${u.id})">
-                ${avatarHtml(u, "av-xs")} <span>${esc(u.username)}</span> ${badgeHtml(u)}
+              <button class="btn btn-ghost" onclick="openProfileByUsername('${esc(u.username)}')">
+                ${avatarHtml(u, "av-xs")} <span>${esc(getDisplayName(u))}</span> ${badgeHtml(u)}
               </button>`).join("")}
           </div>
         </div>`;
@@ -1312,10 +1359,10 @@
       return `
         <article class="card" style="${ui.highlightPostId === p.id ? "border-color:var(--blue)" : ""}">
           <div class="row-between">
-            <button class="brand-btn" style="font-size:14px" onclick="openProfile(${author.id})">
+            <button class="brand-btn" style="font-size:14px" onclick="openProfileByUsername('${esc(author.username)}')">
               ${avatarHtml(author, "av-md")}
               <div style="text-align:start">
-                <div class="row" style="gap:5px"><span>${esc(author.username)}</span>${badgeHtml(author)}</div>
+                <div class="row" style="gap:5px"><span>${esc(getDisplayName(author))}</span>${badgeHtml(author)}</div>
                 <div class="muted tabular">${relTime(p.createdAt)} · <span class="tag-badge">${esc(p.category || "عام")}</span></div>
               </div>
             </button>
@@ -1338,7 +1385,7 @@
               ${p.comments.map((c) => {
                 const cu = getUser(c.userId);
                 return `<div style="background:var(--surface-soft);padding:10px;border-radius:10px">
-                  <div class="row" style="font-size:12px"><strong>${esc(cu ? cu.username : "مستخدم")}</strong>${badgeHtml(cu)}<span class="muted">· ${relTime(c.createdAt)}</span></div>
+                  <div class="row" style="font-size:12px"><strong>${esc(cu ? getDisplayName(cu) : "مستخدم")}</strong>${badgeHtml(cu)}<span class="muted">· ${relTime(c.createdAt)}</span></div>
                   <div style="font-size:13px;margin-top:4px">${esc(c.content)}</div>
                 </div>`;
               }).join("") || `<div class="muted">${t("noComments")}</div>`}
@@ -1448,7 +1495,7 @@
       db.posts.unshift(post);
       db.postLogs.push({ userId: me.id, createdAt: now });
       db.follows.filter((f) => f.followingId === me.id).forEach((f) => {
-        notifyUser(f.followerId, "post", me.id, `قام ${me.username} بنشر بوست جديد`, "", post.id);
+        notifyUser(f.followerId, "post", me.id, `قام ${getDisplayName(me)} بنشر بوست جديد`, "", post.id);
       });
       save();
       toast("تم نشر البوست بنجاح");
@@ -1470,7 +1517,7 @@
       if (idx >= 0) p.likes.splice(idx, 1);
       else {
         p.likes.push(me.id);
-        if (p.userId !== me.id) notifyUser(p.userId, "like", me.id, `أعجب ${me.username} بوستك`, "", p.id);
+        if (p.userId !== me.id) notifyUser(p.userId, "like", me.id, `أعجب ${getDisplayName(me)} بوستك`, "", p.id);
       }
       save();
       render();
@@ -1485,7 +1532,7 @@
       const p = db.posts.find((x) => x.id === postId);
       if (!p) return;
       p.comments.push({ id: uid(), userId: me.id, content: text, createdAt: Date.now() });
-      if (p.userId !== me.id) notifyUser(p.userId, "comment", me.id, `علق ${me.username} على بوستك`, "", p.id);
+      if (p.userId !== me.id) notifyUser(p.userId, "comment", me.id, `علق ${getDisplayName(me)} على بوستك`, "", p.id);
       save();
       render();
     }
@@ -1496,8 +1543,8 @@
       toast(t("postShareSuccess"));
     }
 
-    function shareProfileLink(userId) {
-      const url = `${location.origin}${location.pathname}#user-${userId}`;
+    function shareProfileLink(username) {
+      const url = `${location.origin}${location.pathname}#u-${username}`;
       navigator.clipboard?.writeText(url).catch(() => {});
       toast(t("profileShareSuccess"));
     }
@@ -1509,7 +1556,7 @@
       if (idx >= 0) db.follows.splice(idx, 1);
       else {
         db.follows.push({ followerId: me.id, followingId: targetId });
-        notifyUser(targetId, "follow", me.id, `بدأ ${me.username} بمتابعتك`);
+        notifyUser(targetId, "follow", me.id, `بدأ ${getDisplayName(me)} بمتابعتك`);
       }
       save();
       render();
@@ -1531,8 +1578,8 @@
     }
 
     function renderProfile() {
-      const u = getUser(ui.profileUserId);
-      if (!u || u.disabled) return `<div class="card">المستخدم غير موجود أو حسابة معطل</div>`;
+      const u = getUserByUsername(ui.profileUsername);
+      if (!u || u.disabled) return `<div class="card">المستخدم غير موجود أو حسابه معطل</div>`;
       const me = currentUser();
       const isOwn = me.id === u.id;
       const isF = db.follows.some((f) => f.followerId === me.id && f.followingId === u.id);
@@ -1549,7 +1596,8 @@
               <div class="row" style="gap:16px;align-items:flex-start">
                 ${avatarHtml(u, "av-lg")}
                 <div>
-                  <div class="row"><h2>${esc(u.username)}</h2>${badgeHtml(u)}</div>
+                  <div class="row"><h2>${esc(getDisplayName(u))}</h2>${badgeHtml(u)}</div>
+                  <div class="muted">@${esc(u.username)}</div>
                   ${u.bio ? `<p style="margin:6px 0 0;font-size:14px">${esc(u.bio)}</p>` : ""}
                   <div class="info-chips">
                     ${u.gender ? `<span class="info-chip"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>${esc(u.gender)}</span>` : ""}
@@ -1560,7 +1608,7 @@
                 </div>
               </div>
               <div class="row" style="flex-wrap:wrap">
-                <button class="btn btn-soft" onclick="shareProfileLink(${u.id})">
+                <button class="btn btn-soft" onclick="shareProfileLink('${esc(u.username)}')">
                   <svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
                   ${t("charShare")}
                 </button>
@@ -1611,14 +1659,14 @@
               <strong style="font-size:15px">${t("chat")}</strong>
               <select class="input" style="width:auto;padding:5px 8px;font-size:12px" onchange="if(this.value) startChat(Number(this.value))">
                 <option value="">+ محادثة جديدة</option>
-                ${peers.map((p) => `<option value="${p.id}">${esc(p.username)}</option>`).join("")}
+                ${peers.map((p) => `<option value="${p.id}">${esc(getDisplayName(p))}</option>`).join("")}
               </select>
             </div>
             <div>
               ${myConvs.map((c) => {
                 const o = getUser(c.user1Id === me.id ? c.user2Id : c.user1Id);
                 return `<button onclick="ui.activeChatId=${c.id};render()" style="width:100%;text-align:start;border:none;border-bottom:1px solid var(--border);padding:12px 14px;background:${active && active.id === c.id ? "var(--surface-tint)" : "var(--surface)"}; color:var(--ink)">
-                  <div class="row-between"><strong>${esc(o ? o.username : "")}</strong><span class="muted tabular">${c.messages.length}/100</span></div>
+                  <div class="row-between"><strong>${esc(o ? getDisplayName(o) : "")}</strong><span class="muted tabular">${c.messages.length}/100</span></div>
                   <div class="muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.messages[c.messages.length - 1]?.content || "محادثة جديدة")}</div>
                 </button>`;
               }).join("") || `<div class="muted" style="padding:20px;text-align:center">لا توجد محادثات نشطة</div>`}
@@ -1628,7 +1676,7 @@
             ${!active || !other ? `<div class="muted" style="margin:auto">اختر محادثة لبدء المراسلة.</div>` : `
               <div class="row-between" style="padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border)">
                 <div>
-                  <strong>${esc(other.username)}</strong> ${badgeHtml(other)}
+                  <strong>${esc(getDisplayName(other))}</strong> ${badgeHtml(other)}
                   <div class="muted tabular">${active.messages.length} / 100 رسالة (تحذف تلقائياً بعد 24 ساعة)</div>
                 </div>
                 <div class="row">
@@ -1691,7 +1739,7 @@
       const reason = document.getElementById("rep-reason").value.trim() || "مخالفة";
       db.reports.unshift({
         id: uid(), reporterId: me.id, conversationId: convId, reason, status: "open",
-        snapshot: conv.messages.slice(-15).map((m) => ({ username: getUser(m.senderId)?.username || "مستخدم", content: m.content })),
+        snapshot: conv.messages.slice(-15).map((m) => ({ username: getDisplayName(getUser(m.senderId)) || "مستخدم", content: m.content })),
         createdAt: Date.now(),
       });
       save();
@@ -1717,7 +1765,7 @@
               const actor = n.actorId ? getUser(n.actorId) : null;
               return `<div style="padding:12px;border-radius:12px;background:${n.type === "admin" ? "var(--surface-tint)" : "var(--surface-soft)"}">
                 ${n.title ? `<div style="font-size:12px;font-weight:700;color:var(--blue)">${esc(n.title)}</div>` : ""}
-                <div style="font-size:14px">${actor && n.type !== "admin" ? `<strong>${esc(actor.username)}</strong> ` : ""}${esc(n.message)}</div>
+                <div style="font-size:14px">${actor && n.type !== "admin" ? `<strong>${esc(getDisplayName(actor))}</strong> ` : ""}${esc(n.message)}</div>
                 <div class="muted">${relTime(n.createdAt)}</div>
               </div>`;
             }).join("") || `<div class="muted" style="text-align:center">لا توجد إشعارات حالياً.</div>`}
@@ -1761,7 +1809,7 @@
                   <div class="row">
                     ${avatarHtml(u, "av-sm")}
                     <div>
-                      <div><strong>${esc(u.username)}</strong> ${badgeHtml(u)} <span class="muted">(${u.role})</span> ${u.disabled ? '<span style="color:var(--danger);font-size:11px">[معطل]</span>' : ''}</div>
+                      <div><strong>${esc(getDisplayName(u))}</strong> (@${esc(u.username)}) ${badgeHtml(u)} <span class="muted">(${u.role})</span> ${u.disabled ? '<span style="color:var(--danger);font-size:11px">[معطل]</span>' : ''}</div>
                       <div class="muted">تاريخ الانضمام: ${relTime(u.createdAt)}</div>
                     </div>
                   </div>
@@ -1786,7 +1834,7 @@
                 return `<div style="padding:14px;background:var(--surface-soft);border-radius:12px" class="stack">
                   <div class="row-between">
                     <div>
-                      <strong>اسم المستخدم: ${esc(applicant ? applicant.username : "مستخدم")}</strong>
+                      <strong>اسم المستخدم: ${esc(applicant ? getDisplayName(applicant) : "مستخدم")} (@${esc(applicant?.username)})</strong>
                       <div class="muted tabular">تاريخ الطلب: ${relTime(r.createdAt)} · الحالة: <span style="color:${r.status==='approved'?'var(--teal)':r.status==='rejected'?'var(--danger)':'var(--warning-text)'}">${r.status==='approved'?'تم القبول':r.status==='rejected'?'مرفوض':'قيد المراجعة'}</span></div>
                     </div>
                     <div class="row">
@@ -1830,7 +1878,7 @@
                 return `<div class="row-between" style="padding:12px;background:var(--surface-soft);border-radius:12px">
                   <div style="max-width:70%">
                     <div class="row" style="font-size:12px;margin-bottom:4px">
-                      <strong>${esc(author ? author.username : "مستخدم محذوف")}</strong>
+                      <strong>${esc(author ? getDisplayName(author) : "مستخدم محذوف")}</strong>
                       <span class="tag-badge">${esc(p.category || "عام")}</span>
                       <span class="muted">${relTime(p.createdAt)}</span>
                     </div>
