@@ -239,7 +239,7 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_standalone_v7";
+    const STORAGE_KEY = "bahr_standalone_v8";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     
@@ -260,7 +260,7 @@
         menuTheme: "تبديل الوضع الليلي/النهاري",
         menuDelete: "حذف الحساب",
         menuLogout: "تسجيل الخروج",
-        writersInBahr: "مقترح متابعات",
+        writersInBahr: "اقتراحات للمتابعة",
         noWriters: "لا توجد اقتراحات حالياً",
         charCount: "حرف",
         remainingToday: "المتبقي اليوم",
@@ -538,6 +538,10 @@
       reader.readAsDataURL(file);
     }
 
+    function esc(str) {
+      return String(str || "").replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
     function avatarHtml(user, size = "av-md") {
       if (!user) return "";
       if (user.photoData) {
@@ -670,7 +674,6 @@
         .map(([id, label]) => `<button class="nav-link ${ui.view === id && (id !== 'feed' || ui.feedMode === 'home') ? "active" : ""}" onclick="ui.feedMode='home'; setView('${id}')">${label}</button>`)
         .join("");
 
-      // إزالة اسم المستخدم من بجانب الثلاث نقاط تماماً كما طلبت
       document.getElementById("auth-actions").innerHTML = `
         <div class="header-search">
           <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
@@ -1034,7 +1037,6 @@
         };
         db.users.push(newUser);
         
-        // متابعة تلقائية للحساب الأساسي الأول (مثل admin أو أول حساب) من تلقاء نفسه
         const primaryTarget = db.users[0] && db.users[0].id !== newUser.id ? db.users[0].id : null;
         if (primaryTarget) {
           db.follows.push({ followerId: newUser.id, followingId: primaryTarget });
@@ -1089,7 +1091,7 @@
           <div class="stack" style="gap:6px">
             ${myDrafts.map((d) => `
               <div class="row-between" style="background:var(--surface-soft);padding:8px 12px;border-radius:10px">
-                <span style="font-size:13px;max-width:65%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><strong>[${d.category}]</strong> ${esc(d.content)}</span>
+                <span style="font-size:13px;max-width:65%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><strong>[${esc(d.category)}]</strong> ${esc(d.content)}</span>
                 <div class="row">
                   <button class="btn btn-soft" style="padding:4px 8px;font-size:11px" onclick="loadDraft(${d.id})">Post</button>
                   <button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deleteDraft(${d.id})">Del</button>
@@ -1098,14 +1100,12 @@
           </div>` : ""}
       </div>`;
 
-      // التبويبات بالترتيب: [الصفحة الرئيسية] ، [حسابي] ، [كل البوستات]
       const modeTabs = `<div class="tabs">
         <button class="tab-btn ${ui.feedMode === 'home' ? 'active' : ''}" onclick="ui.feedMode='home';render()">${t("home")}</button>
         <button class="tab-btn" onclick="openProfile(${me.id})">${t("myAccount")}</button>
         <button class="tab-btn ${ui.feedMode === 'all' ? 'active' : ''}" onclick="ui.feedMode='all';render()">${t("allPosts")}</button>
       </div>`;
 
-      // قائمة اقتراح متابعات (المستخدمين الذين لا يتابعهم بعد)
       const followingIds = db.follows.filter((f) => f.followerId === me.id).map((f) => f.followingId);
       const suggestions = db.users.filter((u) => u.id !== me.id && !blocked.includes(u.id) && !followingIds.includes(u.id) && u.role !== 'admin').slice(0, 5);
 
@@ -1121,7 +1121,6 @@
               <h3 style="font-size:15px;margin-bottom:12px">${t("writersInBahr")}</h3>
               <div class="stack" style="gap:10px">
                 ${suggestions.length ? suggestions.map((u) => {
-                  const fc = db.follows.filter((f) => f.followingId === u.id).length;
                   return `<div class="row-between">
                     <button class="brand-btn" style="font-size:13px" onclick="openProfile(${u.id})">
                       ${avatarHtml(u, "av-sm")} <span>${esc(u.username)}</span> ${badgeHtml(u)}
@@ -1154,7 +1153,6 @@
         posts = posts.filter((p) => p.content.toLowerCase().includes(q) || getUser(p.userId)?.username.toLowerCase().includes(q));
       }
 
-      // البحث عن أشخاص أو بوستات معاً
       const matchingUsers = ui.searchQuery
         ? db.users.filter((u) => !blocked.includes(u.id) && u.username.toLowerCase().includes(ui.searchQuery.toLowerCase()))
         : [];
