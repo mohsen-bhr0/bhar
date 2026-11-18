@@ -252,7 +252,7 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_standalone_v10";
+    const STORAGE_KEY = "bahr_standalone_v11";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     
@@ -261,7 +261,6 @@
         brandName: "بحر",
         home: "الرئيسية",
         myAccount: "حسابي",
-        allPosts: "كل البوستات",
         discover: "اكتشف",
         chat: "الرسائل",
         notifications: "الإشعارات",
@@ -310,7 +309,6 @@
         brandName: "Bahr",
         home: "Home",
         myAccount: "My Account",
-        allPosts: "All Posts",
         discover: "Discover",
         chat: "Messages",
         notifications: "Notifications",
@@ -532,7 +530,7 @@
           if (w > h) {
             if (w > MAX) { h = Math.round((h * MAX) / w); w = MAX; }
           } else {
-            if (h > MAX) { w = Math.round((w * MAX) / h); h = MAX; }
+            if (h > MAX) { w = Math.round((h * MAX) / h); h = MAX; }
           }
           canvas.width = w;
           canvas.height = h;
@@ -732,7 +730,7 @@
               ${t("menuTheme")}
             </button>
             <button class="dropdown-item" onclick="setView('admin')" style="${me.role === 'admin' ? '' : 'display:none'}">
-              <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c-.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c-.5.38 1.03.7 1.62.94l.36 2.54c-.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
               ${t("adminPanel")}
             </button>
             <div class="divider" style="margin:4px 0"></div>
@@ -1659,29 +1657,39 @@
           </div>
           ${ui.adminTab === "users" ? `
             <div class="card stack">
+              <h3>إدارة المستخدمين</h3>
               ${db.users.map((u) => `
                 <div class="row-between" style="padding:10px 0;border-bottom:1px solid var(--border)">
-                  <div class="row">${avatarHtml(u, "av-sm")} <strong>${esc(u.username)}</strong> ${badgeHtml(u)}</div>
+                  <div class="row">${avatarHtml(u, "av-sm")} <strong>${esc(u.username)}</strong> ${badgeHtml(u)} <span class="muted">(${u.role})</span></div>
                   <div class="row" style="flex-wrap:wrap">
-                    <button class="btn ${u.verified ? "btn-primary" : "btn-soft"}" onclick="adminVerify(${u.id})">Verify</button>
-                    ${u.role !== "admin" ? `<button class="btn btn-danger" onclick="adminDeleteUser(${u.id})">Delete</button>` : ""}
+                    <button class="btn ${u.verified ? "btn-primary" : "btn-soft"}" onclick="adminVerify(${u.id})">${u.verified ? "موثق ✓" : "توثيق"}</button>
+                    ${u.role !== "admin" ? `<button class="btn btn-danger" onclick="adminDeleteUser(${u.id})">حذف</button>` : ""}
                   </div>
                 </div>`).join("")}
             </div>` : ""}
           ${ui.adminTab === "settings" ? `
             <div class="card stack">
-              <div class="row-between">
-                <div><strong>Registration</strong></div>
-                <button class="btn ${s.registrationOpen ? "btn-primary" : "btn-danger"}" onclick="db.settings.registrationOpen=!db.settings.registrationOpen;save();render()">${s.registrationOpen ? "Open" : "Closed"}</button>
+              <h3>إعدادات المنصة</h3>
+              <div class="row-between" style="padding:10px 0;border-bottom:1px solid var(--border)">
+                <div><strong>فتح/إغلاق التسجيل الجديد</strong></div>
+                <button class="btn ${s.registrationOpen ? "btn-primary" : "btn-danger"}" onclick="db.settings.registrationOpen=!db.settings.registrationOpen;save();render()">${s.registrationOpen ? "التسجيل مفتوح" : "التسجيل مغلق"}</button>
+              </div>
+              <div class="row-between" style="padding:10px 0">
+                <div><strong>الحذف التلقائي للمنشورات القديمة</strong></div>
+                <button class="btn ${s.autoDeleteEnabled ? "btn-primary" : "btn-ghost"}" onclick="db.settings.autoDeleteEnabled=!db.settings.autoDeleteEnabled;save();render()">${s.autoDeleteEnabled ? "مفعل (24 ساعة)" : "معطل"}</button>
               </div>
             </div>` : ""}
           ${ui.adminTab === "mod" ? `
             <div class="card stack">
-              <h3>Reports (${db.reports.length})</h3>
+              <h3>البلاغات والشكاوى (${db.reports.length})</h3>
               ${db.reports.map((r) => `
-                <div style="padding:10px;background:var(--surface-soft);border-radius:10px">
-                  <div class="row-between"><strong>${esc(r.reason)}</strong><button class="btn btn-soft" style="padding:4px 8px;font-size:11px" onclick="toggleRep(${r.id})">${r.status}</button></div>
-                </div>`).join("") || `<div class="muted">No reports.</div>`}
+                <div style="padding:12px;background:var(--surface-soft);border-radius:10px" class="stack">
+                  <div class="row-between">
+                    <strong>السبب: ${esc(r.reason)}</strong>
+                    <button class="btn ${r.status === 'open' ? 'btn-danger' : 'btn-soft'}" style="padding:4px 10px;font-size:11px" onclick="toggleRep(${r.id})">${r.status === 'open' ? 'قيد المراجعة' : 'محلول'}</button>
+                  </div>
+                  <div class="muted tabular">التاريخ: ${relTime(r.createdAt)}</div>
+                </div>`).join("") || `<div class="muted" style="text-align:center">لا توجد بلاغات حالياً.</div>`}
             </div>` : ""}
         </div>`;
     }
