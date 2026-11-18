@@ -160,7 +160,7 @@
     .menu-btn:hover, .theme-btn:hover { background: var(--surface-tint); }
     .menu-btn svg, .theme-btn svg { width: 18px; height: 18px; fill: currentColor; }
     .dropdown-content {
-      position: absolute; left: 0; top: 48px; background: var(--surface); min-width: 180px;
+      position: absolute; left: 0; top: 48px; background: var(--surface); min-width: 195px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid var(--border);
       border-radius: 12px; z-index: 40; display: none; overflow: hidden;
     }
@@ -189,7 +189,7 @@
       position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.6);
       display: flex; align-items: center; justify-content: center; padding: 16px;
     }
-    .modal-card { width: 100%; max-width: 460px; background: var(--surface); border-radius: 16px; padding: 20px; border: 1px solid var(--border); color: var(--ink); }
+    .modal-card { width: 100%; max-width: 460px; background: var(--surface); border-radius: 16px; padding: 20px; border: 1px solid var(--border); color: var(--ink); max-height: 90vh; overflow-y: auto; }
   </style>
 </head>
 <body onclick="closeAllMenus(event)">
@@ -211,7 +211,7 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_standalone_v4";
+    const STORAGE_KEY = "bahr_standalone_v5";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     const CATEGORIES = ["تقنية", "خواطر", "طب وصحة", "ريادة أعمال", "كتب"];
@@ -271,7 +271,7 @@
     let db = loadState();
     let ui = {
       view: "feed",
-      feedMode: "following",
+      feedMode: "all",
       authMode: "login",
       profileUserId: null,
       activeChatId: null,
@@ -282,6 +282,19 @@
       filterCategory: "",
       theme: localStorage.getItem("bahr_theme") || "light"
     };
+
+    // دعم فتح رابط حساب مشارك مباشرة
+    function checkInitialHash() {
+      const h = location.hash || "";
+      if (h.startsWith("#user-")) {
+        const id = Number(h.replace("#user-", ""));
+        if (id && db.users.some((u) => u.id === id)) {
+          ui.profileUserId = id;
+          ui.view = "profile";
+        }
+      }
+    }
+    checkInitialHash();
 
     document.documentElement.setAttribute("data-theme", ui.theme);
 
@@ -403,6 +416,7 @@
       const me = currentUser();
       if (!me) { ui.view = "auth"; render(); return; }
       ui.view = "feed";
+      ui.feedMode = "all";
       render();
     }
 
@@ -431,7 +445,7 @@
       if (menu) menu.classList.toggle("show");
     }
 
-    function closeAllMenus(e) {
+    function closeAllMenus() {
       const menu = document.getElementById("user-dropdown-menu");
       if (menu && menu.classList.contains("show")) {
         menu.classList.remove("show");
@@ -442,11 +456,9 @@
       cleanupSweep();
       const me = currentUser();
 
-      // الوضع الليلي زر في الهيدر
       const themeBtnHtml = `
         <button class="theme-btn" onclick="toggleTheme()" title="تبديل الوضع الليلي">
           <svg viewBox="0 0 24 24"><path d="${ui.theme === 'light' ? 'M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z' : 'M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z'}"/></svg>
-        </svg>
         </button>`;
 
       if (!me) {
@@ -479,15 +491,23 @@
             <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
           </button>
           <div id="user-dropdown-menu" class="dropdown-content">
-            <button class="dropdown-item" onclick="openProfile(${me.id})">
+            <button class="dropdown-item" onclick="openAccountSettingsModal()">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-              حسابي
+              حسابي (تغيير الاسم)
+            </button>
+            <button class="dropdown-item" onclick="openChangePasswordModal()">
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+              تغيير كلمة المرور
             </button>
             <button class="dropdown-item" onclick="setView('admin')" style="${me.role === 'admin' ? '' : 'display:none'}">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
               لوحة الإدارة
             </button>
             <div class="divider" style="margin:4px 0"></div>
+            <button class="dropdown-item danger" onclick="openDeleteAccountModal()">
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+              حذف الحساب
+            </button>
             <button class="dropdown-item danger" onclick="logout()">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.1 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
               تسجيل الخروج
@@ -505,13 +525,161 @@
       else app.innerHTML = renderFeed();
     }
 
+    // نافذة "حسابي" لتغيير الاسم والنبذة والأفاتار من قائمة الثلاث شرط
+    function openAccountSettingsModal() {
+      const me = currentUser();
+      if (!me) return;
+      const presets = PRESET_AVATARS.filter((a) => db.settings.enabledAvatars.includes(a.id));
+      window.__editAv = me.avatarId;
+
+      document.getElementById("modal-root").innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal-card stack">
+            <div class="row-between">
+              <h3>إعدادات حسابي</h3>
+              <button class="btn btn-ghost" style="padding:4px 10px" onclick="closeModal()">✕</button>
+            </div>
+            <form onsubmit="saveAccountSettings(event)" class="stack">
+              <div>
+                <label class="muted">اسم المستخدم (تغيير الاسم)</label>
+                <input id="acc-username" class="input" required minlength="3" maxlength="24" value="${esc(me.username)}" />
+              </div>
+              <div>
+                <label class="muted">النبذة التعريفية</label>
+                <input id="acc-bio" class="input" maxlength="160" value="${esc(me.bio)}" placeholder="اكتب نبذة قصيرة..." />
+              </div>
+              <div>
+                <label class="muted">الصورة الشخصية (الأفاتار)</label>
+                <div class="avatar-grid" style="margin-top:6px">
+                  <button type="button" class="avatar-pick ${!window.__editAv ? "selected" : ""}" onclick="selectModalAv(this, null)">
+                    <span class="avatar av-sm" style="background:#0d63a5">${esc(me.username[0])}</span>
+                    <span style="font-size:10px">أول حرف</span>
+                  </button>
+                  ${presets.map((p) => `
+                    <button type="button" class="avatar-pick ${window.__editAv === p.id ? "selected" : ""}" onclick="selectModalAv(this, '${p.id}')">
+                      <span class="avatar av-sm" style="background:${p.bg}">${p.svg}</span>
+                      <span style="font-size:10px">${p.name}</span>
+                    </button>`).join("")}
+                </div>
+              </div>
+              <div class="row" style="justify-content:flex-end">
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+                <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+              </div>
+            </form>
+          </div>
+        </div>`;
+    }
+
+    function selectModalAv(btn, avId) {
+      window.__editAv = avId;
+      btn.parentElement.querySelectorAll(".avatar-pick").forEach((el) => el.classList.remove("selected"));
+      btn.classList.add("selected");
+    }
+
+    function saveAccountSettings(e) {
+      e.preventDefault();
+      const me = currentUser();
+      if (!me) return;
+      const newName = document.getElementById("acc-username").value.trim();
+      const newBio = document.getElementById("acc-bio").value.trim().slice(0, 160);
+      if (newName.length < 3) return toast("الاسم يجب أن يكون 3 أحرف على الأقل");
+
+      const exists = db.users.some((u) => u.id !== me.id && u.username.toLowerCase() === newName.toLowerCase());
+      if (exists) return toast("اسم المستخدم مستخدم بالفعل، اختر اسماً آخر");
+
+      me.username = newName;
+      me.bio = newBio;
+      me.avatarId = window.__editAv || null;
+      save();
+      closeModal();
+      toast("تم تحديث بيانات حسابك بنجاح");
+      render();
+    }
+
+    // نافذة تغيير كلمة المرور
+    function openChangePasswordModal() {
+      document.getElementById("modal-root").innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal-card stack">
+            <h3>تغيير كلمة المرور</h3>
+            <form onsubmit="submitChangePassword(event)" class="stack">
+              <div>
+                <label class="muted">كلمة المرور الحالية</label>
+                <input id="old-pass" type="password" class="input" required />
+              </div>
+              <div>
+                <label class="muted">كلمة المرور الجديدة (6 أحرف على الأقل)</label>
+                <input id="new-pass" type="password" class="input" required minlength="6" />
+              </div>
+              <div class="row" style="justify-content:flex-end">
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+                <button type="submit" class="btn btn-primary">تحديث كلمة المرور</button>
+              </div>
+            </form>
+          </div>
+        </div>`;
+    }
+
+    function submitChangePassword(e) {
+      e.preventDefault();
+      const me = currentUser();
+      const oldP = document.getElementById("old-pass").value;
+      const newP = document.getElementById("new-pass").value;
+      if (me.password !== oldP) return toast("كلمة المرور الحالية غير صحيحة");
+      if (newP.length < 6) return toast("كلمة المرور الجديدة قصيرة جداً");
+      me.password = newP;
+      save();
+      closeModal();
+      toast("تم تغيير كلمة المرور بنجاح");
+    }
+
+    // نافذة حذف الحساب نهائياً
+    function openDeleteAccountModal() {
+      const me = currentUser();
+      if (me.id === 1 && me.role === "admin") {
+        return toast("لا يمكن حذف حساب الإدارة الرئيسي");
+      }
+      document.getElementById("modal-root").innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal-card stack">
+            <h3 style="color:var(--danger)">حذف الحساب نهائياً</h3>
+            <p style="font-size:14px;margin:0">هل أنت متأكد من رغبتك في حذف حسابك؟ سيتم مسح جميع بوستاتك ومتابعاتك ورسائلك ولا يمكن التراجع عن هذا الإجراء.</p>
+            <input id="del-confirm-pw" type="password" class="input" placeholder="أدخل كلمة المرور للتأكيد..." />
+            <div class="row" style="justify-content:flex-end">
+              <button type="button" class="btn btn-ghost" onclick="closeModal()">تراجع</button>
+              <button type="button" class="btn btn-danger" onclick="confirmDeleteMyAccount()">تأكيد حذف الحساب</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function confirmDeleteMyAccount() {
+      const me = currentUser();
+      const pw = document.getElementById("del-confirm-pw").value;
+      if (me.password !== pw) return toast("كلمة المرور غير صحيحة");
+      const myId = me.id;
+      db.users = db.users.filter((u) => u.id !== myId);
+      db.posts = db.posts.filter((p) => p.userId !== myId);
+      db.follows = db.follows.filter((f) => f.followerId !== myId && f.followingId !== myId);
+      db.drafts = db.drafts.filter((d) => d.userId !== myId);
+      db.currentUserId = null;
+      save();
+      closeModal();
+      ui.view = "auth";
+      toast("تم حذف حسابك نهائياً");
+      render();
+    }
+
     function renderAuth() {
       const regOpen = db.settings.registrationOpen;
       const presets = PRESET_AVATARS.filter((a) => db.settings.enabledAvatars.includes(a.id));
       return `
         <div class="card" style="max-width:520px;margin:40px auto;">
           <div style="text-align:center;margin-bottom:20px">
-            <span class="brand-mark" style="width:48px;height:48px;font-size:24px;margin-bottom:8px">⚓</span>
+            <span class="brand-mark" style="width:48px;height:48px;font-size:24px;margin-bottom:8px">
+              <svg viewBox="0 0 24 24" style="width:24px;height:24px"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </span>
             <h2 style="font-size:22px">مرحباً بك في منصة بحر</h2>
             <div class="muted" style="margin-top:4px">يجب تسجيل الدخول أو إنشاء حساب جديد للوصول إلى المنصة</div>
           </div>
@@ -579,7 +747,7 @@
         if (!found) return toast("بيانات الدخول غير صحيحة");
         db.currentUserId = found.id;
         save();
-        ui.view = "feed";
+        if (!ui.profileUserId) ui.view = "feed";
         toast("أهلاً بك في بحر");
         render();
       } else {
@@ -598,7 +766,7 @@
         db.currentUserId = newUser.id;
         window.__pickAv = null;
         save();
-        ui.view = "feed";
+        if (!ui.profileUserId) ui.view = "feed";
         toast("تم إنشاء الحساب بنجاح");
         render();
       }
@@ -624,14 +792,9 @@
     function renderFeed() {
       const me = currentUser();
       const blocked = me.blockedUsers || [];
-      const followingIds = db.follows.filter((f) => f.followerId === me.id).map((f) => f.followingId);
       
       const posts = db.posts
-        .filter((p) => {
-          if (blocked.includes(p.userId)) return false;
-          if (ui.view === "discover" || ui.feedMode === "discover") return true;
-          return p.userId === me.id || followingIds.includes(p.userId);
-        })
+        .filter((p) => !blocked.includes(p.userId))
         .sort((a, b) => b.createdAt - a.createdAt);
 
       const q = getQuota(me);
@@ -667,9 +830,10 @@
           </div>` : ""}
       </div>`;
 
+      // استبدال زر المتابعون بزر حسابي الذي ينقل المستخدم لملفه الشخصي وبوستاته وعدد متابعيه
       const modeTabs = `<div class="tabs">
-        <button class="tab-btn ${ui.feedMode === "following" ? "active" : ""}" onclick="ui.feedMode='following';render()">المتابَعون</button>
-        <button class="tab-btn ${ui.feedMode === "discover" ? "active" : ""}" onclick="ui.feedMode='discover';render()">كل البوستات</button>
+        <button class="tab-btn" onclick="openProfile(${me.id})">حسابي</button>
+        <button class="tab-btn active" onclick="ui.feedMode='all';render()">كل البوستات</button>
       </div>`;
 
       const writers = db.users.filter((u) => u.id !== me.id && !blocked.includes(u.id)).slice(0, 6);
@@ -679,7 +843,7 @@
           <div class="stack">
             ${modeTabs}
             ${q.remaining > 0 ? composerHtml : `<div class="card"><div style="font-size:14px;font-weight:600">استهلكت حد النشر المتاح خلال 24 ساعة (${q.limit})</div><div class="muted tabular" style="margin-top:4px">يمكنك النشر مجدداً بعد ${q.nextAt ? remTime(q.nextAt) : "24 ساعة"}</div></div>`}
-            ${posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد بوستات في هذا المسار.</div>`}
+            ${posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد بوستات منشورة بعد.</div>`}
           </div>
           <aside class="stack">
             <div class="card">
@@ -742,7 +906,6 @@
       const me = currentUser();
       const liked = p.likes.includes(me.id);
       const canDel = (me.id === p.userId || me.role === "admin");
-      // تعديل البوست متاح خلال أول 10 دقائق فقط
       const canEdit = (me.id === p.userId && (Date.now() - p.createdAt < 10 * 60 * 1000));
       const openC = Boolean(ui.openComments[p.id]);
 
@@ -935,6 +1098,12 @@
       toast("تم نسخ رابط البوست");
     }
 
+    function shareProfileLink(userId) {
+      const url = `${location.origin}${location.pathname}#user-${userId}`;
+      navigator.clipboard?.writeText(url).catch(() => {});
+      toast("تم نسخ رابط الحساب لمشاركته مع الآخرين");
+    }
+
     function toggleFollow(targetId) {
       const me = currentUser();
       if (targetId === me.id) return;
@@ -985,10 +1154,14 @@
                 <div>
                   <div class="row"><h2>${esc(u.username)}</h2>${badgeHtml(u)}</div>
                   ${u.bio ? `<p style="margin:6px 0 0;font-size:14px">${esc(u.bio)}</p>` : ""}
-                  <div class="muted tabular" style="margin-top:8px">${followers} متابِع · ${following} يتابِع · ${userPosts.length} بوست</div>
+                  <div class="muted tabular" style="margin-top:8px"><strong>${followers}</strong> متابِع · <strong>${following}</strong> يتابِع · <strong>${userPosts.length}</strong> بوست</div>
                 </div>
               </div>
-              <div class="row">
+              <div class="row" style="flex-wrap:wrap">
+                <button class="btn btn-soft" onclick="shareProfileLink(${u.id})">
+                  <svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+                  مشاركة رابط الحساب
+                </button>
                 ${!isOwn ? `
                   <button class="btn ${isF ? "btn-soft" : "btn-primary"}" onclick="toggleFollow(${u.id})">${isF ? "متابَع" : "متابعة"}</button>
                   ${canChat ? `<button class="btn btn-ghost" onclick="startChat(${u.id})">مراسلة</button>` : ""}
@@ -1014,7 +1187,8 @@
                 <div><button type="submit" class="btn btn-primary">حفظ النبذة والصورة الشخصية</button></div>
               </form>` : ""}
           </div>
-          ${userPosts.map(renderPostCard).join("") || `<div class="card muted" style="text-align:center">لا توجد بوستات بعد.</div>`}
+          <h3 style="font-size:16px">البوستات المنشورة (${userPosts.length})</h3>
+          ${userPosts.map(renderPostCard).join("") || `<div class="card muted" style="text-align:center">لا توجد بوستات منشورة في هذا الحساب بعد.</div>`}
         </div>`;
     }
 
