@@ -176,10 +176,13 @@
     }
     .tag-badge:hover { opacity: 0.85; }
 
-    .hashtag-link {
-      color: var(--blue); text-decoration: none; font-weight: 600;
-    }
+    .hashtag-link { color: var(--blue); text-decoration: none; font-weight: 600; }
     .hashtag-link:hover { text-decoration: underline; }
+
+    .legal-link-btn {
+      background: none; border: none; color: var(--blue); font-size: 12px; padding: 0; cursor: pointer; text-decoration: underline;
+    }
+    .legal-link-btn:hover { color: var(--blue-hover); }
 
     .stats-grid {
       display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px;
@@ -248,7 +251,7 @@
       position: fixed; inset: 0; z-index: 80; background: rgba(0,0,0,0.6);
       display: flex; align-items: center; justify-content: center; padding: 16px;
     }
-    .modal-card { width: 100%; max-width: 480px; background: var(--surface); border-radius: 16px; padding: 20px; border: 1px solid var(--border); color: var(--ink); max-height: 90vh; overflow-y: auto; }
+    .modal-card { width: 100%; max-width: 520px; background: var(--surface); border-radius: 16px; padding: 22px; border: 1px solid var(--border); color: var(--ink); max-height: 85vh; overflow-y: auto; }
   </style>
 </head>
 <body onclick="closeAllMenus()">
@@ -272,7 +275,7 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_complete_standalone_v24";
+    const STORAGE_KEY = "bahr_complete_standalone_v25";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     
@@ -291,6 +294,9 @@
         menuVerifyRequest: "طلب توثيق الحساب",
         menuLang: "English / العربية",
         menuTheme: "تبديل الوضع الليلي/النهاري",
+        privacyPolicy: "سياسة الخصوصية",
+        termsOfUse: "سياسة الاستخدام",
+        userAgreement: "اتفاقية المستخدم",
         menuDelete: "حذف الحساب نهائياً",
         menuLogout: "تسجيل الخروج",
         writersInBahr: "اقتراحات للمتابعة",
@@ -340,6 +346,9 @@
         menuVerifyRequest: "Request Verification",
         menuLang: "العربية / English",
         menuTheme: "Toggle Dark/Light Mode",
+        privacyPolicy: "Privacy Policy",
+        termsOfUse: "Terms of Use",
+        userAgreement: "User Agreement",
         menuDelete: "Delete Account",
         menuLogout: "Logout",
         writersInBahr: "Suggested to Follow",
@@ -376,6 +385,57 @@
         bahrCharterText: "One text post every 24 hours (500 chars) with #hashtags and optional categories, and temporary chats deleted after 24 hours.",
       }
     };
+
+    const LEGAL_CONTENTS = {
+      privacy: {
+        ar: {
+          title: "سياسة الخصوصية",
+          body: "نحن في منصة 'بحر' نولي أهمية قصوى لخصوصية بياناتك. نقوم بجمع المعلومات الأساسية فقط اللازمة لتقديم الخدمة (مثل اسم المستخدم، الاسم الثنائي، والبيانات الشخصية الاختيارية). لا نقوم نهائياً بمشاركة أو بيع بياناتك لأي طرف ثالث. جميع الرسائل والمحادثات مؤقتة ويتم حذفها تلقائياً بمرور 24 ساعة لضمان أمانك الكامل."
+        },
+        en: {
+          title: "Privacy Policy",
+          body: "At Bahr, we prioritize your data privacy. We collect only essential information required to provide our services (such as username, display name, and optional profile data). We never share or sell your data to any third party. All direct messages and chats are temporary and automatically deleted after 24 hours to ensure your complete security."
+        }
+      },
+      terms: {
+        ar: {
+          title: "سياسة الاستخدام",
+          body: "باستخدامك لمنصة 'بحر'، فإنك توافق على الالتزام ببيئة تواصل هادفة ونظيفة. يُحظر تماماً نشر أي محتوى يخالف الآداب العامة، أو يحض على الكراهية، أو ينتهك حقوق الآخرين. تتيح لك المنصة نشر بوست نصي واحد كل 24 ساعة لضمان جودة المحتوى ومنع الإزعاج، وللإدارة الحق في تعليق أو حذف أي حساب يخالف هذه السياسات."
+        },
+        en: {
+          title: "Terms of Use",
+          body: "By using Bahr, you agree to maintain a constructive and clean communication environment. Posting content that violates public morals, promotes hate speech, or infringes on others' rights is strictly prohibited. The platform allows one text post every 24 hours to ensure content quality. Management reserves the right to suspend or remove any violating account."
+        }
+      },
+      agreement: {
+        ar: {
+          title: "اتفاقية المستخدم",
+          body: "تشكل هذه الاتفاقية عقداً ملزماً بينك وبين إدارة منصة 'بحر'. أنت مسؤول مسؤولية كاملة عن كافة الأنشطة التي تتم عبر حسابك وعن سرية كلمة المرور الخاصة بك. تحتفظ الإدارة بالحق في تعديل هذه الشروط في أي وقت، ويعتبر استمرارك في استخدام المنصة موافقة صريحة على تلك التعديلات."
+        },
+        en: {
+          title: "User Agreement",
+          body: "This agreement constitutes a binding contract between you and Bahr administration. You are fully responsible for all activities under your account and for maintaining password confidentiality. Management reserves the right to modify these terms at any time, and continued use constitutes your explicit acceptance."
+        }
+      }
+    };
+
+    function openLegalModal(type) {
+      const lang = ui.lang;
+      const content = LEGAL_CONTENTS[type][lang];
+      document.getElementById("modal-root").innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal-card stack">
+            <div class="row-between">
+              <h3>${esc(content.title)}</h3>
+              <button class="btn btn-ghost" style="padding:4px 10px" onclick="closeModal()">✕</button>
+            </div>
+            <div style="font-size:14px;line-height:1.8;white-space:pre-wrap">${esc(content.body)}</div>
+            <div class="row" style="justify-content:flex-end">
+              <button class="btn btn-primary" onclick="closeModal()">${lang === 'en' ? 'Close' : 'إغلاق'}</button>
+            </div>
+          </div>
+        </div>`;
+    }
 
     const DEFAULT_CATEGORIES = ["تقنية", "خواطر", "طب وصحة", "ريادة أعمال", "كتب"];
     const COUNTRIES = [
@@ -590,7 +650,6 @@
 
     function formatPostTextWithHashtags(text) {
       const safe = esc(text);
-      // Replace hashtags with clickable links
       return safe.replace(/(#[a-zA-Z0-9_\u0600-\u06FF]+)/g, '<a href="javascript:void(0)" class="hashtag-link" onclick="filterByTag(\'$1\')">$1</a>');
     }
 
@@ -718,6 +777,10 @@
                 <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
                 ${t("menuLang")}
               </button>
+              <div class="divider" style="margin:4px 0"></div>
+              <button class="dropdown-item" onclick="openLegalModal('privacy')">${t("privacyPolicy")}</button>
+              <button class="dropdown-item" onclick="openLegalModal('terms')">${t("termsOfUse")}</button>
+              <button class="dropdown-item" onclick="openLegalModal('agreement')">${t("userAgreement")}</button>
             </div>
           </div>`;
         document.getElementById("app").innerHTML = renderAuth();
@@ -795,6 +858,10 @@
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c-.5.38 1.03.7 1.62.94l.36 2.54c-.05.24.24.41.48.41h3.84c-.24 0 .44-.17.47-.41l.36-2.54c-.59-.24 1.13-.56 1.62-.94l2.39.96c-.22.08-.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
               ${t("adminPanel")}
             </button>
+            <div class="divider" style="margin:4px 0"></div>
+            <button class="dropdown-item" onclick="openLegalModal('privacy')">${t("privacyPolicy")}</button>
+            <button class="dropdown-item" onclick="openLegalModal('terms')">${t("termsOfUse")}</button>
+            <button class="dropdown-item" onclick="openLegalModal('agreement')">${t("userAgreement")}</button>
             <div class="divider" style="margin:4px 0"></div>
             <button class="dropdown-item danger" onclick="openDeleteAccountModal()">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
@@ -1162,6 +1229,12 @@
                   </div>` : ""}
                 <button type="submit" class="btn btn-primary" style="padding:12px;font-size:15px">${ui.authMode === "login" ? (ui.lang === 'en' ? 'Login' : 'دخول') : (ui.lang === 'en' ? 'Create Account' : 'إنشاء حساب جديد')}</button>
               </form>`}
+          <div class="divider" style="margin:16px 0"></div>
+          <div class="row" style="justify-content:center;gap:16px;flex-wrap:wrap">
+            <button class="legal-link-btn" onclick="openLegalModal('privacy')">${t("privacyPolicy")}</button>
+            <button class="legal-link-btn" onclick="openLegalModal('terms')">${t("termsOfUse")}</button>
+            <button class="legal-link-btn" onclick="openLegalModal('agreement')">${t("userAgreement")}</button>
+          </div>
         </div>`;
     }
 
@@ -1645,11 +1718,7 @@
       const followersCount = db.follows.filter((f) => f.followingId === u.id).length;
       const followingCount = db.follows.filter((f) => f.followerId === u.id).length;
       const userPosts = db.posts.filter((p) => p.userId === u.id).sort((a, b) => b.createdAt - a.createdAt);
-      
-      // Calculate total likes received
       const totalLikes = userPosts.reduce((acc, p) => acc + (p.likes ? p.likes.length : 0), 0);
-      
-      // Calculate posts in the last 30 days
       const thirtyDaysAgo = Date.now() - (30 * DAY_MS);
       const postsLastMonth = userPosts.filter((p) => p.createdAt > thirtyDaysAgo).length;
 
