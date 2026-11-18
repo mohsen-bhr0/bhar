@@ -21,6 +21,8 @@
       --teal: #0e8a8a;
       --danger: #dc2626;
       --danger-bg: #fef2f2;
+      --warning-bg: #fffbeb;
+      --warning-text: #b45309;
     }
     [data-theme="dark"] {
       --bg: #0b131e;
@@ -35,6 +37,8 @@
       --teal: #2dd4bf;
       --danger: #f87171;
       --danger-bg: #451a03;
+      --warning-bg: #451a03;
+      --warning-text: #fbbf24;
     }
     [data-lang="en"] { direction: ltr; font-family: system-ui, -apple-system, sans-serif; }
     
@@ -252,7 +256,7 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_complete_standalone_v20";
+    const STORAGE_KEY = "bahr_complete_standalone_v21";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     
@@ -371,7 +375,7 @@
         nextId: 100,
         users: [
           {
-            id: 1, username: "admin", password: "BahrAdmin123", role: "admin", verified: true,
+            id: 1, username: "admin", password: "BahrAdmin123", role: "admin", verified: true, disabled: false,
             photoData: null, gender: "رجل", birthDate: "1995-01-01", country: "مصر",
             bio: "الحساب الإداري الرسمي لمنصة بحر.",
             dailyPostLimit: 10, autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: now,
@@ -477,7 +481,7 @@
 
       db.posts = db.posts.filter((p) => {
         const author = getUser(p.userId);
-        if (!author) return false;
+        if (!author || author.disabled) return false;
         if (author.autoDeleteMode === "disabled") return true;
         if (author.autoDeleteMode === "enabled") {
           const hrs = author.autoDeleteHours || gHours;
@@ -730,7 +734,7 @@
               ${t("menuTheme")}
             </button>
             <button class="dropdown-item" onclick="setView('admin')" style="${me.role === 'admin' ? '' : 'display:none'}">
-              <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c-.5.38 1.03.7 1.62.94l.36 2.54c-.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c-.5.38 1.03.7 1.62.94l.36 2.54c-.05.24.24.41.48.41h3.84c-.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c-.22.08-.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
               ${t("adminPanel")}
             </button>
             <div class="divider" style="margin:4px 0"></div>
@@ -957,7 +961,7 @@
             : `<form onsubmit="submitAuth(event)" class="stack">
                 <div>
                   <label class="muted">${ui.lang === 'en' ? 'Username' : 'اسم المستخدم'}</label>
-                  <input id="auth-u" class="input" required minlength="3" maxlength="24" placeholder="اسم المستخدم أو البريد" oninput="checkUsernameLive(this.value)" />
+                  <input id="auth-u" class="input" required minlength="3" maxlength="24" placeholder="اسم المستخدم" oninput="checkUsernameLive(this.value)" />
                   <div id="u-suggest" style="margin-top:6px"></div>
                 </div>
                 <div>
@@ -1038,6 +1042,7 @@
       if (ui.authMode === "login") {
         const found = db.users.find((x) => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
         if (!found) return toast("بيانات تسجيل الدخول غير صحيحة");
+        if (found.disabled) return toast("عذراً، هذا الحساب معطل من قِبل الإدارة");
         db.currentUserId = found.id;
         save();
         if (!ui.profileUserId) ui.view = "feed";
@@ -1054,7 +1059,7 @@
         if (!gender || !birthDate || !country) return toast("يرجى إكمال كافة الحقول المطلوبة");
 
         const newUser = {
-          id: uid(), username: u, password: p, role: "user", verified: false,
+          id: uid(), username: u, password: p, role: "user", verified: false, disabled: false,
           photoData: window.__regPhotoData || null,
           gender, birthDate, country,
           bio: "", dailyPostLimit: 1,
@@ -1090,7 +1095,10 @@
       const blocked = me.blockedUsers || [];
       
       const posts = db.posts
-        .filter((p) => !blocked.includes(p.userId))
+        .filter((p) => {
+          const author = getUser(p.userId);
+          return author && !author.disabled && !blocked.includes(p.userId);
+        })
         .sort((a, b) => b.createdAt - a.createdAt);
 
       const q = getQuota(me);
@@ -1109,7 +1117,7 @@
             </div>
             <button type="submit" class="btn btn-primary" ${q.remaining <= 0 ? "disabled" : ""}>${t("publishPost")}</button>
           </div>
-          <div class="muted tabular" style="margin-top:6px"><span id="char-c">0</span> / 500 · ${t("remainingToday")}: ${q.remaining}</div>
+          <div class="muted tabular" style="margin-top:6px"><span id="char-c">0</span> / 500 · ${t("remainingToday")}: ${q.remaining} (حدك اليومي: ${q.limit})</div>
         </form>
         ${myDrafts.length ? `
           <div class="divider" style="margin:8px 0"></div>
@@ -1127,7 +1135,7 @@
       </div>`;
 
       const followingIds = db.follows.filter((f) => f.followerId === me.id).map((f) => f.followingId);
-      const suggestions = db.users.filter((u) => u.id !== me.id && !blocked.includes(u.id) && !followingIds.includes(u.id) && u.role !== 'admin').slice(0, 5);
+      const suggestions = db.users.filter((u) => u.id !== me.id && !u.disabled && !blocked.includes(u.id) && !followingIds.includes(u.id) && u.role !== 'admin').slice(0, 5);
 
       return `
         <div class="grid-2">
@@ -1162,7 +1170,10 @@
     function getDiscoverHtml() {
       const me = currentUser();
       const blocked = me.blockedUsers || [];
-      let posts = db.posts.filter((p) => !blocked.includes(p.userId));
+      let posts = db.posts.filter((p) => {
+        const author = getUser(p.userId);
+        return author && !author.disabled && !blocked.includes(p.userId);
+      });
 
       if (ui.filterCategory) {
         posts = posts.filter((p) => p.category === ui.filterCategory);
@@ -1173,7 +1184,7 @@
       }
 
       const matchingUsers = ui.searchQuery
-        ? db.users.filter((u) => !blocked.includes(u.id) && u.username.toLowerCase().includes(ui.searchQuery.toLowerCase()))
+        ? db.users.filter((u) => !u.disabled && !blocked.includes(u.id) && u.username.toLowerCase().includes(ui.searchQuery.toLowerCase()))
         : [];
 
       let usersHtml = "";
@@ -1210,7 +1221,7 @@
 
     function renderPostCard(p) {
       const author = getUser(p.userId);
-      if (!author) return "";
+      if (!author || author.disabled) return "";
       const me = currentUser();
       const liked = p.likes.includes(me.id);
       const canDel = (me.id === p.userId || me.role === "admin");
@@ -1440,7 +1451,7 @@
 
     function renderProfile() {
       const u = getUser(ui.profileUserId);
-      if (!u) return `<div class="card">المستخدم غير موجود</div>`;
+      if (!u || u.disabled) return `<div class="card">المستخدم غير موجود أو حسابة معطل</div>`;
       const me = currentUser();
       const isOwn = me.id === u.id;
       const isF = db.follows.some((f) => f.followerId === me.id && f.followingId === u.id);
@@ -1510,7 +1521,7 @@
       const active = myConvs.find((c) => c.id === ui.activeChatId) || myConvs[0] || null;
       if (active) ui.activeChatId = active.id;
       const other = active ? getUser(active.user1Id === me.id ? active.user2Id : active.user1Id) : null;
-      const peers = db.users.filter((u) => u.id !== me.id && u.role !== "admin" && !(me.blockedUsers || []).includes(u.id));
+      const peers = db.users.filter((u) => u.id !== me.id && !u.disabled && u.role !== "admin" && !(me.blockedUsers || []).includes(u.id));
 
       return `
         <div class="chat-box">
@@ -1642,6 +1653,8 @@
 
     function renderAdmin() {
       const s = db.settings;
+      const allPosts = db.posts.sort((a, b) => b.createdAt - a.createdAt);
+
       return `
         <div class="stack">
           <div class="card row-between">
@@ -1650,22 +1663,54 @@
               <div class="muted tabular">إجمالي المستخدمين: ${db.users.length} · إجمالي البوستات: ${db.posts.length} · البلاغات: ${db.reports.length}</div>
             </div>
             <div class="tabs">
-              <button class="tab-btn ${ui.adminTab === "users" ? "active" : ""}" onclick="ui.adminTab='users';render()">إدارة المستخدمين</button>
+              <button class="tab-btn ${ui.adminTab === "users" ? "active" : ""}" onclick="ui.adminTab='users';render()">إدارة المستخدمين والحصص</button>
+              <button class="tab-btn ${ui.adminTab === "posts" ? "active" : ""}" onclick="ui.adminTab='posts';render()">إدارة وحذف البوستات</button>
               <button class="tab-btn ${ui.adminTab === "settings" ? "active" : ""}" onclick="ui.adminTab='settings';render()">إعدادات المنصة</button>
               <button class="tab-btn ${ui.adminTab === "mod" ? "active" : ""}" onclick="ui.adminTab='mod';render()">البلاغات والشكاوى</button>
             </div>
           </div>
           ${ui.adminTab === "users" ? `
             <div class="card stack">
-              <h3>إدارة المستخدمين والصلاحيات</h3>
+              <h3>إدارة المستخدمين، الحصص، وتفعيل/تعطيل الحسابات</h3>
               ${db.users.map((u) => `
-                <div class="row-between" style="padding:10px 0;border-bottom:1px solid var(--border)">
-                  <div class="row">${avatarHtml(u, "av-sm")} <strong>${esc(u.username)}</strong> ${badgeHtml(u)} <span class="muted">(${u.role})</span></div>
+                <div class="row-between" style="padding:12px 0;border-bottom:1px solid var(--border)">
+                  <div class="row">
+                    ${avatarHtml(u, "av-sm")}
+                    <div>
+                      <div><strong>${esc(u.username)}</strong> ${badgeHtml(u)} <span class="muted">(${u.role})</span> ${u.disabled ? '<span style="color:var(--danger);font-size:11px">[معطل]</span>' : ''}</div>
+                      <div class="muted">تاريخ الانضمام: ${relTime(u.createdAt)}</div>
+                    </div>
+                  </div>
                   <div class="row" style="flex-wrap:wrap">
-                    <button class="btn ${u.verified ? "btn-primary" : "btn-soft"}" onclick="adminVerify(${u.id})">${u.verified ? "موثق ✓" : "منح توثيق"}</button>
-                    ${u.role !== "admin" ? `<button class="btn btn-danger" onclick="adminDeleteUser(${u.id})">حذف الحساب</button>` : ""}
+                    <div class="row" style="gap:4px">
+                      <span class="muted">حصة البوستات اليومية:</span>
+                      <input type="number" min="1" max="100" class="input" style="width:70px;padding:4px 8px;font-size:12px" value="${u.dailyPostLimit || 1}" onchange="adminUpdateQuota(${u.id}, this.value)" />
+                    </div>
+                    <button class="btn ${u.verified ? "btn-primary" : "btn-soft"}" style="padding:5px 10px;font-size:11px" onclick="adminVerify(${u.id})">${u.verified ? "موثق ✓" : "توثيق"}</button>
+                    ${u.role !== "admin" ? `
+                      <button class="btn ${u.disabled ? "btn-primary" : "btn-ghost"}" style="padding:5px 10px;font-size:11px" onclick="adminToggleDisable(${u.id})">${u.disabled ? "تنشيط الحساب" : "تعطيل الحساب"}</button>
+                      <button class="btn btn-danger" style="padding:5px 10px;font-size:11px" onclick="adminDeleteUser(${u.id})">حذف</button>
+                    ` : ""}
                   </div>
                 </div>`).join("")}
+            </div>` : ""}
+          ${ui.adminTab === "posts" ? `
+            <div class="card stack">
+              <h3>إدارة وحذف جميع منشورات المنصة (${allPosts.length})</h3>
+              ${allPosts.map((p) => {
+                const author = getUser(p.userId);
+                return `<div class="row-between" style="padding:12px;background:var(--surface-soft);border-radius:12px">
+                  <div style="max-width:70%">
+                    <div class="row" style="font-size:12px;margin-bottom:4px">
+                      <strong>${esc(author ? author.username : "مستخدم محذوف")}</strong>
+                      <span class="tag-badge">${esc(p.category || "عام")}</span>
+                      <span class="muted">${relTime(p.createdAt)}</span>
+                    </div>
+                    <div style="font-size:14px">${esc(p.content)}</div>
+                  </div>
+                  <button class="btn btn-danger" onclick="deletePost(${p.id})">حذف البوست</button>
+                </div>`;
+              }).join("") || `<div class="muted" style="text-align:center">لا توجد منشورات حالياً.</div>`}
             </div>` : ""}
           ${ui.adminTab === "settings" ? `
             <div class="card stack">
@@ -1693,7 +1738,10 @@
                       <strong>السبب: ${esc(r.reason)}</strong>
                       <div class="muted tabular">تاريخ البلاغ: ${relTime(r.createdAt)}</div>
                     </div>
-                    <button class="btn ${r.status === 'open' ? 'btn-danger' : 'btn-soft'}" style="padding:6px 12px;font-size:12px" onclick="toggleRep(${r.id})">${r.status === 'open' ? 'قيد المراجعة' : 'محلول'}</button>
+                    <div class="row">
+                      ${r.postId ? `<button class="btn btn-soft" style="padding:6px 12px;font-size:12px" onclick="deletePost(${r.postId});toggleRep(${r.id})">حذف البوست المبلغ عنه</button>` : ""}
+                      <button class="btn ${r.status === 'open' ? 'btn-danger' : 'btn-soft'}" style="padding:6px 12px;font-size:12px" onclick="toggleRep(${r.id})">${r.status === 'open' ? 'قيد المراجعة' : 'محلول'}</button>
+                    </div>
                   </div>
                   ${r.snapshot ? `<div style="font-size:12px;background:var(--surface);padding:8px;border-radius:8px;border:1px solid var(--border);max-height:120px;overflow-y:auto"><strong>سجل المحادثة:</strong><br>${r.snapshot.map(m=>`<span>${esc(m.username)}: ${esc(m.content)}</span>`).join("<br>")}</div>` : ""}
                 </div>`).join("") || `<div class="muted" style="text-align:center">لا توجد بلاغات نشطة حالياً.</div>`}
@@ -1704,6 +1752,15 @@
     function adminVerify(id) {
       const u = getUser(id); if (!u) return;
       u.verified = !u.verified; save(); render();
+    }
+    function adminToggleDisable(id) {
+      const u = getUser(id); if (!u || u.role === "admin") return;
+      u.disabled = !u.disabled; save(); toast(u.disabled ? "تم تعطيل الحساب" : "تم تنشيط الحساب"); render();
+    }
+    function adminUpdateQuota(id, val) {
+      const u = getUser(id); if (!u) return;
+      const limit = Math.max(1, parseInt(val) || 1);
+      u.dailyPostLimit = limit; save(); toast("تم تحديث الحصة اليومية");
     }
     function adminDeleteUser(id) {
       db.users = db.users.filter((u) => u.id !== id);
