@@ -2,659 +2,1145 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>بحر — منصة تواصل اجتماعي نصية</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@500;600;700&display=swap" rel="stylesheet" />
   <style>
-    :root { --sidebar-w: 250px; --feed-w: 600px; --right-w: 330px; }
-    [data-theme="light"] {
-      --bg: #f8fafc;
+    :root {
+      --bg: #f6f9fc;
       --surface: #ffffff;
-      --surface-soft: #f1f5f9;
-      --surface-tint: rgba(29,155,240,0.10);
-      --border: #e2e8f0;
-      --ink: #0f1419;
-      --muted: #536471;
-      --blue: #1d9bf0;
-      --blue-hover: #1a8cd8;
+      --surface-soft: #f8fbfe;
+      --surface-tint: #edf5fc;
+      --border: #dce7f2;
+      --ink: #0d2238;
+      --muted: #5b748b;
+      --blue: #0d63a5;
+      --blue-hover: #0a4f85;
       --teal: #0e8a8a;
-      --danger: #f4212e;
-      --danger-bg: #fee2e2;
-      --header-bg: rgba(255,255,255,0.85);
-      --shadow: 0 8px 24px rgba(15,20,25,0.08);
-      --scroll: #cfd9de;
-    }
-    [data-theme="dark"] {
-      --bg: #000000;
-      --surface: #000000;
-      --surface-soft: #16181c;
-      --surface-tint: rgba(29,155,240,0.15);
-      --border: #2f3336;
-      --ink: #e7e9ea;
-      --muted: #71767b;
-      --blue: #1d9bf0;
-      --blue-hover: #1a8cd8;
-      --teal: #2dd4bf;
-      --danger: #f4212e;
-      --danger-bg: rgba(244,33,46,0.12);
-      --header-bg: rgba(0,0,0,0.78);
-      --shadow: 0 8px 24px rgba(255,255,255,0.10);
-      --scroll: #333639;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
     }
     * { box-sizing: border-box; }
-    html { scrollbar-color: var(--scroll) transparent; }
     body {
       margin: 0;
       font-family: "IBM Plex Sans Arabic", system-ui, -apple-system, sans-serif;
-      background: var(--bg); color: var(--ink); line-height: 1.6; overflow-x: hidden;
-      transition: background 0.25s, color 0.25s;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
     }
     h1, h2, h3, .brand { font-family: "Readex Pro", "IBM Plex Sans Arabic", sans-serif; margin: 0; }
     button, input, textarea, select { font-family: inherit; }
     button { cursor: pointer; }
     .tabular { font-variant-numeric: tabular-nums; }
-    .container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 0 12px; }
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
 
-    .layout { display: flex; min-height: 100vh; direction: rtl; }
-
-    /* الشريط الجانبي */
-    .sidebar {
-      width: var(--sidebar-w); flex-shrink: 0;
-      display: flex; flex-direction: column;
-      position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 40;
-      border-left: 1px solid var(--border); background: var(--bg); padding: 0 10px;
-      transition: transform 0.25s ease;
+    header {
+      position: sticky; top: 0; z-index: 30;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--border);
     }
-    .sidebar-header { padding: 14px 8px 4px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .sidebar-nav { flex: 1; padding: 8px 2px; display: flex; flex-direction: column; gap: 2px; }
-    .sidebar-link {
-      display: flex; align-items: center; gap: 16px; padding: 12px 14px; border-radius: 9999px;
-      background: none; border: none; color: var(--ink); font-size: 17px; font-weight: 500;
-      text-align: right; width: 100%; transition: 0.15s;
+    .topbar {
+      height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px;
     }
-    .sidebar-link:hover { background: var(--surface-soft); }
-    .sidebar-link.active { color: var(--blue); font-weight: 700; }
-    .sidebar-link .icon { font-size: 22px; width: 28px; text-align: center; flex-shrink: 0; }
-    .sidebar-link .badge-count { margin-right: auto; background: var(--blue); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; min-width: 18px; text-align: center; }
-    .sidebar-footer { padding: 10px 6px 16px; border-top: 1px solid var(--border); }
-    .sidebar-user { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 14px; margin-bottom: 8px; transition: 0.15s; }
-    .sidebar-user:hover { background: var(--surface-soft); }
-    .sidebar-user-info { flex: 1; overflow: hidden; }
-    .sidebar-user-info .name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sidebar-user-info .handle { font-size: 12px; color: var(--muted); }
-    .theme-toggle {
-      width: 40px; height: 40px; flex-shrink: 0; border-radius: 999px;
-      border: 1px solid var(--border); background: var(--surface-soft); color: var(--ink);
-      font-size: 17px; display: inline-flex; align-items: center; justify-content: center; transition: 0.15s;
+    .brand-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: none; border: none; color: var(--ink); font-size: 20px; font-weight: 700;
+      white-space: nowrap;
     }
-    .theme-toggle:hover { background: var(--surface-tint); border-color: var(--blue); }
+    .brand-mark {
+      width: 32px; height: 32px; border-radius: 10px; background: var(--blue); color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    nav { display: flex; align-items: center; gap: 20px; overflow-x: auto; }
+    .nav-link {
+      background: none; border: none; border-bottom: 2px solid transparent;
+      padding: 6px 2px; font-size: 14px; font-weight: 500; color: var(--muted); white-space: nowrap;
+    }
+    .nav-link.active { color: var(--blue); border-bottom-color: var(--blue); }
 
-    /* البحث */
-    .search-box { padding: 10px 2px 12px; border-bottom: 1px solid var(--border); position: relative; }
-    .search-box input { width: 100%; padding: 10px 38px 10px 14px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 9999px; font-size: 14px; outline: none; color: var(--ink); }
-    .search-box input:focus { border-color: var(--blue); background: var(--bg); }
-    .search-icon { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--muted); pointer-events: none; }
-    .search-results { position: absolute; top: 100%; right: 2px; left: 2px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); max-height: 320px; overflow-y: auto; z-index: 100; margin-top: 6px; }
-    .search-result-item { padding: 10px 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); cursor: pointer; }
-    .search-result-item:hover { background: var(--surface-soft); }
-    .search-result-item:last-child { border-bottom: none; }
-    .search-empty { padding: 16px; text-align: center; color: var(--muted); font-size: 13px; }
-
-    /* المحتوى الرئيسي */
-    .main-content { flex: 1; min-width: 0; display: flex; justify-content: center; }
-    main { padding: 0 0 90px; width: 100%; }
-
-    .grid-2 { display: grid; grid-template-columns: minmax(0, var(--feed-w)) var(--right-w); gap: 0 28px; align-items: start; justify-content: center; }
-    .grid-2 > .stack:first-child { border-inline: 1px solid var(--border); padding: 10px 16px 0; min-height: 100vh; }
-    .grid-2 > aside.stack { position: sticky; top: 14px; }
-
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
-    article.card { border: 1px solid var(--border); border-radius: 16px; padding: 18px; background: var(--surface); margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    main { padding: 26px 0 60px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr; gap: 22px; align-items: start; }
+    @media (min-width: 960px) { .grid-2 { grid-template-columns: 2fr 1fr; } }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px;
+    }
     .stack { display: flex; flex-direction: column; gap: 16px; }
     .row { display: flex; align-items: center; gap: 10px; }
     .row-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 18px; border-radius: 9999px; border: 1px solid transparent; font-size: 13px; font-weight: 700; white-space: nowrap; transition: 0.15s; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 16px; border-radius: 11px; border: 1px solid transparent;
+      font-size: 13px; font-weight: 600; white-space: nowrap; transition: 0.15s;
+    }
     .btn-primary { background: var(--blue); color: #fff; }
     .btn-primary:hover { background: var(--blue-hover); }
     .btn-soft { background: var(--surface-tint); color: var(--blue); }
-    .btn-soft:hover { background: rgba(29,155,240,0.2); }
-    .btn-ghost { background: transparent; color: var(--muted); border-color: var(--border); }
-    .btn-ghost:hover { background: var(--surface-soft); color: var(--ink); }
+    .btn-soft:hover { background: #dcebfa; }
+    .btn-ghost { background: #f1f6fa; color: var(--ink); }
     .btn-danger { background: var(--danger-bg); color: var(--danger); }
     .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    .input, textarea, select { width: 100%; padding: 10px 14px; font-size: 14px; color: var(--ink); background: transparent; border: 1px solid var(--border); border-radius: 12px; outline: none; }
-    .input:focus, textarea:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue); }
-    textarea { resize: vertical; background: var(--surface-soft); }
+    .input, textarea, select {
+      width: 100%; padding: 10px 13px; font-size: 14px; color: var(--ink);
+      background: var(--surface-soft); border: 1px solid var(--border); border-radius: 11px;
+      outline: none;
+    }
+    .input:focus, textarea:focus, select:focus { border-color: var(--blue); }
 
-    .avatar { border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 700; color: #fff; user-select: none; overflow: hidden; background: var(--surface-soft); }
-    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar {
+      border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-weight: 700; color: #fff; user-select: none; overflow: hidden;
+    }
     .av-xs { width: 28px; height: 28px; font-size: 12px; }
     .av-sm { width: 36px; height: 36px; font-size: 14px; }
     .av-md { width: 44px; height: 44px; font-size: 16px; }
     .av-lg { width: 68px; height: 68px; font-size: 26px; }
-    .verified { width: 17px; height: 17px; border-radius: 9999px; background: var(--blue); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+    .verified {
+      width: 16px; height: 16px; border-radius: 9999px; background: var(--blue); color: #fff;
+      display: inline-flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0;
+    }
 
-    .tabs { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 4px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 9999px; }
-    .tab-btn { background: none; border: none; padding: 7px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); transition: 0.15s; }
-    .tab-btn.active { background: var(--blue); color: #fff; }
+    .tabs {
+      display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px;
+      background: #eaf2f9; border-radius: 12px;
+    }
+    .tab-btn {
+      background: none; border: none; padding: 7px 14px; border-radius: 9px;
+      font-size: 12px; font-weight: 600; color: var(--muted);
+    }
+    .tab-btn.active { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
 
     .muted { color: var(--muted); font-size: 12px; }
-    .divider { border-top: 1px solid var(--border); margin: 14px 0; }
+    .divider { border-top: 1px solid #edf3f9; margin: 14px 0; }
     .post-text { font-size: 15.5px; line-height: 1.85; white-space: pre-wrap; word-break: break-word; margin: 14px 0 0; }
-    .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 12px; max-height: 220px; overflow-y: auto; }
-    @media (min-width: 500px) { .avatar-grid { grid-template-columns: repeat(6, 1fr); } }
-    .avatar-pick { background: var(--surface); border: 1px solid transparent; border-radius: 10px; padding: 5px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .avatar-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;
+      padding: 10px; background: var(--surface-soft); border: 1px solid var(--border);
+      border-radius: 12px; max-height: 170px; overflow-y: auto;
+    }
+    .avatar-pick {
+      background: #fff; border: 1px solid transparent; border-radius: 10px;
+      padding: 5px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    }
     .avatar-pick.selected { border-color: var(--blue); background: var(--surface-tint); }
-    .avatar-pick .avatar { width: 44px; height: 44px; }
-
-    /* الشات */
-    .chat-box { display: grid; grid-template-columns: 1fr; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; background: var(--surface); min-height: 520px; }
+    .chat-box { display: grid; grid-template-columns: 1fr; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; background: #fff; min-height: 520px; }
     @media (min-width: 820px) { .chat-box { grid-template-columns: 300px 1fr; } }
-    .chat-list { border-left: 1px solid var(--border); display: flex; flex-direction: column; background: var(--surface); }
-    .chat-thread { display: flex; flex-direction: column; background: var(--bg); }
+    .chat-list { border-left: 1px solid #e6eef6; display: flex; flex-direction: column; }
+    .chat-thread { display: flex; flex-direction: column; background: #fafbfd; }
     .chat-msgs { flex: 1; padding: 16px; overflow-y: auto; max-height: 380px; display: flex; flex-direction: column; gap: 10px; }
-    .bubble { max-width: 78%; padding: 10px 14px; border-radius: 16px; font-size: 14px; }
+    .bubble { max-width: 78%; padding: 10px 14px; border-radius: 14px; font-size: 14px; }
     .bubble.mine { align-self: flex-start; background: var(--blue); color: #fff; }
-    .bubble.theirs { align-self: flex-end; background: var(--surface); border: 1px solid var(--border); color: var(--ink); }
-
-    .toast { position: fixed; bottom: 86px; left: 50%; transform: translateX(-50%); z-index: 60; background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: 13px; box-shadow: var(--shadow); }
-    .modal-backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(15,20,25,0.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
-    .modal-card { width: 100%; max-width: 460px; background: var(--surface); border-radius: 16px; padding: 20px; border: 1px solid var(--border); }
-
-    /* هيدر الجوال والشريط السفلي العائم مثل صورتك */
-    .mobile-header { display: none; position: sticky; top: 0; z-index: 45; background: var(--header-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 10px 14px; align-items: center; justify-content: space-between; }
-    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(15,20,25,0.55); z-index: 35; }
-    .sidebar-overlay.open { display: block; }
-    .hamburger { background: none; border: none; font-size: 22px; color: var(--ink); padding: 4px; width: 40px; height: 40px; border-radius: 999px; }
-    .hamburger:hover { background: var(--surface-soft); }
-    
-    .bottom-nav { display: none; position: fixed; bottom: 12px; right: 12px; left: 12px; z-index: 45; background: #1a202c; border-radius: 9999px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); padding: 6px 12px; align-items: center; justify-content: space-around; direction: rtl; }
-    [data-theme="light"] .bottom-nav { background: #1e293b; }
-    .bn-link { background: none; border: none; color: #94a3b8; font-size: 13px; font-weight: 600; padding: 8px 14px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; transition: 0.15s; white-space: nowrap; }
-    .bn-link:hover { color: #fff; background: rgba(255,255,255,0.1); }
-    .bn-link.active { background: #334155; color: #fff; font-weight: 700; }
-    .bn-link .badge-count { margin-right: 4px; background: var(--blue); color: #fff; font-size: 10px; font-weight: 700; padding: 0 6px; border-radius: 999px; }
-
-    @media (max-width: 1000px) {
-      .grid-2 { grid-template-columns: minmax(0, var(--feed-w)); }
-      .grid-2 > aside.stack { display: none; }
+    .bubble.theirs { align-self: flex-end; background: #fff; border: 1px solid var(--border); }
+    .toast {
+      position: fixed; bottom: 20px; left: 20px; z-index: 60;
+      background: #0a2540; color: #fff; padding: 10px 16px; border-radius: 11px; font-size: 12px;
+      box-shadow: 0 8px 24px rgba(10,37,64,0.2);
     }
-    @media (max-width: 768px) {
-      .sidebar { position: fixed; top: 0; right: 0; bottom: 0; width: 262px; height: 100dvh; transform: translateX(100%); box-shadow: var(--shadow); }
-      .sidebar.open { transform: translateX(0); }
-      .main-content { margin-right: 0; }
-      .mobile-header { display: flex; }
-      .bottom-nav { display: flex; }
-      .container { padding: 0 8px; }
-      .grid-2 { grid-template-columns: minmax(0, 1fr); gap: 0; }
-      .grid-2 > aside.stack { display: none; }
-      .grid-2 > .stack:first-child { border-inline: none; padding: 8px 6px 0; }
-      article.card { padding: 14px 12px; margin-bottom: 12px; }
-      .toast { bottom: 80px; }
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 50; background: rgba(10,37,64,0.45);
+      display: flex; align-items: center; justify-content: center; padding: 16px;
     }
+    .modal-card { width: 100%; max-width: 460px; background: #fff; border-radius: 16px; padding: 20px; border: 1px solid var(--border); }
   </style>
 </head>
 <body>
-  <div class="layout">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <button class="brand-btn" onclick="goHome()" style="background:none;border:none;display:flex;align-items:center;gap:10px;color:var(--ink);font-size:20px;font-weight:700">
-          <span style="width:32px;height:32px;border-radius:10px;background:var(--blue);color:#fff;display:inline-flex;align-items:center;justify-content:center">⚓</span>
-          <span>بحر</span>
-        </button>
-        <button class="theme-toggle" onclick="toggleTheme()" title="الوضع الفاتح / الداكن" aria-label="تبديل المظهر"><span class="theme-icon">🌙</span></button>
-      </div>
-
-      <div class="search-box">
-        <input type="text" id="global-search" placeholder="ابحث عن مستخدم..." oninput="handleSearch(this.value)" onfocus="handleSearch(this.value)" />
-        <span class="search-icon">🔍</span>
-        <div id="search-results"></div>
-      </div>
-
-      <nav class="sidebar-nav" id="nav"></nav>
-
-      <div class="sidebar-footer" id="auth-actions"></div>
-    </aside>
-
-    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
-
-    <div class="mobile-header">
-      <button class="hamburger" onclick="toggleSidebar(true)">☰</button>
-      <button class="brand-btn" onclick="goHome()" style="background:none;border:none;display:flex;align-items:center;gap:8px;color:var(--ink);font-size:18px;font-weight:700">
-        <span style="width:28px;height:28px;border-radius:8px;background:var(--blue);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:14px">⚓</span>
+  <header>
+    <div class="container topbar">
+      <button class="brand-btn" onclick="goHome()">
+        <span class="brand-mark">⚓</span>
         <span>بحر</span>
       </button>
-      <div class="row" style="gap:8px">
-        <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="setView('auth')">تسجيل الدخول</button>
-        <button class="theme-toggle" style="width:34px;height:34px" onclick="toggleTheme()" aria-label="تبديل المظهر"><span class="theme-icon">🌙</span></button>
-      </div>
+      <nav id="nav"></nav>
+      <div id="auth-actions"></div>
     </div>
+  </header>
 
-    <div class="main-content">
-      <main class="container" id="app"></main>
-    </div>
-  </div>
-
-  <nav class="bottom-nav" id="bottom-nav"></nav>
-
+  <main class="container" id="app"></main>
   <div id="modal-root"></div>
   <div id="toast-root"></div>
 
   <script>
-  (function () {
-    const saved = localStorage.getItem("bahr_theme") || "light";
-    document.documentElement.setAttribute("data-theme", saved);
-  })();
-  function toggleTheme() {
-    const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", next);
-    localStorage.setItem("bahr_theme", next);
-    document.querySelectorAll(".theme-icon").forEach((el) => { el.textContent = next === "dark" ? "☀️" : "🌙"; });
-  }
+    const STORAGE_KEY = "bahr_standalone_v1";
+    const HOUR_MS = 3600000;
+    const DAY_MS = 24 * HOUR_MS;
 
-  const STORAGE_KEY = "bahr_v2";
-  const HOUR_MS = 3600000;
-  const DAY_MS = 24 * HOUR_MS;
+    const PRESET_AVATARS = [
+      { id: "wave", name: "موجة", bg: "#0d63a5", icon: "🌊" },
+      { id: "lighthouse", name: "منارة", bg: "#1e3a5f", icon: "🗼" },
+      { id: "sailboat", name: "شراع", bg: "#0369a1", icon: "⛵" },
+      { id: "compass", name: "بوصلة", bg: "#0f2942", icon: "🧭" },
+      { id: "anchor", name: "مرساة", bg: "#1e40af", icon: "⚓" },
+      { id: "shell", name: "صدفة", bg: "#0f766e", icon: "🐚" },
+      { id: "star", name: "نجمة", bg: "#0284c7", icon: "⭐" },
+      { id: "crescent", name: "هلال", bg: "#0b1d3a", icon: "🌙" },
+      { id: "sun", name: "شروق", bg: "#0369a1", icon: "🌅" },
+      { id: "whale", name: "حوت", bg: "#0c4a6e", icon: "🐋" },
+      { id: "coral", name: "مرجان", bg: "#115e59", icon: "🪸" },
+      { id: "palm", name: "نخلة", bg: "#0d9488", icon: "🏝️" },
+      { id: "drop", name: "قطرة", bg: "#2563eb", icon: "💧" },
+      { id: "pearl", name: "لؤلؤة", bg: "#334155", icon: "🫧" },
+      { id: "fish", name: "سمكة", bg: "#0e7490", icon: "🐟" },
+      { id: "turtle", name: "سلحفاة", bg: "#0f766e", icon: "🐢" },
+      { id: "bird", name: "نورس", bg: "#0ea5e9", icon: "🕊️" },
+      { id: "lantern", name: "فانوس", bg: "#1e293b", icon: "🏮" },
+      { id: "cloud", name: "غيمة", bg: "#0284c7", icon: "☁️" },
+      { id: "quill", name: "ريشة", bg: "#0f172a", icon: "🪶" },
+      { id: "ship", name: "سفينة", bg: "#1d4ed8", icon: "🚢" },
+      { id: "dolphin", name: "دلفين", bg: "#0369a1", icon: "🐬" },
+    ];
 
-  const PRESET_AVATARS = [
-    { id: "student",  name: "طالب",   seed: "student",  bg: "#dbeafe" },
-    { id: "engineer", name: "مهندس",  seed: "engineer", bg: "#d1fae5" },
-    { id: "doctor",   name: "طبيب",   seed: "doctor",   bg: "#fee2e2" },
-    { id: "teacher",  name: "معلم",   seed: "teacher",  bg: "#fef3c7" },
-    { id: "writer",   name: "كاتب",   seed: "writer",   bg: "#ede9fe" },
-    { id: "artist",   name: "فنان",   seed: "artist",   bg: "#fce7f3" },
-    { id: "pilot",    name: "طيار",   seed: "pilot",    bg: "#e0f2fe" },
-    { id: "chef",     name: "طاهي",   seed: "chef",     bg: "#ffedd5" },
-    { id: "lawyer",   name: "محامي",  seed: "lawyer",   bg: "#f3f4f6" },
-    { id: "nurse",    name: "ممرض",   seed: "nurse",    bg: "#ccfbf1" },
-    { id: "manager",  name: "مدير",   seed: "manager",  bg: "#e0e7ff" },
-    { id: "designer", name: "مصمم",   seed: "designer", bg: "#fae8ff" },
-  ];
+    const LETTER_COLORS = ["#0d63a5", "#0e7490", "#1e40af", "#0f766e", "#0369a1", "#1d4ed8", "#155e75"];
 
-  const LETTER_COLORS = ["#0d63a5", "#0e7490", "#1e40af", "#0f766e", "#0369a1", "#1d4ed8", "#155e75"];
+    function initialData() {
+      const now = Date.now();
+      return {
+        settings: {
+          registrationOpen: true,
+          autoDeleteEnabled: false,
+          autoDeleteHours: 24,
+          enabledAvatars: PRESET_AVATARS.map((a) => a.id),
+        },
+        currentUserId: null,
+        nextId: 100,
+        users: [
+          {
+            id: 1, username: "admin", password: "BahrAdmin123", role: "admin", verified: true,
+            avatarId: "lighthouse", bio: "الحساب الإداري الرسمي لمنصة بحر.",
+            dailyPostLimit: 10, autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: now - 5 * DAY_MS,
+          },
+          {
+            id: 2, username: "سارة_البحرية", password: "BahrUser123", role: "user", verified: true,
+            avatarId: "wave", bio: "أدوّن خواطر الساحل والكتب الهادئة كل مساء.",
+            dailyPostLimit: 1, autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: now - 4 * DAY_MS,
+          },
+          {
+            id: 3, username: "طارق_الملاح", password: "BahrUser123", role: "user", verified: false,
+            avatarId: "compass", bio: "فكرة واحدة واضحة تغني عن ضجيج كثير.",
+            dailyPostLimit: 1, autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: now - 3 * DAY_MS,
+          },
+          {
+            id: 4, username: "ليلى_نور", password: "BahrUser123", role: "user", verified: false,
+            avatarId: null, bio: "قهوة الصباح وفكرة عابرة في أقل من خمسمائة حرف.",
+            dailyPostLimit: 1, autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: now - 2 * DAY_MS,
+          },
+        ],
+        follows: [
+          { followerId: 2, followingId: 3 },
+          { followerId: 3, followingId: 2 },
+          { followerId: 4, followingId: 2 },
+        ],
+        posts: [
+          {
+            id: 10, userId: 2, createdAt: now - 2 * HOUR_MS,
+            content: "أجمل ما في كتابة فكرة واحدة في اليوم هو أنك تختار كلماتك كما يختار المسافر حقيبته: لا تحمل معك إلا ما يستحق البقاء.",
+            likes: [3, 4],
+            comments: [{ id: 20, userId: 3, content: "أتفق تماماً، بوست واحد يومياً يعيد قيمة الكلمة.", createdAt: now - HOUR_MS }],
+          },
+          {
+            id: 11, userId: 3, createdAt: now - 7 * HOUR_MS,
+            content: "الهدوء ليس غياب الأصوات، بل غياب العجلة. حين نجلس أمام البحر دقائق معدودة، يعود الإيقاع الطبيعي لأفكارنا.",
+            likes: [2], comments: [],
+          },
+          {
+            id: 12, userId: 4, createdAt: now - 12 * HOUR_MS,
+            content: "فنجان قهوة بجانب النافذة، وبوست واحد قبل أن يبدأ زحام النهار.",
+            likes: [], comments: [],
+          },
+        ],
+        postLogs: [
+          { userId: 2, createdAt: now - 2 * HOUR_MS },
+          { userId: 3, createdAt: now - 7 * HOUR_MS },
+          { userId: 4, createdAt: now - 12 * HOUR_MS },
+        ],
+        conversations: [],
+        reports: [],
+        notifications: [
+          {
+            id: 50, userId: 2, type: "admin", actorId: 1, postId: null,
+            title: "مرحباً بك في بحر", message: "يمكنك نشر بوست نصي واحد كل 24 ساعة بحد أقصى 500 حرف.",
+            isRead: false, createdAt: now - DAY_MS,
+          },
+        ],
+      };
+    }
 
-  function avatarUrl(seed) {
-    return `https://api.dicebear.com/7.x/personas/svg?seed=${encodeURIComponent(seed)}&backgroundColor=dbeafe,d1fae5,fee2e2,fef3c7,ede9fe,fce7f3&radius=50`;
-  }
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch {}
+      const fresh = initialData();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
+      return fresh;
+    }
 
-  function initialData() {
-    const now = Date.now();
-    return {
-      settings: { registrationOpen: true, autoDeleteEnabled: false, autoDeleteHours: 24, enabledAvatars: PRESET_AVATARS.map((a) => a.id) },
-      currentUserId: null,
-      nextId: 10,
-      users: [
-        { id: 1, username: "Mohsen0Tamer", password: "Admin@123456", role: "admin", verified: true, avatarId: "manager", bio: "مالك منصة بحر.", dailyPostLimit: 10, autoDeleteMode: "inherit", createdAt: now },
-        { id: 2, username: "سارة_البحرية", password: "password123", role: "user", verified: true, avatarId: "writer", bio: "كاتبة محتوى", dailyPostLimit: 1, autoDeleteMode: "inherit", createdAt: now - 3600000 },
-        { id: 3, username: "عمر_الشاطئ", password: "password123", role: "user", verified: true, avatarId: "pilot", bio: "رحالة", dailyPostLimit: 1, autoDeleteMode: "inherit", createdAt: now - 7200000 }
-      ],
-      follows: [],
-      posts: [
-        { id: 1, userId: 2, content: "أجمل ما في كتابة فكرة واحدة في اليوم هو أنك تختار كلماتك كما يختار المسافر حقيبته: لا تحمل معك إلا ما يستحق البقاء.", likes: [1, 3], comments: [], createdAt: now - 7200000 },
-        { id: 2, userId: 3, content: "الهدوء ليس غياب الأصوات، بل غياب العجلة.", likes: [1], comments: [], createdAt: now - 18000000 }
-      ],
-      postLogs: [],
-      conversations: [],
-      reports: [],
-      notifications: [],
+    let db = loadState();
+    let ui = {
+      view: "discover",
+      feedMode: "following",
+      authMode: "login",
+      profileUserId: null,
+      activeChatId: null,
+      adminTab: "users",
+      highlightPostId: null,
+      openComments: {},
     };
-  }
 
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    const fresh = initialData();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
-    return fresh;
-  }
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+    }
 
-  let db = loadState();
-  let ui = {
-    view: "discover",
-    feedMode: "following",
-    authMode: "login",
-    profileUserId: null,
-    activeChatId: null,
-    adminTab: "users",
-    highlightPostId: null,
-    openComments: {},
-    searchQuery: "",
-  };
+    function uid() {
+      db.nextId += 1;
+      return db.nextId;
+    }
 
-  function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
-  function uid() { db.nextId += 1; return db.nextId; }
-  function esc(str) { return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
-  function currentUser() { return db.users.find((u) => u.id === db.currentUserId) || null; }
-  function getUser(id) { return db.users.find((u) => u.id === id) || null; }
+    function esc(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
 
-  function cleanupSweep() {
-    const now = Date.now();
-    const gEnabled = db.settings.autoDeleteEnabled;
-    const gHours = db.settings.autoDeleteHours || 24;
-    db.posts = db.posts.filter((p) => {
-      const author = getUser(p.userId);
-      if (!author) return false;
-      if (author.autoDeleteMode === "disabled") return true;
-      if (author.autoDeleteMode === "enabled") {
-        const hrs = author.autoDeleteHours || gHours;
-        return now - p.createdAt < hrs * HOUR_MS;
+    function currentUser() {
+      return db.users.find((u) => u.id === db.currentUserId) || null;
+    }
+
+    function getUser(id) {
+      return db.users.find((u) => u.id === id) || null;
+    }
+
+    function cleanupSweep() {
+      const now = Date.now();
+      const gEnabled = db.settings.autoDeleteEnabled;
+      const gHours = db.settings.autoDeleteHours || 24;
+
+      db.posts = db.posts.filter((p) => {
+        const author = getUser(p.userId);
+        if (!author) return false;
+        if (author.autoDeleteMode === "disabled") return true;
+        if (author.autoDeleteMode === "enabled") {
+          const hrs = author.autoDeleteHours || gHours;
+          return now - p.createdAt < hrs * HOUR_MS;
+        }
+        if (gEnabled) return now - p.createdAt < gHours * HOUR_MS;
+        return true;
+      });
+
+      db.conversations = db.conversations.filter((c) => now - c.lastMessageAt < DAY_MS);
+      db.postLogs = db.postLogs.filter((l) => now - l.createdAt < 2 * DAY_MS);
+      save();
+    }
+
+    function toast(msg) {
+      const root = document.getElementById("toast-root");
+      root.innerHTML = `<div class="toast">${esc(msg)}</div>`;
+      clearTimeout(window.__toastT);
+      window.__toastT = setTimeout(() => { root.innerHTML = ""; }, 3000);
+    }
+
+    function relTime(ts) {
+      const m = Math.floor((Date.now() - ts) / 60000);
+      if (m < 1) return "الآن";
+      if (m < 60) return `منذ ${m} د`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `منذ ${h} س`;
+      return `منذ ${Math.floor(h / 24)} يوم`;
+    }
+
+    function remTime(targetTs) {
+      const mins = Math.max(1, Math.ceil((targetTs - Date.now()) / 60000));
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return h > 0 ? `${h} س و ${m} د` : `${m} د`;
+    }
+
+    function avatarHtml(user, size = "av-md") {
+      if (!user) return "";
+      const preset = user.avatarId && db.settings.enabledAvatars.includes(user.avatarId)
+        ? PRESET_AVATARS.find((a) => a.id === user.avatarId)
+        : null;
+      if (preset) {
+        return `<span class="avatar ${size}" style="background:${preset.bg}" title="${esc(preset.name)}">${preset.icon}</span>`;
       }
-      if (gEnabled) return now - p.createdAt < gHours * HOUR_MS;
-      return true;
-    });
-    save();
-  }
-
-  function toast(msg) {
-    const root = document.getElementById("toast-root");
-    root.innerHTML = `<div class="toast">${esc(msg)}</div>`;
-    clearTimeout(window.__toastT);
-    window.__toastT = setTimeout(() => { root.innerHTML = ""; }, 3000);
-  }
-
-  function relTime(ts) {
-    const m = Math.floor((Date.now() - ts) / 60000);
-    if (m < 1) return "الآن";
-    if (m < 60) return `منذ ${m} د`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `منذ ${h} س`;
-    return `منذ ${Math.floor(h / 24)} يوم`;
-  }
-
-  function avatarHtml(user, size = "av-md") {
-    if (!user) return "";
-    const preset = user.avatarId && db.settings.enabledAvatars.includes(user.avatarId)
-      ? PRESET_AVATARS.find((a) => a.id === user.avatarId) : null;
-    if (preset) {
-      return `<span class="avatar ${size}" style="background:${preset.bg}" title="${esc(preset.name)}"><img src="${avatarUrl(preset.seed)}" alt="${esc(preset.name)}" loading="lazy" /></span>`;
-    }
-    let hash = 0;
-    for (let i = 0; i < user.username.length; i++) hash = (hash * 31 + user.username.charCodeAt(i)) >>> 0;
-    const color = LETTER_COLORS[hash % LETTER_COLORS.length];
-    const letter = (user.username.trim()[0] || "ب").toUpperCase();
-    return `<span class="avatar ${size}" style="background:${color};color:#fff">${esc(letter)}</span>`;
-  }
-
-  function badgeHtml(user) { return user && user.verified ? `<span class="verified" title="حساب موثق">✓</span>` : ""; }
-
-  function getQuota(user) {
-    const win = Date.now() - DAY_MS;
-    const logs = db.postLogs.filter((l) => l.userId === user.id && l.createdAt > win).sort((a, b) => a.createdAt - b.createdAt);
-    const limit = Math.max(1, user.dailyPostLimit || 1);
-    const remaining = Math.max(0, limit - logs.length);
-    return { limit, remaining, nextAt: remaining === 0 && logs[0] ? logs[0].createdAt + DAY_MS : null };
-  }
-
-  function toggleSidebar(open) {
-    const sb = document.getElementById("sidebar");
-    const ov = document.getElementById("sidebar-overlay");
-    if (!sb || !ov) return;
-    if (open) { sb.classList.add("open"); ov.classList.add("open"); }
-    else { sb.classList.remove("open"); ov.classList.remove("open"); }
-  }
-
-  function handleSearch(query) {
-    ui.searchQuery = query.trim();
-    const box = document.getElementById("search-results");
-    if (!box) return;
-    if (ui.searchQuery.length < 1) { box.innerHTML = ""; return; }
-    const q = ui.searchQuery.toLowerCase();
-    const me = currentUser();
-    const results = db.users
-      .filter((u) => u.role !== "admin" || (me && me.role === "admin"))
-      .filter((u) => u.username.toLowerCase().includes(q) || (u.bio || "").toLowerCase().includes(q))
-      .slice(0, 8);
-    if (!results.length) { box.innerHTML = `<div class="search-results"><div class="search-empty">لا توجد نتائج</div></div>`; return; }
-    box.innerHTML = `<div class="search-results">${results.map((u) => `
-      <div class="search-result-item" onclick="selectSearchResult(${u.id})">
-        ${avatarHtml(u, "av-xs")}
-        <div style="flex:1;overflow:hidden">
-          <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:4px">${esc(u.username)} ${badgeHtml(u)}</div>
-          ${u.bio ? `<div style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.bio)}</div>` : ""}
-        </div>
-      </div>`).join("")}</div>`;
-  }
-
-  function selectSearchResult(userId) {
-    document.getElementById("global-search").value = "";
-    document.getElementById("search-results").innerHTML = "";
-    openProfile(userId);
-  }
-
-  function goHome() { ui.view = currentUser() ? "feed" : "discover"; toggleSidebar(false); render(); }
-  function setView(v) { ui.view = v; toggleSidebar(false); render(); }
-  function openProfile(userId) { ui.profileUserId = userId; ui.view = "profile"; toggleSidebar(false); render(); }
-
-  function render() {
-    cleanupSweep();
-    const me = currentUser();
-    const unread = me ? db.notifications.filter((n) => n.userId === me.id && !n.isRead).length : 0;
-
-    const navLinks = [];
-    if (me) navLinks.push(["feed", "🏠", "الرئيسية"]);
-    navLinks.push(["discover", "🌊", "اكتشف"]);
-    if (me && me.role !== "admin") navLinks.push(["chat", "💬", "الرسائل"]);
-    if (me) navLinks.push(["notifications", "🔔", "الإشعارات", unread]);
-    if (me && me.role === "admin") navLinks.push(["admin", "⚙️", "لوحة الإدارة"]);
-    if (me) navLinks.push(["profile", "👤", "ملفي الشخصي", 0, me.id]);
-
-    document.getElementById("nav").innerHTML = navLinks.map(([id, icon, label, badge, userId]) => {
-      const isActive = ui.view === id || (id === "profile" && ui.view === "profile" && ui.profileUserId === me?.id);
-      const clickAction = id === "profile" && userId ? `openProfile(${userId})` : `setView('${id}')`;
-      return `<button class="sidebar-link ${isActive ? "active" : ""}" onclick="${clickAction}">
-        <span class="icon">${icon}</span>
-        <span>${label}</span>
-        ${badge ? `<span class="badge-count">${badge}</span>` : ""}
-      </button>`;
-    }).join("");
-
-    const bn = document.getElementById("bottom-nav");
-    if (bn) {
-      bn.innerHTML = `
-        <button class="bn-link ${ui.view === 'chat' ? 'active' : ''}" onclick="setView('chat')">محادثة</button>
-        <button class="bn-link ${ui.view === 'discover' || ui.view === 'feed' ? 'active' : ''}" onclick="setView('discover')">معاينة</button>
-        <button class="bn-link" onclick="setView('discover')">القطع الأثرية</button>
-      `;
+      let hash = 0;
+      for (let i = 0; i < user.username.length; i++) hash = (hash * 31 + user.username.charCodeAt(i)) >>> 0;
+      const color = LETTER_COLORS[hash % LETTER_COLORS.length];
+      const letter = (user.username.trim()[0] || "ب").toUpperCase();
+      return `<span class="avatar ${size}" style="background:${color}">${esc(letter)}</span>`;
     }
 
-    document.getElementById("auth-actions").innerHTML = me ? `
-      <div class="sidebar-user">
-        ${avatarHtml(me, "av-sm")}
-        <div class="sidebar-user-info">
-          <div class="name">${esc(me.username)} ${badgeHtml(me)}</div>
-          <div class="handle">@${esc(me.username)}</div>
-        </div>
-      </div>
-      <button class="btn btn-danger" style="width:100%;justify-content:center" onclick="logout()">تسجيل الخروج</button>
-    ` : `
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="setView('auth')">تسجيل الدخول</button>
-    `;
+    function badgeHtml(user) {
+      return user && user.verified ? `<span class="verified" title="حساب موثق">✓</span>` : "";
+    }
 
-    const app = document.getElementById("app");
-    if (ui.view === "auth") app.innerHTML = renderAuth();
-    else if (ui.view === "profile") app.innerHTML = renderProfile();
-    else if (ui.view === "chat" && me) app.innerHTML = renderChat();
-    else if (ui.view === "notifications" && me) app.innerHTML = renderNotifications();
-    else if (ui.view === "admin" && me && me.role === "admin") app.innerHTML = renderAdmin();
-    else app.innerHTML = renderFeed();
-  }
+    function getQuota(user) {
+      const win = Date.now() - DAY_MS;
+      const logs = db.postLogs.filter((l) => l.userId === user.id && l.createdAt > win).sort((a, b) => a.createdAt - b.createdAt);
+      const limit = Math.max(1, user.dailyPostLimit || 1);
+      const remaining = Math.max(0, limit - logs.length);
+      return { limit, remaining, nextAt: remaining === 0 && logs[0] ? logs[0].createdAt + DAY_MS : null };
+    }
 
-  function renderAuth() {
-    return `
-      <div class="card" style="max-width:520px;margin:20px auto;">
-        <div class="row-between" style="margin-bottom:16px">
-          <div class="tabs">
-            <button class="tab-btn ${ui.authMode === "login" ? "active" : ""}" onclick="ui.authMode='login';render()">تسجيل الدخول</button>
-            <button class="tab-btn ${ui.authMode === "register" ? "active" : ""}" onclick="ui.authMode='register';render()">حساب جديد</button>
+    function suggestUsernames(name) {
+      const base = name.trim().replace(/\s+/g, "_").slice(0, 16) || "عضو";
+      const pool = [`${base}_1`, `${base}_بحر`, `${base}_26`, `${base}_نور`, `${base}_${Math.floor(10 + Math.random() * 89)}`];
+      return pool.filter((c) => !db.users.some((u) => u.username.toLowerCase() === c.toLowerCase())).slice(0, 4);
+    }
+
+    function notifyUser(userId, type, actorId, message, title = "", postId = null) {
+      db.notifications.unshift({
+        id: uid(), userId, type, actorId, postId, title, message, isRead: false, createdAt: Date.now(),
+      });
+    }
+
+    function goHome() {
+      ui.view = currentUser() ? "feed" : "discover";
+      render();
+    }
+
+    function setView(v) {
+      ui.view = v;
+      render();
+    }
+
+    function openProfile(userId) {
+      ui.profileUserId = userId;
+      ui.view = "profile";
+      render();
+    }
+
+    function render() {
+      cleanupSweep();
+      const me = currentUser();
+
+      const unread = me ? db.notifications.filter((n) => n.userId === me.id && !n.isRead).length : 0;
+      const navLinks = [];
+      if (me) navLinks.push(["feed", "الرئيسية"]);
+      navLinks.push(["discover", "اكتشف"]);
+      if (me && me.role !== "admin") navLinks.push(["chat", "الرسائل"]);
+      if (me) navLinks.push(["notifications", `الإشعارات${unread ? ` (${unread})` : ""}`]);
+      if (me && me.role === "admin") navLinks.push(["admin", "لوحة الإدارة"]);
+
+      document.getElementById("nav").innerHTML = navLinks
+        .map(([id, label]) => `<button class="nav-link ${ui.view === id ? "active" : ""}" onclick="setView('${id}')">${label}</button>`)
+        .join("");
+
+      document.getElementById("auth-actions").innerHTML = me
+        ? `<div class="row">
+             <button class="brand-btn" style="font-size:14px" onclick="openProfile(${me.id})">
+               ${avatarHtml(me, "av-xs")} <span>${esc(me.username)}</span> ${badgeHtml(me)}
+             </button>
+             <button class="btn btn-danger" onclick="logout()">خروج</button>
+           </div>`
+        : `<button class="btn btn-primary" onclick="setView('auth')">تسجيل الدخول</button>`;
+
+      const app = document.getElementById("app");
+      if (ui.view === "auth") app.innerHTML = renderAuth();
+      else if (ui.view === "profile") app.innerHTML = renderProfile();
+      else if (ui.view === "chat" && me) app.innerHTML = renderChat();
+      else if (ui.view === "notifications" && me) app.innerHTML = renderNotifications();
+      else if (ui.view === "admin" && me && me.role === "admin") app.innerHTML = renderAdmin();
+      else app.innerHTML = renderFeed();
+    }
+
+    function renderAuth() {
+      const regOpen = db.settings.registrationOpen;
+      const presets = PRESET_AVATARS.filter((a) => db.settings.enabledAvatars.includes(a.id));
+      return `
+        <div class="card" style="max-width:520px;margin:20px auto;">
+          <div class="row-between" style="margin-bottom:16px">
+            <div class="tabs">
+              <button class="tab-btn ${ui.authMode === "login" ? "active" : ""}" onclick="ui.authMode='login';render()">تسجيل الدخول</button>
+              <button class="tab-btn ${ui.authMode === "register" ? "active" : ""}" onclick="ui.authMode='register';render()">حساب جديد</button>
+            </div>
+            <button class="btn btn-ghost" onclick="setView('discover')">تصفح</button>
           </div>
-          <button class="btn btn-ghost" onclick="setView('discover')">تصفح</button>
-        </div>
-        <form onsubmit="submitAuth(event)" class="stack">
-          <div>
-            <label class="muted">اسم المستخدم</label>
-            <input id="auth-u" class="input" required minlength="3" maxlength="24" placeholder="اسم المستخدم" />
+          ${ui.authMode === "register" && !regOpen
+            ? `<div style="padding:14px;background:#fef7ec;border:1px solid #f5d0a9;border-radius:12px;font-size:13px;color:#8a4b08">التسجيل الجديد مغلق حالياً من قبل الإدارة.</div>`
+            : `<form onsubmit="submitAuth(event)" class="stack">
+                <div>
+                  <label class="muted">اسم المستخدم (بدون إيميل)</label>
+                  <input id="auth-u" class="input" required minlength="3" maxlength="24" placeholder="مثال: نادر_الساحل" oninput="checkUsernameLive(this.value)" />
+                  <div id="u-suggest" style="margin-top:6px"></div>
+                </div>
+                <div>
+                  <label class="muted">كلمة المرور</label>
+                  <input id="auth-p" type="password" class="input" required minlength="6" placeholder="••••••" />
+                </div>
+                ${ui.authMode === "register" ? `
+                  <div>
+                    <div class="row-between"><span class="muted">اختر صورة رمزية أو اتركه للحرف الأول</span></div>
+                    <div class="avatar-grid" style="margin-top:6px">
+                      <button type="button" class="avatar-pick ${!window.__pickAv ? "selected" : ""}" onclick="window.__pickAv=null;render()">
+                        <span class="avatar av-sm" style="background:#0d63a5">أ</span>
+                        <span style="font-size:10px">الحرف الأول</span>
+                      </button>
+                      ${presets.map((p) => `
+                        <button type="button" class="avatar-pick ${window.__pickAv === p.id ? "selected" : ""}" onclick="window.__pickAv='${p.id}';render()">
+                          <span class="avatar av-sm" style="background:${p.bg}">${p.icon}</span>
+                          <span style="font-size:10px">${p.name}</span>
+                        </button>`).join("")}
+                    </div>
+                  </div>` : ""}
+                <button type="submit" class="btn btn-primary">${ui.authMode === "login" ? "دخول إلى بحر" : "إنشاء حساب"}</button>
+              </form>`}
+          <div class="divider"></div>
+          <div class="muted" style="margin-bottom:8px">دخول سريع للمعاينة:</div>
+          <div class="row" style="flex-wrap:wrap">
+            <button class="btn btn-ghost" onclick="quickLogin('سارة_البحرية','BahrUser123')">عضو: سارة_البحرية</button>
+            <button class="btn btn-soft" onclick="quickLogin('admin','BahrAdmin123')">الإدارة: admin</button>
           </div>
-          <div>
-            <label class="muted">كلمة المرور</label>
-            <input id="auth-p" type="password" class="input" required minlength="6" placeholder="••••••" />
-          </div>
-          <button type="submit" class="btn btn-primary">${ui.authMode === "login" ? "دخول إلى بحر" : "إنشاء حساب"}</button>
-        </form>
-      </div>`;
-  }
-
-  function submitAuth(e) {
-    e.preventDefault();
-    const u = document.getElementById("auth-u").value.trim();
-    const p = document.getElementById("auth-p").value;
-    if (ui.authMode === "login") {
-      const found = db.users.find((x) => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
-      if (!found) return toast("بيانات الدخول غير صحيحة");
-      db.currentUserId = found.id; save(); ui.view = "feed"; toast("أهلاً بك في بحر"); render();
-    } else {
-      if (db.users.some((x) => x.username.toLowerCase() === u.toLowerCase())) return toast("اسم المستخدم محجوز");
-      const newUser = { id: uid(), username: u, password: p, role: "user", verified: false, avatarId: null, bio: "", dailyPostLimit: 1, autoDeleteMode: "inherit", createdAt: Date.now() };
-      db.users.push(newUser); db.currentUserId = newUser.id; save(); ui.view = "feed"; toast("تم إنشاء الحساب بنجاح"); render();
-    }
-  }
-
-  function logout() { db.currentUserId = null; save(); ui.view = "discover"; toast("تم تسجيل الخروج"); render(); }
-
-  function renderFeed() {
-    const me = currentUser();
-    const posts = db.posts.sort((a, b) => b.createdAt - a.createdAt);
-
-    let composerHtml = "";
-    if (me) {
-      const q = getQuota(me);
-      composerHtml = q.remaining > 0
-        ? `<div class="card"><form onsubmit="publishPost(event)">
-             <textarea id="post-input" rows="3" maxlength="500" placeholder="شارك فكرة نصية هادئة اليوم..."></textarea>
-             <div class="row-between" style="margin-top:10px">
-               <span class="muted tabular">المتبقي اليوم: ${q.remaining} من ${q.limit}</span>
-               <button type="submit" class="btn btn-primary">نشر البوست</button>
-             </div>
-           </form></div>`
-        : `<div class="card"><div style="font-size:14px;font-weight:600">استهلكت حد النشر المتاح خلال 24 ساعة</div></div>`;
-    } else {
-      composerHtml = `<div class="card" style="text-align:center; padding: 24px;">
-        <h2 style="font-size:22px; margin-bottom: 8px;">أهلاً بك في بحر</h2>
-        <div class="muted" style="margin-bottom: 16px;">منصة نصية هادئة؛ بوست واحد كل 24 ساعة حتى 500 حرف، بدون رفع صور.</div>
-        <button class="btn btn-primary" onclick="setView('auth')" style="padding: 10px 28px;">سجّل أو ادخل الآن</button>
-      </div>`;
+        </div>`;
     }
 
-    return `
-      <div class="grid-2">
+    function checkUsernameLive(val) {
+      const box = document.getElementById("u-suggest");
+      if (!box || ui.authMode !== "register") return;
+      const trimmed = val.trim();
+      if (trimmed.length < 3) { box.innerHTML = ""; return; }
+      const taken = db.users.some((u) => u.username.toLowerCase() === trimmed.toLowerCase());
+      if (!taken) { box.innerHTML = `<span style="font-size:12px;color:var(--teal)">اسم المستخدم متاح ✓</span>`; return; }
+      const sugs = suggestUsernames(trimmed);
+      box.innerHTML = `<div style="font-size:12px;color:#b45309;margin-bottom:4px">الاسم محجوز، بدائل متاحة:</div>` +
+        sugs.map((s) => `<button type="button" class="btn btn-soft" style="padding:4px 9px;font-size:11px;margin-left:4px" onclick="document.getElementById('auth-u').value='${esc(s)}';checkUsernameLive('${esc(s)}')">${esc(s)}</button>`).join("");
+    }
+
+    function submitAuth(e) {
+      e.preventDefault();
+      const u = document.getElementById("auth-u").value.trim();
+      const p = document.getElementById("auth-p").value;
+      if (ui.authMode === "login") {
+        const found = db.users.find((x) => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
+        if (!found) return toast("بيانات الدخول غير صحيحة");
+        db.currentUserId = found.id;
+        save();
+        ui.view = "feed";
+        toast("أهلاً بك في بحر");
+        render();
+      } else {
+        if (!db.settings.registrationOpen) return toast("التسجيل مغلق حالياً");
+        if (db.users.some((x) => x.username.toLowerCase() === u.toLowerCase())) {
+          checkUsernameLive(u);
+          return toast("اسم المستخدم محجوز، اختر بديلاً");
+        }
+        const newUser = {
+          id: uid(), username: u, password: p, role: "user", verified: false,
+          avatarId: window.__pickAv || null, bio: "", dailyPostLimit: 1,
+          autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: Date.now(),
+        };
+        db.users.push(newUser);
+        db.currentUserId = newUser.id;
+        window.__pickAv = null;
+        save();
+        ui.view = "feed";
+        toast("تم إنشاء الحساب بنجاح");
+        render();
+      }
+    }
+
+    function quickLogin(u, p) {
+      const found = db.users.find((x) => x.username === u && x.password === p);
+      if (!found) return;
+      db.currentUserId = found.id;
+      save();
+      ui.view = "feed";
+      render();
+    }
+
+    function logout() {
+      db.currentUserId = null;
+      save();
+      ui.view = "discover";
+      render();
+    }
+
+    function renderFeed() {
+      const me = currentUser();
+      const followingIds = me ? db.follows.filter((f) => f.followerId === me.id).map((f) => f.followingId) : [];
+      const posts = db.posts
+        .filter((p) => {
+          if (!me || ui.view === "discover" || ui.feedMode === "discover") return true;
+          return p.userId === me.id || followingIds.includes(p.userId);
+        })
+        .sort((a, b) => b.createdAt - a.createdAt);
+
+      let composerHtml = "";
+      if (me) {
+        const q = getQuota(me);
+        composerHtml = q.remaining > 0
+          ? `<div class="card">
+               <form onsubmit="publishPost(event)">
+                 <textarea id="post-input" rows="3" maxlength="500" placeholder="شارك فكرة نصية هادئة اليوم... (بدون صور، حد أقصى 500 حرف)" oninput="document.getElementById('char-c').textContent=this.value.length"></textarea>
+                 <div class="row-between" style="margin-top:10px">
+                   <span class="muted tabular"><span id="char-c">0</span> / 500 حرف · المتبقي اليوم: ${q.remaining} من ${q.limit}</span>
+                   <button type="submit" class="btn btn-primary">نشر البوست</button>
+                 </div>
+               </form>
+             </div>`
+          : `<div class="card"><div style="font-size:14px;font-weight:600">استهلكت حد النشر المتاح خلال 24 ساعة (${q.limit})</div><div class="muted tabular" style="margin-top:4px">يمكنك النشر مجدداً بعد ${q.nextAt ? remTime(q.nextAt) : "24 ساعة"}</div></div>`;
+      } else {
+        composerHtml = `<div class="card row-between"><div><h2 style="font-size:18px">أهلاً بك في بحر</h2><div class="muted">منصة نصية هادئة: بوست واحد كل 24 ساعة بحد أقصى 500 حرف.</div></div><button class="btn btn-primary" onclick="setView('auth')">دخول / تسجيل</button></div>`;
+      }
+
+      const modeTabs = me && ui.view === "feed"
+        ? `<div class="tabs">
+             <button class="tab-btn ${ui.feedMode === "following" ? "active" : ""}" onclick="ui.feedMode='following';render()">المتابَعون</button>
+             <button class="tab-btn ${ui.feedMode === "discover" ? "active" : ""}" onclick="ui.feedMode='discover';render()">كل البوستات</button>
+           </div>`
+        : "";
+
+      const writers = db.users.filter((u) => !me || u.id !== me.id).slice(0, 6);
+
+      return `
+        <div class="grid-2">
+          <div class="stack">
+            ${modeTabs}
+            ${composerHtml}
+            ${posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد بوستات في هذا المسار بعد.</div>`}
+          </div>
+          <aside class="stack">
+            <div class="card">
+              <h3 style="font-size:15px;margin-bottom:12px">كتّاب في بحر</h3>
+              <div class="stack" style="gap:10px">
+                ${writers.map((u) => {
+                  const isF = me && db.follows.some((f) => f.followerId === me.id && f.followingId === u.id);
+                  const fc = db.follows.filter((f) => f.followingId === u.id).length;
+                  return `<div class="row-between">
+                    <button class="brand-btn" style="font-size:13px" onclick="openProfile(${u.id})">
+                      ${avatarHtml(u, "av-sm")} <span>${esc(u.username)}</span> ${badgeHtml(u)}
+                    </button>
+                    <div class="row">
+                      <span class="muted tabular">${fc}</span>
+                      <button class="btn ${isF ? "btn-soft" : "btn-primary"}" style="padding:5px 10px;font-size:11px" onclick="toggleFollow(${u.id})">${isF ? "متابَع" : "متابعة"}</button>
+                    </div>
+                  </div>`;
+                }).join("")}
+              </div>
+            </div>
+            <div class="card muted" style="line-height:1.8">
+              <strong style="color:var(--ink);display:block;margin-bottom:4px">ميثاق بحر</strong>
+              بوست نصي واحد كل 24 ساعة (500 حرف) بدون رفع صور، ومحادثات مؤقتة بحد 100 رسالة تُحذف بعد 24 ساعة من آخر رسالة.
+            </div>
+          </aside>
+        </div>`;
+    }
+
+    function renderPostCard(p) {
+      const author = getUser(p.userId);
+      if (!author) return "";
+      const me = currentUser();
+      const liked = me && p.likes.includes(me.id);
+      const canDel = me && (me.id === p.userId || me.role === "admin");
+      const openC = Boolean(ui.openComments[p.id]);
+      return `
+        <article class="card" style="${ui.highlightPostId === p.id ? "border-color:var(--blue)" : ""}">
+          <div class="row-between">
+            <button class="brand-btn" style="font-size:14px" onclick="openProfile(${author.id})">
+              ${avatarHtml(author, "av-md")}
+              <div style="text-align:right">
+                <div class="row" style="gap:5px"><span>${esc(author.username)}</span>${badgeHtml(author)}</div>
+                <div class="muted tabular">${relTime(p.createdAt)}</div>
+              </div>
+            </button>
+            ${canDel ? `<button class="btn btn-danger" style="padding:5px 10px;font-size:11px" onclick="deletePost(${p.id})">حذف</button>` : ""}
+          </div>
+          <p class="post-text">${esc(p.content)}</p>
+          <div class="divider"></div>
+          <div class="row" style="gap:12px">
+            <button class="btn ${liked ? "btn-soft" : "btn-ghost"}" style="padding:6px 12px;font-size:12px" onclick="toggleLike(${p.id})">♥ ${p.likes.length}</button>
+            <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="ui.openComments[${p.id}]=!ui.openComments[${p.id}];render()">💬 ${p.comments.length}</button>
+            <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="sharePost(${p.id})">مشاركة</button>
+          </div>
+          ${openC ? `
+            <div class="divider"></div>
+            <div class="stack" style="gap:8px">
+              ${p.comments.map((c) => {
+                const cu = getUser(c.userId);
+                return `<div style="background:var(--surface-soft);padding:10px;border-radius:10px">
+                  <div class="row" style="font-size:12px"><strong>${esc(cu ? cu.username : "عضو")}</strong>${badgeHtml(cu)}<span class="muted">· ${relTime(c.createdAt)}</span></div>
+                  <div style="font-size:13px;margin-top:4px">${esc(c.content)}</div>
+                </div>`;
+              }).join("") || `<div class="muted">لا توجد تعليقات بعد.</div>`}
+              ${me ? `<form class="row" onsubmit="addComment(event, ${p.id})">
+                <input id="cm-${p.id}" class="input" maxlength="500" placeholder="اكتب تعليقاً نصياً..." />
+                <button class="btn btn-primary" type="submit">تعليق</button>
+              </form>` : ""}
+            </div>` : ""}
+        </article>`;
+    }
+
+    function publishPost(e) {
+      e.preventDefault();
+      const me = currentUser();
+      if (!me) return setView("auth");
+      const text = document.getElementById("post-input").value.trim();
+      if (!text || text.length > 500) return;
+      if (getQuota(me).remaining <= 0) return toast("استهلكت حد النشر لليوم");
+      const now = Date.now();
+      const post = { id: uid(), userId: me.id, content: text, likes: [], comments: [], createdAt: now };
+      db.posts.unshift(post);
+      db.postLogs.push({ userId: me.id, createdAt: now });
+      db.follows.filter((f) => f.followingId === me.id).forEach((f) => {
+        notifyUser(f.followerId, "post", me.id, `نشر ${me.username} بوستاً جديداً`, "", post.id);
+      });
+      save();
+      toast("تم نشر البوست");
+      render();
+    }
+
+    function deletePost(id) {
+      db.posts = db.posts.filter((p) => p.id !== id);
+      save();
+      toast("تم حذف البوست");
+      render();
+    }
+
+    function toggleLike(id) {
+      const me = currentUser();
+      if (!me) return setView("auth");
+      const p = db.posts.find((x) => x.id === id);
+      if (!p) return;
+      const idx = p.likes.indexOf(me.id);
+      if (idx >= 0) p.likes.splice(idx, 1);
+      else {
+        p.likes.push(me.id);
+        if (p.userId !== me.id) notifyUser(p.userId, "like", me.id, `أعجب ${me.username} ببوستك`, "", p.id);
+      }
+      save();
+      render();
+    }
+
+    function addComment(e, postId) {
+      e.preventDefault();
+      const me = currentUser();
+      if (!me) return setView("auth");
+      const inp = document.getElementById(`cm-${postId}`);
+      const text = inp.value.trim();
+      if (!text || text.length > 500) return;
+      const p = db.posts.find((x) => x.id === postId);
+      if (!p) return;
+      p.comments.push({ id: uid(), userId: me.id, content: text, createdAt: Date.now() });
+      if (p.userId !== me.id) notifyUser(p.userId, "comment", me.id, `علّق ${me.username} على بوستك`, "", p.id);
+      save();
+      render();
+    }
+
+    function sharePost(id) {
+      const url = `${location.origin}${location.pathname}#post-${id}`;
+      navigator.clipboard?.writeText(url).catch(() => {});
+      toast("تم نسخ رابط البوست");
+    }
+
+    function toggleFollow(targetId) {
+      const me = currentUser();
+      if (!me) return setView("auth");
+      if (targetId === me.id) return;
+      const idx = db.follows.findIndex((f) => f.followerId === me.id && f.followingId === targetId);
+      if (idx >= 0) db.follows.splice(idx, 1);
+      else {
+        db.follows.push({ followerId: me.id, followingId: targetId });
+        notifyUser(targetId, "follow", me.id, `بدأ ${me.username} بمتابعتك`);
+      }
+      save();
+      render();
+    }
+
+    function renderProfile() {
+      const u = getUser(ui.profileUserId);
+      if (!u) return `<div class="card">المستخدم غير موجود</div>`;
+      const me = currentUser();
+      const isOwn = me && me.id === u.id;
+      const isF = me && db.follows.some((f) => f.followerId === me.id && f.followingId === u.id);
+      const followers = db.follows.filter((f) => f.followingId === u.id).length;
+      const following = db.follows.filter((f) => f.followerId === u.id).length;
+      const userPosts = db.posts.filter((p) => p.userId === u.id).sort((a, b) => b.createdAt - a.createdAt);
+      const canChat = me && !isOwn && u.role !== "admin" && me.role !== "admin";
+      const presets = PRESET_AVATARS.filter((a) => db.settings.enabledAvatars.includes(a.id));
+
+      return `
         <div class="stack">
-          ${composerHtml}
-          ${posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد بوستات بعد.</div>`}
-        </div>
-        <aside class="stack">
-          <div class="card muted" style="line-height:1.8">
-            <strong style="color:var(--ink);display:block;margin-bottom:4px">ميثاق بحر</strong>
-            بوست نصي واحد كل 24 ساعة بدون رفع صور، ومحادثات مؤقتة تُحذف بعد 24 ساعة.
-          </div>
-        </aside>
-      </div>`;
-  }
-
-  function renderPostCard(p) {
-    const author = getUser(p.userId);
-    if (!author) return "";
-    const me = currentUser();
-    const liked = me && p.likes.includes(me.id);
-    const canDel = me && (me.id === p.userId || me.role === "admin");
-    return `
-      <article class="card">
-        <div class="row-between">
-          <button style="background:none;border:none;display:flex;align-items:center;gap:10px;color:var(--ink);cursor:pointer" onclick="openProfile(${author.id})">
-            ${avatarHtml(author, "av-md")}
-            <div style="text-align:right">
-              <div class="row" style="gap:5px"><span>${esc(author.username)}</span>${badgeHtml(author)}</div>
-              <div class="muted tabular">${relTime(p.createdAt)}</div>
+          <div class="card">
+            <div class="row-between">
+              <div class="row" style="gap:16px">
+                ${avatarHtml(u, "av-lg")}
+                <div>
+                  <div class="row"><h2>${esc(u.username)}</h2>${badgeHtml(u)}</div>
+                  ${u.bio ? `<p style="margin:6px 0 0;font-size:14px">${esc(u.bio)}</p>` : ""}
+                  <div class="muted tabular" style="margin-top:8px">${followers} متابِع · ${following} يتابِع · ${userPosts.length} بوست</div>
+                </div>
+              </div>
+              <div class="row">
+                ${!isOwn ? `<button class="btn ${isF ? "btn-soft" : "btn-primary"}" onclick="toggleFollow(${u.id})">${isF ? "متابَع" : "متابعة"}</button>` : ""}
+                ${canChat ? `<button class="btn btn-ghost" onclick="startChat(${u.id})">مراسلة</button>` : ""}
+              </div>
             </div>
-          </button>
-          ${canDel ? `<button class="btn btn-danger" style="padding:5px 10px;font-size:11px" onclick="deletePost(${p.id})">حذف</button>` : ""}
-        </div>
-        <p class="post-text">${esc(p.content)}</p>
-        <div class="divider"></div>
-        <div class="row" style="gap:16px">
-          <button class="btn ${liked ? "btn-soft" : "btn-ghost"}" style="padding:6px 12px;font-size:12px" onclick="toggleLike(${p.id})">♥ ${p.likes.length}</button>
-          <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px">💬 ${p.comments.length}</button>
-          <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="sharePost(${p.id})">مشاركة</button>
-        </div>
-      </article>`;
-  }
+            ${isOwn ? `
+              <div class="divider"></div>
+              <form onsubmit="saveProfile(event)" class="stack">
+                <input id="prof-bio" class="input" maxlength="160" value="${esc(u.bio)}" placeholder="نبذة قصيرة..." />
+                <div class="avatar-grid">
+                  <button type="button" class="avatar-pick ${!u.avatarId ? "selected" : ""}" onclick="setMyAvatar(null)">
+                    <span class="avatar av-sm" style="background:#0d63a5">${esc(u.username[0])}</span>
+                    <span style="font-size:10px">أول حرف</span>
+                  </button>
+                  ${presets.map((p) => `
+                    <button type="button" class="avatar-pick ${u.avatarId === p.id ? "selected" : ""}" onclick="setMyAvatar('${p.id}')">
+                      <span class="avatar av-sm" style="background:${p.bg}">${p.icon}</span>
+                      <span style="font-size:10px">${p.name}</span>
+                    </button>`).join("")}
+                </div>
+                <div><button type="submit" class="btn btn-primary">حفظ النبذة</button></div>
+              </form>` : ""}
+          </div>
+          ${userPosts.map(renderPostCard).join("") || `<div class="card muted" style="text-align:center">لا توجد بوستات بعد.</div>`}
+        </div>`;
+    }
 
-  function publishPost(e) {
-    e.preventDefault();
-    const me = currentUser();
-    if (!me) return setView("auth");
-    const text = document.getElementById("post-input").value.trim();
-    if (!text || text.length > 500) return;
-    const now = Date.now();
-    const post = { id: uid(), userId: me.id, content: text, likes: [], comments: [], createdAt: now };
-    db.posts.unshift(post);
-    db.postLogs.push({ userId: me.id, createdAt: now });
-    save(); toast("تم نشر البوست"); render();
-  }
+    function setMyAvatar(avId) {
+      const me = currentUser();
+      if (!me) return;
+      me.avatarId = avId;
+      save();
+      render();
+    }
 
-  function deletePost(id) { db.posts = db.posts.filter((p) => p.id !== id); save(); toast("تم حذف البوست"); render(); }
-  function toggleLike(id) {
-    const me = currentUser();
-    if (!me) return setView("auth");
-    const p = db.posts.find((x) => x.id === id);
-    if (!p) return;
-    const idx = p.likes.indexOf(me.id);
-    if (idx >= 0) p.likes.splice(idx, 1);
-    else p.likes.push(me.id);
-    save(); render();
-  }
-  function sharePost(id) {
-    navigator.clipboard?.writeText(`${location.origin}${location.pathname}#post-${id}`).catch(() => {});
-    toast("تم نسخ رابط البوست");
-  }
+    function saveProfile(e) {
+      e.preventDefault();
+      const me = currentUser();
+      if (!me) return;
+      me.bio = document.getElementById("prof-bio").value.trim().slice(0, 160);
+      save();
+      toast("تم تحديث الملف الشخصي");
+      render();
+    }
 
-  function renderProfile() {
-    const u = getUser(ui.profileUserId);
-    if (!u) return `<div class="card">المستخدم غير موجود</div>`;
-    const userPosts = db.posts.filter((p) => p.userId === u.id);
-    return `
-      <div class="stack">
-        <div class="card">
-          <div class="row" style="gap:16px">
-            ${avatarHtml(u, "av-lg")}
+    function startChat(targetId) {
+      const me = currentUser();
+      const target = getUser(targetId);
+      if (!me || !target || me.role === "admin" || target.role === "admin") {
+        return toast("لا يمكن بدء محادثة مع الإدارة");
+      }
+      const u1 = Math.min(me.id, targetId);
+      const u2 = Math.max(me.id, targetId);
+      let conv = db.conversations.find((c) => c.user1Id === u1 && c.user2Id === u2);
+      if (!conv) {
+        conv = { id: uid(), user1Id: u1, user2Id: u2, lastMessageAt: Date.now(), messages: [] };
+        db.conversations.unshift(conv);
+        save();
+      }
+      ui.activeChatId = conv.id;
+      ui.view = "chat";
+      render();
+    }
+
+    function renderChat() {
+      const me = currentUser();
+      if (me.role === "admin") return `<div class="card">حساب الإدارة لا يستخدم الشات المباشر.</div>`;
+      const myConvs = db.conversations.filter((c) => c.user1Id === me.id || c.user2Id === me.id)
+        .sort((a, b) => b.lastMessageAt - a.lastMessageAt);
+      const active = myConvs.find((c) => c.id === ui.activeChatId) || myConvs[0] || null;
+      if (active) ui.activeChatId = active.id;
+      const other = active ? getUser(active.user1Id === me.id ? active.user2Id : active.user1Id) : null;
+      const peers = db.users.filter((u) => u.id !== me.id && u.role !== "admin");
+
+      return `
+        <div class="chat-box">
+          <aside class="chat-list">
+            <div class="row-between" style="padding:14px;border-bottom:1px solid #e6eef6">
+              <strong style="font-size:15px">المحادثات</strong>
+              <select class="input" style="width:auto;padding:5px 8px;font-size:12px" onchange="if(this.value) startChat(Number(this.value))">
+                <option value="">+ محادثة جديدة</option>
+                ${peers.map((p) => `<option value="${p.id}">${esc(p.username)}</option>`).join("")}
+              </select>
+            </div>
             <div>
-              <div class="row"><h2>${esc(u.username)}</h2>${badgeHtml(u)}</div>
-              ${u.bio ? `<p style="margin:6px 0 0;font-size:14px">${esc(u.bio)}</p>` : ""}
+              ${myConvs.map((c) => {
+                const o = getUser(c.user1Id === me.id ? c.user2Id : c.user1Id);
+                return `<button onclick="ui.activeChatId=${c.id};render()" style="width:100%;text-align:right;border:none;border-bottom:1px solid #edf3f9;padding:12px 14px;background:${active && active.id === c.id ? "var(--surface-tint)" : "#fff"}">
+                  <div class="row-between"><strong>${esc(o ? o.username : "")}</strong><span class="muted tabular">${c.messages.length}/100</span></div>
+                  <div class="muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.messages[c.messages.length - 1]?.content || "محادثة جديدة")}</div>
+                </button>`;
+              }).join("") || `<div class="muted" style="padding:20px;text-align:center">لا توجد محادثات</div>`}
+            </div>
+          </aside>
+          <section class="chat-thread">
+            ${!active || !other ? `<div class="muted" style="margin:auto">اختر محادثة أو ابدأ محادثة جديدة.</div>` : `
+              <div class="row-between" style="padding:12px 16px;background:#fff;border-bottom:1px solid #e6eef6">
+                <div>
+                  <strong>${esc(other.username)}</strong> ${badgeHtml(other)}
+                  <div class="muted tabular">${active.messages.length} / 100 رسالة · تُحذف بعد ${remTime(active.lastMessageAt + DAY_MS)}</div>
+                </div>
+                <button class="btn btn-danger" onclick="reportChat(${active.id})">إبلاغ</button>
+              </div>
+              <div class="chat-msgs">
+                ${active.messages.map((m) => `
+                  <div class="bubble ${m.senderId === me.id ? "mine" : "theirs"}">
+                    <div>${esc(m.content)}</div>
+                    <div style="font-size:10px;opacity:0.75;margin-top:3px">${relTime(m.createdAt)}</div>
+                  </div>`).join("") || `<div class="muted" style="text-align:center;margin:auto">ابدأ المحادثة (بحد أقصى 500 حرف).</div>`}
+              </div>
+              ${active.messages.length >= 100
+                ? `<div class="muted" style="padding:14px;text-align:center;background:#fff">تم الوصول للحد الأقصى (100 رسالة)</div>`
+                : `<form class="row" style="padding:12px;background:#fff;border-top:1px solid #e6eef6" onsubmit="sendMsg(event, ${active.id})">
+                    <input id="msg-in" class="input" maxlength="500" placeholder="اكتب رسالة نصية (حتى 500 حرف)..." />
+                    <button class="btn btn-primary" type="submit">إرسال</button>
+                  </form>`}
+            `}
+          </section>
+        </div>`;
+    }
+
+    function sendMsg(e, convId) {
+      e.preventDefault();
+      const me = currentUser();
+      const conv = db.conversations.find((c) => c.id === convId);
+      if (!me || !conv || conv.messages.length >= 100) return;
+      const text = document.getElementById("msg-in").value.trim();
+      if (!text || text.length > 500) return;
+      const now = Date.now();
+      conv.messages.push({ id: uid(), senderId: me.id, content: text, createdAt: now });
+      conv.lastMessageAt = now;
+      save();
+      render();
+    }
+
+    function reportChat(convId) {
+      const me = currentUser();
+      const conv = db.conversations.find((c) => c.id === convId);
+      if (!me || !conv) return;
+      document.getElementById("modal-root").innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal-card stack">
+            <h3>إبلاغ عن المحادثة</h3>
+            <textarea id="rep-reason" rows="3" maxlength="300" placeholder="سبب الإبلاغ..."></textarea>
+            <div class="row" style="justify-content:flex-end">
+              <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+              <button class="btn btn-danger" onclick="confirmReport(${convId})">إرسال البلاغ</button>
             </div>
           </div>
-        </div>
-        ${userPosts.map(renderPostCard).join("") || `<div class="card muted" style="text-align:center">لا توجد بوستات.</div>`}
-      </div>`;
-  }
+        </div>`;
+    }
 
-  function renderChat() {
-    return `<div class="card" style="text-align:center; padding: 40px;"><h3>المحادثات</h3><div class="muted">لا توجد محادثات نشطة حالياً.</div></div>`;
-  }
+    function confirmReport(convId) {
+      const me = currentUser();
+      const conv = db.conversations.find((c) => c.id === convId);
+      if (!me || !conv) return closeModal();
+      const reason = document.getElementById("rep-reason").value.trim() || "محتوى مخالف";
+      db.reports.unshift({
+        id: uid(), reporterId: me.id, conversationId: convId, reason, status: "open",
+        snapshot: conv.messages.slice(-15).map((m) => ({ username: getUser(m.senderId)?.username || "عضو", content: m.content })),
+        createdAt: Date.now(),
+      });
+      save();
+      closeModal();
+      toast("تم إرسال البلاغ للإدارة");
+    }
 
-  function renderNotifications() {
-    return `<div class="card"><h3>الإشعارات</h3><div class="muted">لا توجد إشعارات جديدة.</div></div>`;
-  }
+    function closeModal() {
+      document.getElementById("modal-root").innerHTML = "";
+    }
 
-  function renderAdmin() {
-    return `<div class="card"><h3>لوحة الإدارة</h3><div class="muted">مرحباً بك في لوحة الإدارة.</div></div>`;
-  }
+    function renderNotifications() {
+      const me = currentUser();
+      const list = db.notifications.filter((n) => n.userId === me.id);
+      return `
+        <div class="card">
+          <div class="row-between" style="margin-bottom:14px">
+            <h2>الإشعارات</h2>
+            <button class="btn btn-soft" onclick="markAllRead()">تحديد الكل كمقروء</button>
+          </div>
+          <div class="stack" style="gap:10px">
+            ${list.map((n) => {
+              const actor = n.actorId ? getUser(n.actorId) : null;
+              return `<div style="padding:12px;border-radius:12px;background:${n.type === "admin" ? "var(--surface-tint)" : "var(--surface-soft)"}">
+                ${n.title ? `<div style="font-size:12px;font-weight:700;color:var(--blue)">${esc(n.title)}</div>` : ""}
+                <div style="font-size:14px">${actor && n.type !== "admin" ? `<strong>${esc(actor.username)}</strong> ` : ""}${esc(n.message)}</div>
+                <div class="muted">${relTime(n.createdAt)}</div>
+              </div>`;
+            }).join("") || `<div class="muted" style="text-align:center">لا توجد إشعارات.</div>`}
+          </div>
+        </div>`;
+    }
 
-  document.querySelectorAll(".theme-icon").forEach((el) => { el.textContent = document.documentElement.getAttribute("data-theme") === "dark" ? "☀️" : "🌙"; });
-  render();
+    function markAllRead() {
+      const me = currentUser();
+      db.notifications.forEach((n) => { if (n.userId === me.id) n.isRead = true; });
+      save();
+      render();
+    }
+
+    function renderAdmin() {
+      const s = db.settings;
+      return `
+        <div class="stack">
+          <div class="card row-between">
+            <div>
+              <h2>لوحة تحكم الإدارة</h2>
+              <div class="muted tabular">المستخدمون: ${db.users.length} · البوستات: ${db.posts.length} · المحادثات: ${db.conversations.length} · البلاغات: ${db.reports.filter((r) => r.status === "open").length}</div>
+            </div>
+            <div class="tabs">
+              <button class="tab-btn ${ui.adminTab === "users" ? "active" : ""}" onclick="ui.adminTab='users';render()">المستخدمون</button>
+              <button class="tab-btn ${ui.adminTab === "settings" ? "active" : ""}" onclick="ui.adminTab='settings';render()">الإعدادات والصور</button>
+              <button class="tab-btn ${ui.adminTab === "mod" ? "active" : ""}" onclick="ui.adminTab='mod';render()">المحادثات والبلاغات</button>
+              <button class="tab-btn ${ui.adminTab === "notify" ? "active" : ""}" onclick="ui.adminTab='notify';render()">إشعارات إدارية</button>
+            </div>
+          </div>
+
+          ${ui.adminTab === "users" ? `
+            <div class="card stack">
+              ${db.users.map((u) => `
+                <div class="row-between" style="padding:10px 0;border-bottom:1px solid #edf3f9">
+                  <div class="row">${avatarHtml(u, "av-sm")} <strong>${esc(u.username)}</strong> ${badgeHtml(u)}</div>
+                  <div class="row" style="flex-wrap:wrap">
+                    <label class="muted">حد البوست/24س:
+                      <input type="number" min="1" max="100" value="${u.dailyPostLimit}" style="width:55px;padding:4px" onchange="adminUserLimit(${u.id}, this.value)" />
+                    </label>
+                    <select style="width:auto;padding:5px" onchange="adminUserAuto(${u.id}, this.value)">
+                      <option value="inherit" ${u.autoDeleteMode === "inherit" ? "selected" : ""}>حذف تلقائي: النظام</option>
+                      <option value="enabled" ${u.autoDeleteMode === "enabled" ? "selected" : ""}>حذف تلقائي: مفعل</option>
+                      <option value="disabled" ${u.autoDeleteMode === "disabled" ? "selected" : ""}>حذف تلقائي: معطل</option>
+                    </select>
+                    <button class="btn ${u.verified ? "btn-primary" : "btn-soft"}" onclick="adminVerify(${u.id})">${u.verified ? "موثّق ✓" : "توثيق"}</button>
+                    <button class="btn btn-ghost" onclick="adminResetPw(${u.id})">كلمة المرور</button>
+                    ${u.role !== "admin" ? `<button class="btn btn-danger" onclick="adminDeleteUser(${u.id})">حذف</button>` : ""}
+                  </div>
+                </div>`).join("")}
+            </div>` : ""}
+
+          ${ui.adminTab === "settings" ? `
+            <div class="card stack">
+              <div class="row-between">
+                <div><strong>التسجيل الجديد</strong><div class="muted">فتح أو إغلاق إنشاء الحسابات</div></div>
+                <button class="btn ${s.registrationOpen ? "btn-primary" : "btn-danger"}" onclick="db.settings.registrationOpen=!db.settings.registrationOpen;save();render()">${s.registrationOpen ? "مفتوح" : "مغلق"}</button>
+              </div>
+              <div class="divider"></div>
+              <div class="row-between">
+                <div><strong>الحذف التلقائي العام للبوستات (الافتراضي: مقفول)</strong></div>
+                <div class="row">
+                  <input type="number" min="1" value="${s.autoDeleteHours}" style="width:70px" onchange="db.settings.autoDeleteHours=Math.max(1,Number(this.value)||24);save();render()" />
+                  <button class="btn ${s.autoDeleteEnabled ? "btn-primary" : "btn-ghost"}" onclick="db.settings.autoDeleteEnabled=!db.settings.autoDeleteEnabled;save();render()">${s.autoDeleteEnabled ? "مفعل" : "مقفول"}</button>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <strong>الصور الرمزية المتاحة</strong>
+              <div class="avatar-grid">
+                ${PRESET_AVATARS.map((p) => {
+                  const on = s.enabledAvatars.includes(p.id);
+                  return `<button type="button" class="avatar-pick ${on ? "selected" : ""}" style="opacity:${on ? 1 : 0.4}" onclick="toggleAvatarPool('${p.id}')">
+                    <span class="avatar av-sm" style="background:${p.bg}">${p.icon}</span>
+                    <span style="font-size:10px">${p.name}</span>
+                  </button>`;
+                }).join("")}
+              </div>
+            </div>` : ""}
+
+          ${ui.adminTab === "mod" ? `
+            <div class="grid-2">
+              <div class="card stack">
+                <h3>المحادثات النشطة (${db.conversations.length})</h3>
+                ${db.conversations.map((c) => {
+                  const u1 = getUser(c.user1Id)?.username || "";
+                  const u2 = getUser(c.user2Id)?.username || "";
+                  return `<div style="padding:10px;background:var(--surface-soft);border-radius:10px">
+                    <div class="row-between"><strong>${esc(u1)} ↔ ${esc(u2)}</strong><span class="muted">${c.messages.length} رسالة</span></div>
+                    <div class="stack" style="gap:4px;margin-top:8px;max-height:140px;overflow-y:auto">
+                      ${c.messages.map((m) => `<div style="font-size:12px"><strong>${esc(getUser(m.senderId)?.username || "")}:</strong> ${esc(m.content)}</div>`).join("") || `<div class="muted">فارغة</div>`}
+                    </div>
+                  </div>`;
+                }).join("") || `<div class="muted">لا توجد محادثات.</div>`}
+              </div>
+              <div class="card stack">
+                <h3>البلاغات (${db.reports.length})</h3>
+                ${db.reports.map((r) => `
+                  <div style="padding:10px;background:var(--surface-soft);border-radius:10px">
+                    <div class="row-between"><strong>من ${esc(getUser(r.reporterId)?.username || "")}</strong><button class="btn btn-soft" style="padding:4px 8px;font-size:11px" onclick="toggleRep(${r.id})">${r.status === "open" ? "مفتوح" : "تمت المراجعة ✓"}</button></div>
+                    <div class="muted" style="margin:4px 0">${esc(r.reason)}</div>
+                    ${(r.snapshot || []).map((m) => `<div style="font-size:11px">${esc(m.username)}: ${esc(m.content)}</div>`).join("")}
+                  </div>`).join("") || `<div class="muted">لا توجد بلاغات.</div>`}
+              </div>
+            </div>` : ""}
+
+          ${ui.adminTab === "notify" ? `
+            <div class="card" style="max-width:560px">
+              <h3 style="margin-bottom:10px">إرسال إشعار إداري</h3>
+              <form onsubmit="sendAdminNotif(event)" class="stack">
+                <select id="adm-target">
+                  <option value="all">جميع المستخدمين</option>
+                  ${db.users.filter((u) => u.role !== "admin").map((u) => `<option value="${u.id}">${esc(u.username)}</option>`).join("")}
+                </select>
+                <input id="adm-title" class="input" placeholder="عنوان الإشعار" />
+                <textarea id="adm-msg" rows="3" required placeholder="نص الإشعار الإداري..."></textarea>
+                <button class="btn btn-primary" type="submit">إرسال الإشعار</button>
+              </form>
+            </div>` : ""}
+        </div>`;
+    }
+
+    function adminVerify(id) {
+      const u = getUser(id); if (!u) return;
+      u.verified = !u.verified; save(); render();
+    }
+    function adminUserLimit(id, v) {
+      const u = getUser(id); if (!u) return;
+      u.dailyPostLimit = Math.max(1, Number(v) || 1); save(); toast("تم تحديث الحد");
+    }
+    function adminUserAuto(id, mode) {
+      const u = getUser(id); if (!u) return;
+      u.autoDeleteMode = mode; save(); toast("تم التحديث");
+    }
+    function adminDeleteUser(id) {
+      db.users = db.users.filter((u) => u.id !== id);
+      db.posts = db.posts.filter((p) => p.userId !== id);
+      save(); toast("تم حذف الحساب"); render();
+    }
+    function adminResetPw(id) {
+      const u = getUser(id); if (!u) return;
+      document.getElementById("modal-root").innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal-card stack">
+            <h3>تغيير كلمة مرور ${esc(u.username)}</h3>
+            <input id="new-pw" class="input" minlength="6" placeholder="كلمة المرور الجديدة" />
+            <div class="row" style="justify-content:flex-end">
+              <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+              <button class="btn btn-primary" onclick="confirmPw(${id})">حفظ</button>
+            </div>
+          </div>
+        </div>`;
+    }
+    function confirmPw(id) {
+      const u = getUser(id);
+      const pw = document.getElementById("new-pw").value;
+      if (u && pw.length >= 6) { u.password = pw; save(); closeModal(); toast("تم تغيير كلمة المرور"); }
+      else toast("كلمة المرور 6 أحرف على الأقل");
+    }
+    function toggleAvatarPool(avId) {
+      const list = db.settings.enabledAvatars;
+      const i = list.indexOf(avId);
+      if (i >= 0) list.splice(i, 1); else list.push(avId);
+      save(); render();
+    }
+    function toggleRep(id) {
+      const r = db.reports.find((x) => x.id === id);
+      if (r) { r.status = r.status === "open" ? "resolved" : "open"; save(); render(); }
+    }
+    function sendAdminNotif(e) {
+      e.preventDefault();
+      const t = document.getElementById("adm-target").value;
+      const title = document.getElementById("adm-title").value.trim() || "إشعار إداري";
+      const msg = document.getElementById("adm-msg").value.trim();
+      if (!msg) return;
+      if (t === "all") db.users.filter((u) => u.role !== "admin").forEach((u) => notifyUser(u.id, "admin", 1, msg, title));
+      else notifyUser(Number(t), "admin", 1, msg, title);
+      save();
+      toast("تم إرسال الإشعار الإداري");
+      render();
+    }
+
+    render();
   </script>
 </body>
 </html>
