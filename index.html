@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>بحر — منصة تواصل اجتماعي نصية</title>
+  <title>بحر — منصة تواصل اجتماعي نصية متكاملة</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -46,7 +46,7 @@
       color: var(--ink);
       line-height: 1.6;
       transition: background 0.2s, color 0.2s;
-      padding-bottom: 80px;
+      padding-bottom: 90px;
     }
     h1, h2, h3, .brand { font-family: "Readex Pro", "IBM Plex Sans Arabic", sans-serif; margin: 0; }
     button, input, textarea, select { font-family: inherit; }
@@ -92,7 +92,7 @@
     .bottom-nav-item:hover { color: var(--blue); }
 
     .header-search {
-      position: relative; width: 200px; max-width: 32vw;
+      position: relative; width: 220px; max-width: 35vw;
     }
     .header-search input {
       width: 100%; padding: 7px 32px 7px 12px; font-size: 13px; color: var(--ink);
@@ -194,7 +194,7 @@
     .menu-btn:hover { background: var(--surface-tint); }
     .menu-btn svg { width: 18px; height: 18px; fill: currentColor; }
     .dropdown-content {
-      position: absolute; left: 0; top: 48px; background: var(--surface); min-width: 220px;
+      position: absolute; left: 0; top: 48px; background: var(--surface); min-width: 230px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid var(--border);
       border-radius: 12px; z-index: 50; display: none; overflow: hidden;
     }
@@ -219,16 +219,16 @@
     [data-lang="en"] .bubble.theirs { align-self: flex-start; }
     
     .toast {
-      position: fixed; bottom: 80px; left: 20px; z-index: 60;
+      position: fixed; bottom: 85px; left: 20px; z-index: 90;
       background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 11px; font-size: 12px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.3); border: 1px solid var(--border);
     }
     [data-lang="en"] .toast { left: auto; right: 20px; }
     .modal-backdrop {
-      position: fixed; inset: 0; z-index: 70; background: rgba(0,0,0,0.6);
+      position: fixed; inset: 0; z-index: 80; background: rgba(0,0,0,0.6);
       display: flex; align-items: center; justify-content: center; padding: 16px;
     }
-    .modal-card { width: 100%; max-width: 470px; background: var(--surface); border-radius: 16px; padding: 20px; border: 1px solid var(--border); color: var(--ink); max-height: 90vh; overflow-y: auto; }
+    .modal-card { width: 100%; max-width: 480px; background: var(--surface); border-radius: 16px; padding: 20px; border: 1px solid var(--border); color: var(--ink); max-height: 90vh; overflow-y: auto; }
   </style>
 </head>
 <body onclick="closeAllMenus()">
@@ -252,7 +252,7 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_standalone_v12";
+    const STORAGE_KEY = "bahr_complete_standalone_v20";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     
@@ -264,13 +264,13 @@
         discover: "اكتشف",
         chat: "الرسائل",
         notifications: "الإشعارات",
-        adminPanel: "لوحة الإدارة",
+        adminPanel: "لوحة الإدارة الشاملة",
         searchPlaceholder: "ابحث عن أشخاص أو بوستات...",
-        menuAccount: "حسابي (الاسم والصورة)",
+        menuAccount: "إعدادات الحساب (الاسم والصورة والنبذة)",
         menuPass: "تغيير كلمة المرور",
         menuLang: "English / العربية",
         menuTheme: "تبديل الوضع الليلي/النهاري",
-        menuDelete: "حذف الحساب",
+        menuDelete: "حذف الحساب نهائياً",
         menuLogout: "تسجيل الخروج",
         writersInBahr: "اقتراحات للمتابعة",
         noWriters: "لا توجد اقتراحات حالياً",
@@ -282,15 +282,15 @@
         charLimitZero: "استهلكت حد النشر المتاح خلال 24 ساعة",
         charLimitNext: "يمكنك النشر مجدداً بعد",
         noPostsFeed: "لا توجد بوستات منشورة بعد.",
-        char500: "حد أقصى 500 حرف",
+        char500: "اكتب ما يدور في ذهنك (حد أقصى 500 حرف)...",
         charShare: "مشاركة رابط الحساب",
         followers: "متابِع",
         following: "يتابِع",
         postsCount: "بوست",
         follow: "متابعة",
         followingState: "متابَع",
-        messageBtn: "مراسلة",
-        block: "حظر",
+        messageBtn: "مراسلة مباشرة",
+        block: "حظر المستخدم",
         unblock: "إلغاء الحظر",
         edit: "تعديل",
         delete: "حذف",
@@ -302,19 +302,19 @@
         commentPlaceholder: "اكتب تعليقاً نصياً...",
         postShareSuccess: "تم نسخ رابط البوست",
         profileShareSuccess: "تم نسخ رابط الحساب",
-        bahrCharter: "ميثاق بحر",
-        bahrCharterText: "بوست نصي واحد كل 24 ساعة (500 حرف) مع تصنيف إلزامي، ومحادثات مؤقتة تُحذف بعد 24 ساعة.",
+        bahrCharter: "ميثاق منصة بحر",
+        bahrCharterText: "بوست نصي واحد كل 24 ساعة (500 حرف) مع تصنيف إلزامي، ومحادثات مؤقتة تُحذف تلقائياً بعد 24 ساعة.",
       },
       en: {
         brandName: "Bahr",
         home: "Home",
-        myAccount: "My Account",
+        myAccount: "Account Settings",
         discover: "Discover",
         chat: "Messages",
         notifications: "Notifications",
         adminPanel: "Admin Panel",
         searchPlaceholder: "Search people or posts...",
-        menuAccount: "My Account (Name & Photo)",
+        menuAccount: "Account Settings (Name & Photo)",
         menuPass: "Change Password",
         menuLang: "العربية / English",
         menuTheme: "Toggle Dark/Light Mode",
@@ -330,7 +330,7 @@
         charLimitZero: "You have used your daily post quota (24h)",
         charLimitNext: "You can post again after",
         noPostsFeed: "No posts published yet.",
-        char500: "Max 500 characters",
+        char500: "What's on your mind (max 500 chars)...",
         charShare: "Share Profile Link",
         followers: "Follower",
         following: "Following",
@@ -366,7 +366,7 @@
     function initialData() {
       const now = Date.now();
       return {
-        settings: { registrationOpen: true, autoDeleteEnabled: false, autoDeleteHours: 24 },
+        settings: { registrationOpen: true, autoDeleteEnabled: false, autoDeleteHours: 24, allowPostEdits: true },
         currentUserId: null,
         nextId: 100,
         users: [
@@ -906,11 +906,11 @@
         <div class="modal-backdrop">
           <div class="modal-card stack">
             <h3 style="color:var(--danger)">${t("menuDelete")}</h3>
-            <p style="font-size:14px;margin:0">Are you sure? This will delete your posts, follows, and messages.</p>
-            <input id="del-confirm-pw" type="password" class="input" placeholder="Password confirmation..." />
+            <p style="font-size:14px;margin:0">هل أنت متأكد؟ سيتم حذف حسابك وجميع بياناتك نهائياً.</p>
+            <input id="del-confirm-pw" type="password" class="input" placeholder="أدخل كلمة المرور للتأكيد..." />
             <div class="row" style="justify-content:flex-end">
-              <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-              <button type="button" class="btn btn-danger" onclick="confirmDeleteMyAccount()">Delete</button>
+              <button type="button" class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+              <button type="button" class="btn btn-danger" onclick="confirmDeleteMyAccount()">حذف الحساب</button>
             </div>
           </div>
         </div>`;
@@ -944,7 +944,7 @@
               <svg viewBox="0 0 24 24" style="width:24px;height:24px"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
             </span>
             <h2 style="font-size:22px">بحر</h2>
-            <div class="muted" style="margin-top:4px">${ui.lang === 'en' ? 'Sign in or create account' : 'يجب تسجيل الدخول أو إنشاء حساب جديد للوصول إلى المنصة'}</div>
+            <div class="muted" style="margin-top:4px">${ui.lang === 'en' ? 'Sign in or create account' : 'منصة تواصل اجتماعي نصية هادفة'}</div>
           </div>
           <div class="row-between" style="margin-bottom:16px">
             <div class="tabs" style="width:100%">
@@ -953,11 +953,11 @@
             </div>
           </div>
           ${ui.authMode === "register" && !regOpen
-            ? `<div style="padding:14px;background:#fef7ec;border:1px solid #f5d0a9;border-radius:12px;font-size:13px;color:#8a4b08">Registration closed.</div>`
+            ? `<div style="padding:14px;background:#fef7ec;border:1px solid #f5d0a9;border-radius:12px;font-size:13px;color:#8a4b08">عذراً، التسجيل مغلق حالياً من قِبل الإدارة.</div>`
             : `<form onsubmit="submitAuth(event)" class="stack">
                 <div>
                   <label class="muted">${ui.lang === 'en' ? 'Username' : 'اسم المستخدم'}</label>
-                  <input id="auth-u" class="input" required minlength="3" maxlength="24" placeholder="username" oninput="checkUsernameLive(this.value)" />
+                  <input id="auth-u" class="input" required minlength="3" maxlength="24" placeholder="اسم المستخدم أو البريد" oninput="checkUsernameLive(this.value)" />
                   <div id="u-suggest" style="margin-top:6px"></div>
                 </div>
                 <div>
@@ -1025,9 +1025,9 @@
       }
       if (trimmed.length < 3) { box.innerHTML = ""; return; }
       const taken = db.users.some((u) => u.username.toLowerCase() === trimmed.toLowerCase());
-      if (!taken) { box.innerHTML = `<span style="font-size:12px;color:var(--teal)">✓</span>`; return; }
+      if (!taken) { box.innerHTML = `<span style="font-size:12px;color:var(--teal)">✓ اسم المستخدم متاح</span>`; return; }
       const sugs = suggestUsernames(trimmed);
-      box.innerHTML = `<div style="font-size:12px;color:#b45309;margin-bottom:4px">Taken</div>` +
+      box.innerHTML = `<div style="font-size:12px;color:#b45309;margin-bottom:4px">اسم المستخدم مستخدم مسبقاً، اقتراحات:</div>` +
         sugs.map((s) => `<button type="button" class="btn btn-soft" style="padding:4px 9px;font-size:11px;margin-inline-end:4px" onclick="document.getElementById('auth-u').value='${esc(s)}';checkUsernameLive('${esc(s)}')">${esc(s)}</button>`).join("");
     }
 
@@ -1037,21 +1037,21 @@
       const p = document.getElementById("auth-p").value;
       if (ui.authMode === "login") {
         const found = db.users.find((x) => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
-        if (!found) return toast("Invalid credentials");
+        if (!found) return toast("بيانات تسجيل الدخول غير صحيحة");
         db.currentUserId = found.id;
         save();
         if (!ui.profileUserId) ui.view = "feed";
         render();
       } else {
-        if (!db.settings.registrationOpen) return toast("Closed");
+        if (!db.settings.registrationOpen) return toast("التسجيل مغلق حالياً");
         if (db.users.some((x) => x.username.toLowerCase() === u.toLowerCase())) {
           checkUsernameLive(u);
-          return toast("Username taken");
+          return toast("اسم المستخدم مستخدم مسبقاً");
         }
         const gender = document.getElementById("reg-gender").value;
         const birthDate = document.getElementById("reg-birth").value;
         const country = document.getElementById("reg-country").value;
-        if (!gender || !birthDate || !country) return toast("Complete all fields");
+        if (!gender || !birthDate || !country) return toast("يرجى إكمال كافة الحقول المطلوبة");
 
         const newUser = {
           id: uid(), username: u, password: p, role: "user", verified: false,
@@ -1072,7 +1072,7 @@
         window.__regPhotoData = null;
         save();
         if (!ui.profileUserId) ui.view = "feed";
-        toast("Account created successfully");
+        toast("تم إنشاء الحساب وتسجيل الدخول بنجاح");
         render();
       }
     }
@@ -1081,7 +1081,7 @@
       db.currentUserId = null;
       save();
       ui.view = "auth";
-      toast("Logged out");
+      toast("تم تسجيل الخروج");
       render();
     }
 
@@ -1098,11 +1098,11 @@
 
       const composerHtml = `<div class="card stack">
         <form onsubmit="publishPost(event)">
-          <textarea id="post-input" rows="3" maxlength="500" placeholder="${t("char500")}..." oninput="document.getElementById('char-c').textContent=this.value.length"></textarea>
+          <textarea id="post-input" rows="3" maxlength="500" placeholder="${t("char500")}" oninput="document.getElementById('char-c').textContent=this.value.length"></textarea>
           <div class="row-between" style="margin-top:10px">
             <div class="row">
               <select id="post-cat" class="input" style="width:auto;padding:6px 10px;font-size:12px" required>
-                <option value="">--</option>
+                <option value="">-- اختر التصنيف --</option>
                 ${CATEGORIES.map((c) => `<option value="${c}">${c}</option>`).join("")}
               </select>
               <button type="button" class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="saveAsDraft()">${t("saveDraft")}</button>
@@ -1119,8 +1119,8 @@
               <div class="row-between" style="background:var(--surface-soft);padding:8px 12px;border-radius:10px">
                 <span style="font-size:13px;max-width:65%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><strong>[${esc(d.category)}]</strong> ${esc(d.content)}</span>
                 <div class="row">
-                  <button class="btn btn-soft" style="padding:4px 8px;font-size:11px" onclick="loadDraft(${d.id})">Post</button>
-                  <button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deleteDraft(${d.id})">Del</button>
+                  <button class="btn btn-soft" style="padding:4px 8px;font-size:11px" onclick="loadDraft(${d.id})">نشر</button>
+                  <button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deleteDraft(${d.id})">حذف</button>
                 </div>
               </div>`).join("")}
           </div>` : ""}
@@ -1179,7 +1179,7 @@
       let usersHtml = "";
       if (matchingUsers.length) {
         usersHtml = `<div class="card stack" style="gap:10px">
-          <div class="muted">Users:</div>
+          <div class="muted">مستخدمون مطابقون:</div>
           <div class="row" style="flex-wrap:wrap;gap:12px">
             ${matchingUsers.map((u) => `
               <button class="btn btn-ghost" onclick="openProfile(${u.id})">
@@ -1189,7 +1189,7 @@
         </div>`;
       }
 
-      return usersHtml + (posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">No matches found.</div>`);
+      return usersHtml + (posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد نتائج مطابقة لبحثك.</div>`);
     }
 
     function renderDiscover() {
@@ -1197,10 +1197,10 @@
         <div class="stack">
           <div class="card row-between">
             <div class="tabs">
-              <button class="tab-btn ${!ui.filterCategory ? "active" : ""}" onclick="ui.filterCategory='';render()">All</button>
+              <button class="tab-btn ${!ui.filterCategory ? "active" : ""}" onclick="ui.filterCategory='';render()">الكل</button>
               ${CATEGORIES.map((c) => `<button class="tab-btn ${ui.filterCategory === c ? "active" : ""}" onclick="ui.filterCategory='${c}';render()">${c}</button>`).join("")}
             </div>
-            ${ui.searchQuery ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="ui.searchQuery='';render()">Clear</button>` : ""}
+            ${ui.searchQuery ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="ui.searchQuery='';render()">إلغاء البحث</button>` : ""}
           </div>
           <div id="discover-results" class="stack">
             ${getDiscoverHtml()}
@@ -1214,7 +1214,7 @@
       const me = currentUser();
       const liked = p.likes.includes(me.id);
       const canDel = (me.id === p.userId || me.role === "admin");
-      const canEdit = (me.id === p.userId && (Date.now() - p.createdAt < 10 * 60 * 1000));
+      const canEdit = (me.id === p.userId && db.settings.allowPostEdits && (Date.now() - p.createdAt < 30 * 60 * 1000));
       const openC = Boolean(ui.openComments[p.id]);
 
       return `
@@ -1224,7 +1224,7 @@
               ${avatarHtml(author, "av-md")}
               <div style="text-align:start">
                 <div class="row" style="gap:5px"><span>${esc(author.username)}</span>${badgeHtml(author)}</div>
-                <div class="muted tabular">${relTime(p.createdAt)} · <span class="tag-badge">${esc(p.category || "General")}</span></div>
+                <div class="muted tabular">${relTime(p.createdAt)} · <span class="tag-badge">${esc(p.category || "عام")}</span></div>
               </div>
             </button>
             <div class="row">
@@ -1246,7 +1246,7 @@
               ${p.comments.map((c) => {
                 const cu = getUser(c.userId);
                 return `<div style="background:var(--surface-soft);padding:10px;border-radius:10px">
-                  <div class="row" style="font-size:12px"><strong>${esc(cu ? cu.username : "User")}</strong>${badgeHtml(cu)}<span class="muted">· ${relTime(c.createdAt)}</span></div>
+                  <div class="row" style="font-size:12px"><strong>${esc(cu ? cu.username : "مستخدم")}</strong>${badgeHtml(cu)}<span class="muted">· ${relTime(c.createdAt)}</span></div>
                   <div style="font-size:13px;margin-top:4px">${esc(c.content)}</div>
                 </div>`;
               }).join("") || `<div class="muted">${t("noComments")}</div>`}
@@ -1261,14 +1261,14 @@
     function saveAsDraft() {
       const text = document.getElementById("post-input").value.trim();
       const cat = document.getElementById("post-cat").value;
-      if (!text) return toast("Empty draft");
-      if (!cat) return toast("Select category");
+      if (!text) return toast("المسودة فارغة");
+      if (!cat) return toast("يرجى اختيار التصنيف");
       const me = currentUser();
       db.drafts.push({ id: uid(), userId: me.id, content: text, category: cat, createdAt: Date.now() });
       save();
       document.getElementById("post-input").value = "";
       document.getElementById("char-c").textContent = "0";
-      toast("Draft saved");
+      toast("تم حفظ المسودة بنجاح");
       render();
     }
 
@@ -1283,7 +1283,7 @@
       db.posts.unshift(post);
       db.postLogs.push({ userId: me.id, createdAt: now });
       save();
-      toast("Draft posted");
+      toast("تم نشر المسودة");
       render();
     }
 
@@ -1299,11 +1299,11 @@
       document.getElementById("modal-root").innerHTML = `
         <div class="modal-backdrop">
           <div class="modal-card stack">
-            <h3>Edit Post</h3>
+            <h3>تعديل البوست</h3>
             <textarea id="edit-content" rows="4" maxlength="500">${esc(p.content)}</textarea>
             <div class="row" style="justify-content:flex-end">
-              <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-              <button class="btn btn-primary" onclick="confirmEdit(${postId})">Save</button>
+              <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+              <button class="btn btn-primary" onclick="confirmEdit(${postId})">حفظ</button>
             </div>
           </div>
         </div>`;
@@ -1312,11 +1312,11 @@
     function confirmEdit(postId) {
       const p = db.posts.find((x) => x.id === postId);
       const text = document.getElementById("edit-content").value.trim();
-      if (!text || text.length > 500) return toast("Invalid text");
+      if (!text || text.length > 500) return toast("النص غير صالح");
       p.content = text;
       save();
       closeModal();
-      toast("Updated");
+      toast("تم التعديل بنجاح");
       render();
     }
 
@@ -1324,11 +1324,11 @@
       document.getElementById("modal-root").innerHTML = `
         <div class="modal-backdrop">
           <div class="modal-card stack">
-            <h3>Report Post</h3>
-            <textarea id="rep-post-reason" rows="3" placeholder="Reason..."></textarea>
+            <h3>الإبلاغ عن بوست</h3>
+            <textarea id="rep-post-reason" rows="3" placeholder="سبب الإبلاغ..."></textarea>
             <div class="row" style="justify-content:flex-end">
-              <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-              <button class="btn btn-danger" onclick="confirmReportPost(${postId})">Send</button>
+              <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+              <button class="btn btn-danger" onclick="confirmReportPost(${postId})">إرسال البلاغ</button>
             </div>
           </div>
         </div>`;
@@ -1336,11 +1336,11 @@
 
     function confirmReportPost(postId) {
       const me = currentUser();
-      const reason = document.getElementById("rep-post-reason").value.trim() || "Violation";
+      const reason = document.getElementById("rep-post-reason").value.trim() || "مخالفة";
       db.reports.unshift({ id: uid(), reporterId: me.id, postId, reason, status: "open", createdAt: Date.now() });
       save();
       closeModal();
-      toast("Reported");
+      toast("تم إرسال البلاغ للإدارة");
     }
 
     function publishPost(e) {
@@ -1349,24 +1349,24 @@
       const text = document.getElementById("post-input").value.trim();
       const cat = document.getElementById("post-cat").value;
       if (!text || text.length > 500) return;
-      if (!cat) return toast("Select category");
-      if (getQuota(me).remaining <= 0) return toast("Quota exceeded");
+      if (!cat) return toast("يرجى اختيار التصنيف");
+      if (getQuota(me).remaining <= 0) return toast("لقد استنفذت حد النشر المسموح اليوم");
       const now = Date.now();
       const post = { id: uid(), userId: me.id, content: text, category: cat, likes: [], comments: [], createdAt: now };
       db.posts.unshift(post);
       db.postLogs.push({ userId: me.id, createdAt: now });
       db.follows.filter((f) => f.followingId === me.id).forEach((f) => {
-        notifyUser(f.followerId, "post", me.id, `New post by ${me.username}`, "", post.id);
+        notifyUser(f.followerId, "post", me.id, `قام ${me.username} بنشر بوست جديد`, "", post.id);
       });
       save();
-      toast("Published");
+      toast("تم نشر البوست بنجاح");
       render();
     }
 
     function deletePost(id) {
       db.posts = db.posts.filter((p) => p.id !== id);
       save();
-      toast("Deleted");
+      toast("تم حذف البوست");
       render();
     }
 
@@ -1378,7 +1378,7 @@
       if (idx >= 0) p.likes.splice(idx, 1);
       else {
         p.likes.push(me.id);
-        if (p.userId !== me.id) notifyUser(p.userId, "like", me.id, `${me.username} liked your post`, "", p.id);
+        if (p.userId !== me.id) notifyUser(p.userId, "like", me.id, `أعجب ${me.username} بوستك`, "", p.id);
       }
       save();
       render();
@@ -1393,7 +1393,7 @@
       const p = db.posts.find((x) => x.id === postId);
       if (!p) return;
       p.comments.push({ id: uid(), userId: me.id, content: text, createdAt: Date.now() });
-      if (p.userId !== me.id) notifyUser(p.userId, "comment", me.id, `${me.username} commented on your post`, "", p.id);
+      if (p.userId !== me.id) notifyUser(p.userId, "comment", me.id, `علق ${me.username} على بوستك`, "", p.id);
       save();
       render();
     }
@@ -1417,7 +1417,7 @@
       if (idx >= 0) db.follows.splice(idx, 1);
       else {
         db.follows.push({ followerId: me.id, followingId: targetId });
-        notifyUser(targetId, "follow", me.id, `${me.username} followed you`);
+        notifyUser(targetId, "follow", me.id, `بدأ ${me.username} بمتابعتك`);
       }
       save();
       render();
@@ -1429,10 +1429,10 @@
       const idx = me.blockedUsers.indexOf(targetId);
       if (idx >= 0) {
         me.blockedUsers.splice(idx, 1);
-        toast("Unblocked");
+        toast("تم إلغاء الحظر");
       } else {
         me.blockedUsers.push(targetId);
-        toast("Blocked");
+        toast("تم حظر المستخدم");
       }
       save();
       render();
@@ -1440,7 +1440,7 @@
 
     function renderProfile() {
       const u = getUser(ui.profileUserId);
-      if (!u) return `<div class="card">User not found</div>`;
+      if (!u) return `<div class="card">المستخدم غير موجود</div>`;
       const me = currentUser();
       const isOwn = me.id === u.id;
       const isF = db.follows.some((f) => f.followerId === me.id && f.followingId === u.id);
@@ -1488,7 +1488,7 @@
     function startChat(targetId) {
       const me = currentUser();
       const target = getUser(targetId);
-      if (me.role === "admin" || target.role === "admin") return toast("Cannot chat with admin");
+      if (me.role === "admin" || target.role === "admin") return toast("عذراً، الحساب الإداري لا يستخدم المحادثات المباشرة");
       const u1 = Math.min(me.id, targetId);
       const u2 = Math.max(me.id, targetId);
       let conv = db.conversations.find((c) => c.user1Id === u1 && c.user2Id === u2);
@@ -1504,7 +1504,7 @@
 
     function renderChat() {
       const me = currentUser();
-      if (me.role === "admin") return `<div class="card">Admin account doesn't use direct chat.</div>`;
+      if (me.role === "admin") return `<div class="card">حساب الإدارة لا يدعم المحادثات المباشرة.</div>`;
       const myConvs = db.conversations.filter((c) => c.user1Id === me.id || c.user2Id === me.id)
         .sort((a, b) => b.lastMessageAt - a.lastMessageAt);
       const active = myConvs.find((c) => c.id === ui.activeChatId) || myConvs[0] || null;
@@ -1518,7 +1518,7 @@
             <div class="row-between" style="padding:14px;border-bottom:1px solid var(--border)">
               <strong style="font-size:15px">${t("chat")}</strong>
               <select class="input" style="width:auto;padding:5px 8px;font-size:12px" onchange="if(this.value) startChat(Number(this.value))">
-                <option value="">+ New</option>
+                <option value="">+ محادثة جديدة</option>
                 ${peers.map((p) => `<option value="${p.id}">${esc(p.username)}</option>`).join("")}
               </select>
             </div>
@@ -1527,17 +1527,17 @@
                 const o = getUser(c.user1Id === me.id ? c.user2Id : c.user1Id);
                 return `<button onclick="ui.activeChatId=${c.id};render()" style="width:100%;text-align:start;border:none;border-bottom:1px solid var(--border);padding:12px 14px;background:${active && active.id === c.id ? "var(--surface-tint)" : "var(--surface)"}; color:var(--ink)">
                   <div class="row-between"><strong>${esc(o ? o.username : "")}</strong><span class="muted tabular">${c.messages.length}/100</span></div>
-                  <div class="muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.messages[c.messages.length - 1]?.content || "New")}</div>
+                  <div class="muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.messages[c.messages.length - 1]?.content || "محادثة جديدة")}</div>
                 </button>`;
-              }).join("") || `<div class="muted" style="padding:20px;text-align:center">No chats</div>`}
+              }).join("") || `<div class="muted" style="padding:20px;text-align:center">لا توجد محادثات نشطة</div>`}
             </div>
           </aside>
           <section class="chat-thread">
-            ${!active || !other ? `<div class="muted" style="margin:auto">Select a chat.</div>` : `
+            ${!active || !other ? `<div class="muted" style="margin:auto">اختر محادثة لبدء المراسلة.</div>` : `
               <div class="row-between" style="padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border)">
                 <div>
                   <strong>${esc(other.username)}</strong> ${badgeHtml(other)}
-                  <div class="muted tabular">${active.messages.length} / 100</div>
+                  <div class="muted tabular">${active.messages.length} / 100 رسالة (تحذف تلقائياً بعد 24 ساعة)</div>
                 </div>
                 <div class="row">
                   <button class="btn btn-danger" onclick="reportChat(${active.id})">${t("report")}</button>
@@ -1549,13 +1549,13 @@
                   <div class="bubble ${m.senderId === me.id ? "mine" : "theirs"}">
                     <div>${esc(m.content)}</div>
                     <div style="font-size:10px;opacity:0.75;margin-top:3px">${relTime(m.createdAt)}</div>
-                  </div>`).join("") || `<div class="muted" style="text-align:center;margin:auto">Start conversation...</div>`}
+                  </div>`).join("") || `<div class="muted" style="text-align:center;margin:auto">ابدأ المراسلة الآن...</div>`}
               </div>
               ${active.messages.length >= 100
-                ? `<div class="muted" style="padding:14px;text-align:center;background:var(--surface)">Limit reached</div>`
+                ? `<div class="muted" style="padding:14px;text-align:center;background:var(--surface)">تم الوصول للحد الأقصى للمحادثة</div>`
                 : `<form class="row" style="padding:12px;background:var(--surface);border-top:1px solid var(--border)" onsubmit="sendMsg(event, ${active.id})">
-                    <input id="msg-in" class="input" maxlength="500" placeholder="Type a message..." />
-                    <button class="btn btn-primary" type="submit">Send</button>
+                    <input id="msg-in" class="input" maxlength="500" placeholder="اكتب رسالة نصية..." />
+                    <button class="btn btn-primary" type="submit">إرسال</button>
                   </form>`}
             `}
           </section>
@@ -1582,11 +1582,11 @@
       document.getElementById("modal-root").innerHTML = `
         <div class="modal-backdrop">
           <div class="modal-card stack">
-            <h3>Report Chat</h3>
-            <textarea id="rep-reason" rows="3" maxlength="300" placeholder="Reason..."></textarea>
+            <h3>الإبلاغ عن المحادثة</h3>
+            <textarea id="rep-reason" rows="3" maxlength="300" placeholder="سبب الإبلاغ..."></textarea>
             <div class="row" style="justify-content:flex-end">
-              <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-              <button class="btn btn-danger" onclick="confirmReport(${convId})">Send</button>
+              <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+              <button class="btn btn-danger" onclick="confirmReport(${convId})">إرسال البلاغ</button>
             </div>
           </div>
         </div>`;
@@ -1596,15 +1596,15 @@
       const me = currentUser();
       const conv = db.conversations.find((c) => c.id === convId);
       if (!conv) return closeModal();
-      const reason = document.getElementById("rep-reason").value.trim() || "Violation";
+      const reason = document.getElementById("rep-reason").value.trim() || "مخالفة";
       db.reports.unshift({
         id: uid(), reporterId: me.id, conversationId: convId, reason, status: "open",
-        snapshot: conv.messages.slice(-15).map((m) => ({ username: getUser(m.senderId)?.username || "User", content: m.content })),
+        snapshot: conv.messages.slice(-15).map((m) => ({ username: getUser(m.senderId)?.username || "مستخدم", content: m.content })),
         createdAt: Date.now(),
       });
       save();
       closeModal();
-      toast("Reported");
+      toast("تم إرسال البلاغ مع السجل للإدارة");
     }
 
     function closeModal() {
@@ -1618,7 +1618,7 @@
         <div class="card">
           <div class="row-between" style="margin-bottom:14px">
             <h2>${t("notifications")}</h2>
-            <button class="btn btn-soft" onclick="markAllRead()">Read all</button>
+            <button class="btn btn-soft" onclick="markAllRead()">تعليم الكل مقروء</button>
           </div>
           <div class="stack" style="gap:10px">
             ${list.map((n) => {
@@ -1628,7 +1628,7 @@
                 <div style="font-size:14px">${actor && n.type !== "admin" ? `<strong>${esc(actor.username)}</strong> ` : ""}${esc(n.message)}</div>
                 <div class="muted">${relTime(n.createdAt)}</div>
               </div>`;
-            }).join("") || `<div class="muted" style="text-align:center">No notifications.</div>`}
+            }).join("") || `<div class="muted" style="text-align:center">لا توجد إشعارات حالياً.</div>`}
           </div>
         </div>`;
     }
@@ -1647,49 +1647,56 @@
           <div class="card row-between">
             <div>
               <h2>${t("adminPanel")}</h2>
-              <div class="muted tabular">Users: ${db.users.length} · Posts: ${db.posts.length}</div>
+              <div class="muted tabular">إجمالي المستخدمين: ${db.users.length} · إجمالي البوستات: ${db.posts.length} · البلاغات: ${db.reports.length}</div>
             </div>
             <div class="tabs">
-              <button class="tab-btn ${ui.adminTab === "users" ? "active" : ""}" onclick="ui.adminTab='users';render()">Users</button>
-              <button class="tab-btn ${ui.adminTab === "settings" ? "active" : ""}" onclick="ui.adminTab='settings';render()">Settings</button>
-              <button class="tab-btn ${ui.adminTab === "mod" ? "active" : ""}" onclick="ui.adminTab='mod';render()">Reports</button>
+              <button class="tab-btn ${ui.adminTab === "users" ? "active" : ""}" onclick="ui.adminTab='users';render()">إدارة المستخدمين</button>
+              <button class="tab-btn ${ui.adminTab === "settings" ? "active" : ""}" onclick="ui.adminTab='settings';render()">إعدادات المنصة</button>
+              <button class="tab-btn ${ui.adminTab === "mod" ? "active" : ""}" onclick="ui.adminTab='mod';render()">البلاغات والشكاوى</button>
             </div>
           </div>
           ${ui.adminTab === "users" ? `
             <div class="card stack">
-              <h3>إدارة المستخدمين</h3>
+              <h3>إدارة المستخدمين والصلاحيات</h3>
               ${db.users.map((u) => `
                 <div class="row-between" style="padding:10px 0;border-bottom:1px solid var(--border)">
                   <div class="row">${avatarHtml(u, "av-sm")} <strong>${esc(u.username)}</strong> ${badgeHtml(u)} <span class="muted">(${u.role})</span></div>
                   <div class="row" style="flex-wrap:wrap">
-                    <button class="btn ${u.verified ? "btn-primary" : "btn-soft"}" onclick="adminVerify(${u.id})">${u.verified ? "موثق ✓" : "توثيق"}</button>
-                    ${u.role !== "admin" ? `<button class="btn btn-danger" onclick="adminDeleteUser(${u.id})">حذف</button>` : ""}
+                    <button class="btn ${u.verified ? "btn-primary" : "btn-soft"}" onclick="adminVerify(${u.id})">${u.verified ? "موثق ✓" : "منح توثيق"}</button>
+                    ${u.role !== "admin" ? `<button class="btn btn-danger" onclick="adminDeleteUser(${u.id})">حذف الحساب</button>` : ""}
                   </div>
                 </div>`).join("")}
             </div>` : ""}
           ${ui.adminTab === "settings" ? `
             <div class="card stack">
-              <h3>إعدادات المنصة</h3>
+              <h3>إعدادات المنصة العامة</h3>
               <div class="row-between" style="padding:10px 0;border-bottom:1px solid var(--border)">
-                <div><strong>فتح/إغلاق التسجيل الجديد</strong></div>
+                <div><strong>فتح/إغلاق التسجيل الجديد للمستخدمين</strong></div>
                 <button class="btn ${s.registrationOpen ? "btn-primary" : "btn-danger"}" onclick="db.settings.registrationOpen=!db.settings.registrationOpen;save();render()">${s.registrationOpen ? "التسجيل مفتوح" : "التسجيل مغلق"}</button>
               </div>
+              <div class="row-between" style="padding:10px 0;border-bottom:1px solid var(--border)">
+                <div><strong>الحذف التلقائي للمنشورات القديمة (أكثر من 24 ساعة)</strong></div>
+                <button class="btn ${s.autoDeleteEnabled ? "btn-primary" : "btn-ghost"}" onclick="db.settings.autoDeleteEnabled=!db.settings.autoDeleteEnabled;save();render()">${s.autoDeleteEnabled ? "مفعل تلقائياً" : "معطل"}</button>
+              </div>
               <div class="row-between" style="padding:10px 0">
-                <div><strong>الحذف التلقائي للمنشورات القديمة</strong></div>
-                <button class="btn ${s.autoDeleteEnabled ? "btn-primary" : "btn-ghost"}" onclick="db.settings.autoDeleteEnabled=!db.settings.autoDeleteEnabled;save();render()">${s.autoDeleteEnabled ? "مفعل (24 ساعة)" : "معطل"}</button>
+                <div><strong>السماح للمستخدمين بتعديل بوستاتهم</strong></div>
+                <button class="btn ${s.allowPostEdits ? "btn-primary" : "btn-ghost"}" onclick="db.settings.allowPostEdits=!db.settings.allowPostEdits;save();render()">${s.allowPostEdits ? "مسموح" : "مغلق"}</button>
               </div>
             </div>` : ""}
           ${ui.adminTab === "mod" ? `
             <div class="card stack">
               <h3>البلاغات والشكاوى (${db.reports.length})</h3>
               ${db.reports.map((r) => `
-                <div style="padding:12px;background:var(--surface-soft);border-radius:10px" class="stack">
+                <div style="padding:14px;background:var(--surface-soft);border-radius:12px" class="stack">
                   <div class="row-between">
-                    <strong>السبب: ${esc(r.reason)}</strong>
-                    <button class="btn ${r.status === 'open' ? 'btn-danger' : 'btn-soft'}" style="padding:4px 10px;font-size:11px" onclick="toggleRep(${r.id})">${r.status === 'open' ? 'قيد المراجعة' : 'محلول'}</button>
+                    <div>
+                      <strong>السبب: ${esc(r.reason)}</strong>
+                      <div class="muted tabular">تاريخ البلاغ: ${relTime(r.createdAt)}</div>
+                    </div>
+                    <button class="btn ${r.status === 'open' ? 'btn-danger' : 'btn-soft'}" style="padding:6px 12px;font-size:12px" onclick="toggleRep(${r.id})">${r.status === 'open' ? 'قيد المراجعة' : 'محلول'}</button>
                   </div>
-                  <div class="muted tabular">التاريخ: ${relTime(r.createdAt)}</div>
-                </div>`).join("") || `<div class="muted" style="text-align:center">لا توجد بلاغات حالياً.</div>`}
+                  ${r.snapshot ? `<div style="font-size:12px;background:var(--surface);padding:8px;border-radius:8px;border:1px solid var(--border);max-height:120px;overflow-y:auto"><strong>سجل المحادثة:</strong><br>${r.snapshot.map(m=>`<span>${esc(m.username)}: ${esc(m.content)}</span>`).join("<br>")}</div>` : ""}
+                </div>`).join("") || `<div class="muted" style="text-align:center">لا توجد بلاغات نشطة حالياً.</div>`}
             </div>` : ""}
         </div>`;
     }
