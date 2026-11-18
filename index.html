@@ -176,8 +176,20 @@
     }
     .tag-badge:hover { opacity: 0.85; }
 
-    .hashtag-link { color: var(--blue); text-decoration: none; font-weight: 600; }
-    .hashtag-link:hover { text-decoration: underline; }
+    .hashtag-link, .mention-link { color: var(--blue); text-decoration: none; font-weight: 600; }
+    .hashtag-link:hover, .mention-link:hover { text-decoration: underline; }
+    .mention-link { background: var(--surface-tint); padding: 1px 5px; border-radius: 6px; }
+
+    .mention-dropdown {
+      position: absolute; z-index: 60; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); max-height: 180px; overflow-y: auto;
+      width: 240px; margin-top: 4px;
+    }
+    .mention-item {
+      width: 100%; border: none; background: none; padding: 8px 12px; display: flex; align-items: center; gap: 8px;
+      text-align: start; color: var(--ink); font-size: 13px;
+    }
+    .mention-item:hover { background: var(--surface-tint); }
 
     .legal-link-btn {
       background: none; border: none; color: var(--blue); font-size: 12px; padding: 0; cursor: pointer; text-decoration: underline;
@@ -248,10 +260,11 @@
     }
     [data-lang="en"] .toast { left: auto; right: 20px; }
     .modal-backdrop {
-      position: fixed; inset: 0; z-index: 80; background: rgba(0,0,0,0.6);
+      position: fixed; inset: 0; z-index: 80; background: rgba(0,0,0,0.65);
       display: flex; align-items: center; justify-content: center; padding: 16px;
     }
-    .modal-card { width: 100%; max-width: 520px; background: var(--surface); border-radius: 16px; padding: 22px; border: 1px solid var(--border); color: var(--ink); max-height: 85vh; overflow-y: auto; }
+    .modal-card { width: 100%; max-width: 520px; background: var(--surface); border-radius: 16px; padding: 22px; border: 1px solid var(--border); color: var(--ink); max-height: 90vh; overflow-y: auto; }
+    .quote-preview-img { width: 100%; border-radius: 12px; border: 1px solid var(--border); display: block; box-shadow: 0 10px 25px rgba(0,0,0,0.25); }
   </style>
 </head>
 <body onclick="closeAllMenus()">
@@ -275,7 +288,7 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_complete_standalone_v26";
+    const STORAGE_KEY = "bahr_complete_standalone_v27";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     
@@ -311,7 +324,7 @@
         charLimitZero: "استهلكت حد النشر المتاح خلال 24 ساعة",
         charLimitNext: "يمكنك النشر مجدداً بعد",
         noPostsFeed: "لا توجد بوستات منشورة بعد.",
-        char500: "اكتب ما يدور في ذهنك (مثال: #بحر #تقنية)...",
+        char500: "اكتب ما يدور في ذهنك (استخدم @ للمنشن أو # للهاشتاج)...",
         charShare: "مشاركة رابط الحساب",
         followers: "متابِع",
         following: "يتابِع",
@@ -327,12 +340,15 @@
         like: "إعجاب",
         comment: "تعليق",
         share: "مشاركة",
+        quoteCard: "بطاقة اقتباس",
+        downloadCard: "تحميل الصورة",
+        shareCard: "مشاركة البطاقة",
         noComments: "لا توجد تعليقات بعد.",
-        commentPlaceholder: "اكتب تعليقاً نصياً...",
+        commentPlaceholder: "اكتب تعليقاً نصياً (استخدم @ للمنشن)...",
         postShareSuccess: "تم نسخ رابط البوست",
         profileShareSuccess: "تم نسخ رابط الحساب",
         bahrCharter: "ميثاق منصة بحر",
-        bahrCharterText: "بوست نصي واحد كل 24 ساعة (500 حرف) مع إمكانية استخدام #الوسوم والتصنيفات الاختيارية، ومحادثات مؤقتة تُحذف تلقائياً.",
+        bahrCharterText: "بوست نصي واحد كل 24 ساعة (500 حرف) مع إمكانية استخدام #الوسوم، @المنشن، وبطاقات الاقتباس القابلة للمشاركة.",
       },
       en: {
         brandName: "Bahr",
@@ -365,7 +381,7 @@
         charLimitZero: "You have used your daily post quota (24h)",
         charLimitNext: "You can post again after",
         noPostsFeed: "No posts published yet.",
-        char500: "What's on your mind (e.g. #bahr #tech)...",
+        char500: "What's on your mind (use @ to mention or # for tags)...",
         charShare: "Share Profile Link",
         followers: "Follower",
         following: "Following",
@@ -381,12 +397,15 @@
         like: "Like",
         comment: "Comment",
         share: "Share",
+        quoteCard: "Quote Card",
+        downloadCard: "Download Image",
+        shareCard: "Share Card",
         noComments: "No comments yet.",
-        commentPlaceholder: "Write a text comment...",
+        commentPlaceholder: "Write a text comment (use @ to mention)...",
         postShareSuccess: "Post link copied",
         profileShareSuccess: "Profile link copied",
         bahrCharter: "Bahr Charter",
-        bahrCharterText: "One text post every 24 hours (500 chars) with #hashtags and optional categories, and temporary chats deleted after 24 hours.",
+        bahrCharterText: "One text post every 24 hours (500 chars) with #hashtags, @mentions, and shareable Quote Cards.",
       }
     };
 
@@ -652,9 +671,249 @@
       return String(str || "").replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    function formatPostTextWithHashtags(text) {
-      const safe = esc(text);
-      return safe.replace(/(#[a-zA-Z0-9_\u0600-\u06FF]+)/g, '<a href="javascript:void(0)" class="hashtag-link" onclick="filterByTag(\'$1\')">$1</a>');
+    function formatRichText(text) {
+      let safe = esc(text);
+      // Format Hashtags
+      safe = safe.replace(/(#[a-zA-Z0-9_\u0600-\u06FF]+)/g, '<a href="javascript:void(0)" class="hashtag-link" onclick="filterByTag(\'$1\')">$1</a>');
+      // Format Mentions (@username)
+      safe = safe.replace(/@([a-zA-Z0-9_]{3,24})/g, (match, uname) => {
+        const target = getUserByUsername(uname);
+        if (target && !target.disabled) {
+          return `<a href="javascript:void(0)" class="mention-link" onclick="openProfileByUsername('${esc(target.username)}')">@${esc(target.username)}</a>`;
+        }
+        return match;
+      });
+      return safe;
+    }
+
+    function processMentionsAndNotify(text, actor, postId) {
+      const regex = /@([a-zA-Z0-9_]{3,24})/g;
+      const notifiedIds = new Set();
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        const uname = match[1];
+        const target = getUserByUsername(uname);
+        if (target && !target.disabled && target.id !== actor.id && !notifiedIds.has(target.id)) {
+          notifiedIds.add(target.id);
+          notifyUser(target.id, "mention", actor.id, `قام ${getDisplayName(actor)} بذكرك في منشور أو تعليق (@${actor.username})`, "", postId);
+        }
+      }
+    }
+
+    function handleMentionAutocomplete(inputEl, dropdownId) {
+      const box = document.getElementById(dropdownId);
+      if (!box) return;
+      const val = inputEl.value;
+      const cursorPos = inputEl.selectionStart;
+      const textBefore = val.slice(0, cursorPos);
+      const atMatch = textBefore.match(/@([a-zA-Z0-9_]*)$/);
+
+      if (!atMatch) {
+        box.style.display = "none";
+        return;
+      }
+
+      const query = atMatch[1].toLowerCase();
+      const me = currentUser();
+      const candidates = db.users
+        .filter((u) => u.id !== me.id && !u.disabled && (u.username.toLowerCase().includes(query) || getDisplayName(u).toLowerCase().includes(query)))
+        .slice(0, 5);
+
+      if (!candidates.length) {
+        box.style.display = "none";
+        return;
+      }
+
+      box.innerHTML = candidates.map((u) => `
+        <button type="button" class="mention-item" onclick="insertMention('${inputEl.id}', '${dropdownId}', '${esc(u.username)}')">
+          ${avatarHtml(u, "av-xs")}
+          <div>
+            <div style="font-weight:600">${esc(getDisplayName(u))} ${badgeHtml(u)}</div>
+            <div class="muted" style="font-size:11px">@${esc(u.username)}</div>
+          </div>
+        </button>`).join("");
+      box.style.display = "block";
+    }
+
+    function insertMention(inputId, dropdownId, username) {
+      const inputEl = document.getElementById(inputId);
+      const box = document.getElementById(dropdownId);
+      if (!inputEl) return;
+      const val = inputEl.value;
+      const cursorPos = inputEl.selectionStart;
+      const textBefore = val.slice(0, cursorPos);
+      const textAfter = val.slice(cursorPos);
+      const replaced = textBefore.replace(/@([a-zA-Z0-9_]*)$/, `@${username} `);
+      inputEl.value = replaced + textAfter;
+      if (inputId === "post-input") {
+        document.getElementById("char-c").textContent = inputEl.value.length;
+      }
+      if (box) box.style.display = "none";
+      inputEl.focus();
+    }
+
+    function openQuoteCardModal(postId) {
+      const p = db.posts.find((x) => x.id === postId);
+      if (!p) return;
+      const author = getUser(p.userId);
+      const authorName = author ? getDisplayName(author) : "مستخدم";
+      const authorHandle = author ? `@${author.username}` : "";
+      const isVerified = author && author.verified;
+
+      document.getElementById("modal-root").innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal-card stack">
+            <div class="row-between">
+              <h3>${t("quoteCard")}</h3>
+              <button class="btn btn-ghost" style="padding:4px 10px" onclick="closeModal()">✕</button>
+            </div>
+            <canvas id="quote-canvas" width="900" height="540" style="display:none"></canvas>
+            <img id="quote-preview" class="quote-preview-img" alt="Quote Card" />
+            <div class="row" style="justify-content:flex-end;flex-wrap:wrap">
+              <button class="btn btn-soft" onclick="shareQuoteCardImage()">${t("shareCard")}</button>
+              <button class="btn btn-primary" onclick="downloadQuoteCardImage('${esc(author?.username || "bahr")}')">${t("downloadCard")}</button>
+            </div>
+          </div>
+        </div>`;
+
+      setTimeout(() => {
+        drawQuoteCardCanvas(p.content, authorName, authorHandle, isVerified, p.category);
+      }, 30);
+    }
+
+    function drawQuoteCardCanvas(content, authorName, authorHandle, isVerified, category) {
+      const canvas = document.getElementById("quote-canvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width;
+      const H = canvas.height;
+
+      // Deep Elegant Dark Gradient Background
+      const grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, "#091526");
+      grad.addColorStop(0.5, "#0f2744");
+      grad.addColorStop(1, "#081220");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Subtle Decorative Glow Circle
+      const radial = ctx.createRadialGradient(W * 0.85, H * 0.15, 20, W * 0.85, H * 0.15, 320);
+      radial.addColorStop(0, "rgba(56, 189, 248, 0.18)");
+      radial.addColorStop(1, "rgba(56, 189, 248, 0)");
+      ctx.fillStyle = radial;
+      ctx.fillRect(0, 0, W, H);
+
+      // Outer Frame Border
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.35)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(28, 28, W - 56, H - 56, 24);
+      ctx.stroke();
+
+      // Quote Mark Decorative
+      ctx.fillStyle = "rgba(56, 189, 248, 0.25)";
+      ctx.font = "bold 90px Georgia, serif";
+      ctx.textAlign = "right";
+      ctx.fillText("”", W - 65, 135);
+
+      // Post Text Wrapping (RTL)
+      ctx.fillStyle = "#f8fafc";
+      ctx.font = "600 30px 'IBM Plex Sans Arabic', sans-serif";
+      ctx.textAlign = "right";
+      ctx.direction = "rtl";
+
+      const maxWidth = W - 140;
+      const lineHeight = 48;
+      const words = content.split(/\s+/);
+      let lines = [];
+      let currentLine = "";
+
+      for (let i = 0; i < words.length; i++) {
+        const testLine = currentLine + words[i] + " ";
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && i > 0) {
+          lines.push(currentLine.trim());
+          currentLine = words[i] + " ";
+        } else {
+          currentLine = testLine;
+        }
+      }
+      lines.push(currentLine.trim());
+      if (lines.length > 6) {
+        lines = lines.slice(0, 6);
+        lines[5] += "...";
+      }
+
+      const totalTextHeight = lines.length * lineHeight;
+      let startY = (H - totalTextHeight) / 2 + 10;
+
+      lines.forEach((line) => {
+        ctx.fillText(line, W - 70, startY);
+        startY += lineHeight;
+      });
+
+      // Bottom Divider
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(65, H - 115);
+      ctx.lineTo(W - 65, H - 115);
+      ctx.stroke();
+
+      // Author Info (Bottom Right)
+      ctx.fillStyle = "#38bdf8";
+      ctx.font = "bold 24px 'Readex Pro', sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(authorName + (isVerified ? " ✓" : ""), W - 70, H - 72);
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "400 18px sans-serif";
+      ctx.fillText(authorHandle + (category ? `  •  ${category}` : ""), W - 70, H - 45);
+
+      // Bahr Brand Watermark (Bottom Left)
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 26px 'Readex Pro', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("منصة بحر", 70, H - 68);
+
+      ctx.fillStyle = "#38bdf8";
+      ctx.font = "400 15px sans-serif";
+      ctx.fillText("bahr.social", 70, H - 45);
+
+      const previewImg = document.getElementById("quote-preview");
+      if (previewImg) {
+        previewImg.src = canvas.toDataURL("image/png");
+      }
+    }
+
+    function downloadQuoteCardImage(username) {
+      const canvas = document.getElementById("quote-canvas");
+      if (!canvas) return;
+      const link = document.createElement("a");
+      link.download = `bahr-quote-${username}-${Date.now()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      toast("تم تحميل بطاقة الاقتباس بنجاح");
+    }
+
+    async function shareQuoteCardImage() {
+      const canvas = document.getElementById("quote-canvas");
+      if (!canvas) return;
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], "bahr-quote.png", { type: "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: "اقتباس من منصة بحر",
+              text: "مشاركة من منصة بحر"
+            });
+          } catch {}
+        } else {
+          downloadQuoteCardImage("share");
+        }
+      });
     }
 
     function filterByTag(tag) {
@@ -788,6 +1047,9 @@
       if (menu && menu.classList.contains("show")) {
         menu.classList.remove("show");
       }
+      document.querySelectorAll(".mention-dropdown").forEach((el) => {
+        el.style.display = "none";
+      });
     }
 
     function render() {
@@ -1370,7 +1632,10 @@
 
       const composerHtml = `<div class="card stack">
         <form onsubmit="publishPost(event)">
-          <textarea id="post-input" rows="3" maxlength="500" placeholder="${t("char500")}" oninput="document.getElementById('char-c').textContent=this.value.length"></textarea>
+          <div style="position:relative">
+            <textarea id="post-input" rows="3" maxlength="500" placeholder="${t("char500")}" oninput="document.getElementById('char-c').textContent=this.value.length; handleMentionAutocomplete(this, 'post-mention-box')"></textarea>
+            <div id="post-mention-box" class="mention-dropdown" style="display:none"></div>
+          </div>
           <div class="row-between" style="margin-top:10px">
             <div class="row" style="flex-wrap:wrap">
               <select id="post-cat" class="input" style="width:auto;padding:6px 10px;font-size:12px" onchange="handleCatSelectChange(this.value)">
@@ -1538,11 +1803,12 @@
               ${me.id !== author.id ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="reportPostPrompt(${p.id})">${t("report")}</button>` : ""}
             </div>
           </div>
-          <p class="post-text">${formatPostTextWithHashtags(p.content)}</p>
+          <p class="post-text">${formatRichText(p.content)}</p>
           <div class="divider"></div>
-          <div class="row" style="gap:12px">
+          <div class="row" style="gap:8px;flex-wrap:wrap">
             <button class="btn ${liked ? "btn-soft" : "btn-ghost"}" style="padding:6px 12px;font-size:12px" onclick="toggleLike(${p.id})">♥ ${p.likes.length}</button>
             <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="ui.openComments[${p.id}]=!ui.openComments[${p.id}];render()">💬 ${p.comments.length}</button>
+            <button class="btn btn-soft" style="padding:6px 12px;font-size:12px" onclick="openQuoteCardModal(${p.id})">🖼️ ${t("quoteCard")}</button>
             <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="sharePost(${p.id})">${t("share")}</button>
           </div>
           ${openC ? `
@@ -1552,11 +1818,14 @@
                 const cu = getUser(c.userId);
                 return `<div style="background:var(--surface-soft);padding:10px;border-radius:10px">
                   <div class="row" style="font-size:12px"><strong>${esc(cu ? getDisplayName(cu) : "مستخدم")}</strong>${badgeHtml(cu)}<span class="muted">· ${relTime(c.createdAt)}</span></div>
-                  <div style="font-size:13px;margin-top:4px">${esc(c.content)}</div>
+                  <div style="font-size:13px;margin-top:4px">${formatRichText(c.content)}</div>
                 </div>`;
               }).join("") || `<div class="muted">${t("noComments")}</div>`}
-              <form class="row" onsubmit="addComment(event, ${p.id})">
-                <input id="cm-${p.id}" class="input" maxlength="500" placeholder="${t("commentPlaceholder")}" />
+              <form class="row" style="position:relative" onsubmit="addComment(event, ${p.id})">
+                <div style="flex:1;position:relative">
+                  <input id="cm-${p.id}" class="input" maxlength="500" placeholder="${t("commentPlaceholder")}" oninput="handleMentionAutocomplete(this, 'cm-mention-box-${p.id}')" />
+                  <div id="cm-mention-box-${p.id}" class="mention-dropdown" style="display:none;bottom:44px;top:auto"></div>
+                </div>
                 <button class="btn btn-primary" type="submit">${t("comment")}</button>
               </form>
             </div>` : ""}
@@ -1589,6 +1858,7 @@
       const post = { id: uid(), userId: me.id, content: d.content, category: d.category || "", likes: [], comments: [], createdAt: now };
       db.posts.unshift(post);
       db.postLogs.push({ userId: me.id, createdAt: now });
+      processMentionsAndNotify(d.content, me, post.id);
       save();
       toast("تم نشر المسودة");
       render();
@@ -1667,6 +1937,7 @@
       db.follows.filter((f) => f.followingId === me.id).forEach((f) => {
         notifyUser(f.followerId, "post", me.id, `قام ${getDisplayName(me)} بنشر بوست جديد`, "", post.id);
       });
+      processMentionsAndNotify(text, me, post.id);
       save();
       toast("تم نشر البوست بنجاح");
       render();
@@ -1703,6 +1974,7 @@
       if (!p) return;
       p.comments.push({ id: uid(), userId: me.id, content: text, createdAt: Date.now() });
       if (p.userId !== me.id) notifyUser(p.userId, "comment", me.id, `علق ${getDisplayName(me)} على بوستك`, "", p.id);
+      processMentionsAndNotify(text, me, p.id);
       save();
       render();
     }
