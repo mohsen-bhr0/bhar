@@ -165,14 +165,13 @@
     .modal-backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(15,20,25,0.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
     .modal-card { width: 100%; max-width: 460px; background: var(--surface); border-radius: 16px; padding: 20px; border: 1px solid var(--border); }
 
-    /* هيدر الجوال + شريط سفلي مطابق لصورتك */
+    /* هيدر الجوال والشريط السفلي العائم مثل صورتك */
     .mobile-header { display: none; position: sticky; top: 0; z-index: 45; background: var(--header-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 10px 14px; align-items: center; justify-content: space-between; }
     .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(15,20,25,0.55); z-index: 35; }
     .sidebar-overlay.open { display: block; }
     .hamburger { background: none; border: none; font-size: 22px; color: var(--ink); padding: 4px; width: 40px; height: 40px; border-radius: 999px; }
     .hamburger:hover { background: var(--surface-soft); }
     
-    /* الشريط السفلي العائم الموجود في صورتك */
     .bottom-nav { display: none; position: fixed; bottom: 12px; right: 12px; left: 12px; z-index: 45; background: #1a202c; border-radius: 9999px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); padding: 6px 12px; align-items: center; justify-content: space-around; direction: rtl; }
     [data-theme="light"] .bottom-nav { background: #1e293b; }
     .bn-link { background: none; border: none; color: #94a3b8; font-size: 13px; font-weight: 600; padding: 8px 14px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; transition: 0.15s; white-space: nowrap; }
@@ -256,6 +255,7 @@
     localStorage.setItem("bahr_theme", next);
     document.querySelectorAll(".theme-icon").forEach((el) => { el.textContent = next === "dark" ? "☀️" : "🌙"; });
   }
+
   const STORAGE_KEY = "bahr_v2";
   const HOUR_MS = 3600000;
   const DAY_MS = 24 * HOUR_MS;
@@ -367,13 +367,6 @@
     return `منذ ${Math.floor(h / 24)} يوم`;
   }
 
-  function remTime(targetTs) {
-    const mins = Math.max(1, Math.ceil((targetTs - Date.now()) / 60000));
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
-    return h > 0 ? `${h} س و ${m} د` : `${m} د`;
-  }
-
   function avatarHtml(user, size = "av-md") {
     if (!user) return "";
     const preset = user.avatarId && db.settings.enabledAvatars.includes(user.avatarId)
@@ -461,7 +454,6 @@
       </button>`;
     }).join("");
 
-    // بناء الشريط السفلي المطابق تماماً للصورة (اكتشف، معاينة، محادثة، إلخ أو الروابط المتاحة)
     const bn = document.getElementById("bottom-nav");
     if (bn) {
       bn.innerHTML = `
