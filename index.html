@@ -68,15 +68,13 @@
       height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 14px;
     }
     .brand-btn {
-      display: inline-flex; align-items: center; gap: 8px;
+      display: inline-flex; align-items: center; gap: 10px;
       background: none; border: none; color: var(--ink); font-size: 19px; font-weight: 700;
       white-space: nowrap;
     }
-    .brand-mark {
-      width: 32px; height: 32px; border-radius: 10px; background: var(--blue); color: #fff;
-      display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    .brand-logo-img {
+      width: 36px; height: 36px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; background: var(--surface-soft);
     }
-    .brand-mark svg { width: 18px; height: 18px; fill: currentColor; }
     
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
@@ -271,9 +269,7 @@
   <header>
     <div class="container topbar">
       <button class="brand-btn" onclick="goHome()">
-        <span class="brand-mark">
-          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        </span>
+        <img src="75a582ae.jpeg" alt="بحر" class="brand-logo-img" />
         <span data-i18n="brandName">بحر</span>
       </button>
       <div id="auth-actions" class="row"></div>
@@ -288,7 +284,7 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_complete_standalone_v27";
+    const STORAGE_KEY = "bahr_complete_standalone_v28";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     
@@ -673,9 +669,7 @@
 
     function formatRichText(text) {
       let safe = esc(text);
-      // Format Hashtags
       safe = safe.replace(/(#[a-zA-Z0-9_\u0600-\u06FF]+)/g, '<a href="javascript:void(0)" class="hashtag-link" onclick="filterByTag(\'$1\')">$1</a>');
-      // Format Mentions (@username)
       safe = safe.replace(/@([a-zA-Z0-9_]{3,24})/g, (match, uname) => {
         const target = getUserByUsername(uname);
         if (target && !target.disabled) {
@@ -788,7 +782,6 @@
       const W = canvas.width;
       const H = canvas.height;
 
-      // Deep Elegant Dark Gradient Background
       const grad = ctx.createLinearGradient(0, 0, W, H);
       grad.addColorStop(0, "#091526");
       grad.addColorStop(0.5, "#0f2744");
@@ -796,27 +789,23 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
 
-      // Subtle Decorative Glow Circle
       const radial = ctx.createRadialGradient(W * 0.85, H * 0.15, 20, W * 0.85, H * 0.15, 320);
       radial.addColorStop(0, "rgba(56, 189, 248, 0.18)");
       radial.addColorStop(1, "rgba(56, 189, 248, 0)");
       ctx.fillStyle = radial;
       ctx.fillRect(0, 0, W, H);
 
-      // Outer Frame Border
       ctx.strokeStyle = "rgba(56, 189, 248, 0.35)";
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.roundRect(28, 28, W - 56, H - 56, 24);
       ctx.stroke();
 
-      // Quote Mark Decorative
       ctx.fillStyle = "rgba(56, 189, 248, 0.25)";
       ctx.font = "bold 90px Georgia, serif";
       ctx.textAlign = "right";
       ctx.fillText("”", W - 65, 135);
 
-      // Post Text Wrapping (RTL)
       ctx.fillStyle = "#f8fafc";
       ctx.font = "600 30px 'IBM Plex Sans Arabic', sans-serif";
       ctx.textAlign = "right";
@@ -852,7 +841,6 @@
         startY += lineHeight;
       });
 
-      // Bottom Divider
       ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -860,7 +848,6 @@
       ctx.lineTo(W - 65, H - 115);
       ctx.stroke();
 
-      // Author Info (Bottom Right)
       ctx.fillStyle = "#38bdf8";
       ctx.font = "bold 24px 'Readex Pro', sans-serif";
       ctx.textAlign = "right";
@@ -870,7 +857,6 @@
       ctx.font = "400 18px sans-serif";
       ctx.fillText(authorHandle + (category ? `  •  ${category}` : ""), W - 70, H - 45);
 
-      // Bahr Brand Watermark (Bottom Left)
       ctx.fillStyle = "#ffffff";
       ctx.font = "bold 26px 'Readex Pro', sans-serif";
       ctx.textAlign = "left";
@@ -1448,9 +1434,7 @@
       return `
         <div class="card" style="max-width:520px;margin:30px auto;">
           <div style="text-align:center;margin-bottom:20px">
-            <span class="brand-mark" style="width:48px;height:48px;margin-bottom:8px">
-              <svg viewBox="0 0 24 24" style="width:24px;height:24px"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            </span>
+            <img src="75a582ae.jpeg" alt="بحر" style="width:56px;height:56px;border-radius:14px;object-fit:cover;border:1px solid var(--border);margin-bottom:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1)" />
             <h2 style="font-size:22px">بحر</h2>
             <div class="muted" style="margin-top:4px">${ui.lang === 'en' ? 'Sign in or create account' : 'منصة تواصل اجتماعي نصية هادفة'}</div>
           </div>
