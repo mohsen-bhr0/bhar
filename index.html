@@ -275,7 +275,7 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_complete_standalone_v25";
+    const STORAGE_KEY = "bahr_complete_standalone_v26";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     
@@ -300,6 +300,8 @@
         menuDelete: "حذف الحساب نهائياً",
         menuLogout: "تسجيل الخروج",
         writersInBahr: "اقتراحات للمتابعة",
+        trendingTags: "الوسوم الأكثر رواجاً (التريند)",
+        noTrending: "لا توجد وسوم رائجة حالياً",
         noWriters: "لا توجد اقتراحات حالياً",
         charCount: "حرف",
         remainingToday: "المتبقي اليوم",
@@ -352,6 +354,8 @@
         menuDelete: "Delete Account",
         menuLogout: "Logout",
         writersInBahr: "Suggested to Follow",
+        trendingTags: "Trending Hashtags (24h)",
+        noTrending: "No trending hashtags right now",
         noWriters: "No suggestions available",
         charCount: "chars",
         remainingToday: "Remaining today",
@@ -657,6 +661,31 @@
       ui.filterTag = tag.trim();
       ui.view = "discover";
       render();
+    }
+
+    function getTrendingHashtags() {
+      const now = Date.now();
+      const recentPosts = db.posts.filter((p) => {
+        const author = getUser(p.userId);
+        return author && !author.disabled && (now - p.createdAt <= DAY_MS);
+      });
+
+      const counts = {};
+      const regex = /(#[a-zA-Z0-9_\u0600-\u06FF]+)/g;
+      recentPosts.forEach((p) => {
+        const matches = p.content.match(regex);
+        if (matches) {
+          matches.forEach((tag) => {
+            const cleanTag = tag.trim();
+            counts[cleanTag] = (counts[cleanTag] || 0) + 1;
+          });
+        }
+      });
+
+      return Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([tag, count]) => ({ tag, count }));
     }
 
     function avatarHtml(user, size = "av-md") {
@@ -1337,6 +1366,7 @@
 
       const q = getQuota(me);
       const myDrafts = db.drafts.filter((d) => d.userId === me.id);
+      const trending = getTrendingHashtags();
 
       const composerHtml = `<div class="card stack">
         <form onsubmit="publishPost(event)">
@@ -1380,6 +1410,16 @@
             ${posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">${t("noPostsFeed")}</div>`}
           </div>
           <aside class="stack">
+            <div class="card">
+              <h3 style="font-size:15px;margin-bottom:12px">${t("trendingTags")}</h3>
+              <div class="stack" style="gap:8px">
+                ${trending.length ? trending.map((item) => `
+                  <div class="row-between" style="background:var(--surface-soft);padding:8px 12px;border-radius:10px;cursor:pointer" onclick="filterByTag('${esc(item.tag)}')">
+                    <span style="color:var(--blue);font-weight:600;font-size:13px">${esc(item.tag)}</span>
+                    <span class="muted tabular" style="font-size:11px">${item.count} بوست</span>
+                  </div>`).join("") : `<div class="muted" style="text-align:center">${t("noTrending")}</div>`}
+              </div>
+            </div>
             <div class="card">
               <h3 style="font-size:15px;margin-bottom:12px">${t("writersInBahr")}</h3>
               <div class="stack" style="gap:10px">
