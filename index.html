@@ -198,7 +198,7 @@
     .menu-btn:hover { background: var(--surface-tint); }
     .menu-btn svg { width: 18px; height: 18px; fill: currentColor; }
     .dropdown-content {
-      position: absolute; left: 0; top: 48px; background: var(--surface); min-width: 230px;
+      position: absolute; left: 0; top: 48px; background: var(--surface); min-width: 240px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid var(--border);
       border-radius: 12px; z-index: 50; display: none; overflow: hidden;
     }
@@ -256,7 +256,7 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_complete_standalone_v21";
+    const STORAGE_KEY = "bahr_complete_standalone_v22";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
     
@@ -272,6 +272,7 @@
         searchPlaceholder: "ابحث عن أشخاص أو بوستات...",
         menuAccount: "إعدادات الحساب (الاسم والصورة والنبذة)",
         menuPass: "تغيير كلمة المرور",
+        menuVerifyRequest: "طلب توثيق الحساب",
         menuLang: "English / العربية",
         menuTheme: "تبديل الوضع الليلي/النهاري",
         menuDelete: "حذف الحساب نهائياً",
@@ -320,6 +321,7 @@
         searchPlaceholder: "Search people or posts...",
         menuAccount: "Account Settings (Name & Photo)",
         menuPass: "Change Password",
+        menuVerifyRequest: "Request Verification",
         menuLang: "العربية / English",
         menuTheme: "Toggle Dark/Light Mode",
         menuDelete: "Delete Account",
@@ -388,6 +390,7 @@
         postLogs: [],
         conversations: [],
         reports: [],
+        verificationRequests: [],
         notifications: [],
       };
     }
@@ -725,6 +728,10 @@
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
               ${t("menuPass")}
             </button>
+            <button class="dropdown-item" onclick="openVerificationRequestModal()">
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+              ${t("menuVerifyRequest")}
+            </button>
             <button class="dropdown-item" onclick="switchLanguage()">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
               ${t("menuLang")}
@@ -734,7 +741,7 @@
               ${t("menuTheme")}
             </button>
             <button class="dropdown-item" onclick="setView('admin')" style="${me.role === 'admin' ? '' : 'display:none'}">
-              <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c-.5.38 1.03.7 1.62.94l.36 2.54c-.05.24.24.41.48.41h3.84c-.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c-.22.08-.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c-.5.38 1.03.7 1.62.94l.36 2.54c-.05.24.24.41.48.41h3.84c-.24 0 .44-.17.47-.41l.36-2.54c-.59-.24 1.13-.56 1.62-.94l2.39.96c-.22.08-.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
               ${t("adminPanel")}
             </button>
             <div class="divider" style="margin:4px 0"></div>
@@ -757,6 +764,80 @@
       else if (ui.view === "admin" && me.role === "admin") app.innerHTML = renderAdmin();
       else if (ui.view === "discover") app.innerHTML = renderDiscover();
       else app.innerHTML = renderFeed();
+    }
+
+    function openVerificationRequestModal() {
+      const me = currentUser();
+      if (!me) return;
+      document.getElementById("modal-root").innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal-card stack">
+            <div class="row-between">
+              <h3>طلب توثيق الحساب</h3>
+              <button class="btn btn-ghost" style="padding:4px 10px" onclick="closeModal()">✕</button>
+            </div>
+            <form onsubmit="submitVerificationRequest(event)" class="stack">
+              <div>
+                <label class="muted">الاسم الثلاثي</label>
+                <input id="vr-fullname" class="input" required placeholder="الاسم الثلاثي حصراً..." />
+              </div>
+              <div>
+                <label class="muted">الرقم القومي</label>
+                <input id="vr-nationalid" class="input" required minlength="10" maxlength="14" placeholder="الرقم القومي (14 رقم)..." />
+              </div>
+              <div>
+                <label class="muted">العنوان</label>
+                <input id="vr-address" class="input" required placeholder="العنوان الحالي بالتفصيل..." />
+              </div>
+              <div class="row">
+                <div style="flex:1">
+                  <label class="muted">السن</label>
+                  <input id="vr-age" type="number" min="10" max="100" class="input" required placeholder="السن..." />
+                </div>
+                <div style="flex:1">
+                  <label class="muted">تاريخ الميلاد</label>
+                  <input id="vr-birth" type="date" class="input" required />
+                </div>
+              </div>
+              <div>
+                <label class="muted">رقم الهاتف</label>
+                <input id="vr-phone" type="tel" class="input" required placeholder="رقم الهاتف..." />
+              </div>
+              <div class="row" style="justify-content:flex-end">
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+                <button type="submit" class="btn btn-primary">إرسال الطلب للإدارة</button>
+              </div>
+            </form>
+          </div>
+        </div>`;
+    }
+
+    function submitVerificationRequest(e) {
+      e.preventDefault();
+      const me = currentUser();
+      if (!me) return;
+      const fullname = document.getElementById("vr-fullname").value.trim();
+      const nationalId = document.getElementById("vr-nationalid").value.trim();
+      const address = document.getElementById("vr-address").value.trim();
+      const age = document.getElementById("vr-age").value.trim();
+      const birthDate = document.getElementById("vr-birth").value.trim();
+      const phone = document.getElementById("vr-phone").value.trim();
+
+      if (!db.verificationRequests) db.verificationRequests = [];
+      const reqId = uid();
+      db.verificationRequests.unshift({
+        id: reqId, userId: me.id, fullname, nationalId, address, age, birthDate, phone, status: "pending", createdAt: Date.now()
+      });
+
+      const adminUser = db.users.find(u => u.role === "admin");
+      if (adminUser) {
+        notifyUser(adminUser.id, "admin", me.id, `قام المستخدم ${me.username} بتقديم طلب توثيق حساب جديد (الاسم: ${fullname})`, "طلب توثيق جديد");
+      }
+
+      save();
+      closeModal();
+      toast("تم إرسال طلب التوثيق إلى الإدارة بنجاح");
+      render();
     }
 
     function openAccountSettingsModal() {
@@ -1654,19 +1735,22 @@
     function renderAdmin() {
       const s = db.settings;
       const allPosts = db.posts.sort((a, b) => b.createdAt - a.createdAt);
+      const vReqs = db.verificationRequests || [];
 
       return `
         <div class="stack">
           <div class="card row-between">
             <div>
               <h2>${t("adminPanel")}</h2>
-              <div class="muted tabular">إجمالي المستخدمين: ${db.users.length} · إجمالي البوستات: ${db.posts.length} · البلاغات: ${db.reports.length}</div>
+              <div class="muted tabular">إجمالي المستخدمين: ${db.users.length} · البوستات: ${db.posts.length} · طلبات التوثيق: ${vReqs.length}</div>
             </div>
             <div class="tabs">
-              <button class="tab-btn ${ui.adminTab === "users" ? "active" : ""}" onclick="ui.adminTab='users';render()">إدارة المستخدمين والحصص</button>
-              <button class="tab-btn ${ui.adminTab === "posts" ? "active" : ""}" onclick="ui.adminTab='posts';render()">إدارة وحذف البوستات</button>
-              <button class="tab-btn ${ui.adminTab === "settings" ? "active" : ""}" onclick="ui.adminTab='settings';render()">إعدادات المنصة</button>
-              <button class="tab-btn ${ui.adminTab === "mod" ? "active" : ""}" onclick="ui.adminTab='mod';render()">البلاغات والشكاوى</button>
+              <button class="tab-btn ${ui.adminTab === "users" ? "active" : ""}" onclick="ui.adminTab='users';render()">المستخدمين والحصص</button>
+              <button class="tab-btn ${ui.adminTab === "verify" ? "active" : ""}" onclick="ui.adminTab='verify';render()">طلبات التوثيق (${vReqs.filter(r=>r.status==='pending').length})</button>
+              <button class="tab-btn ${ui.adminTab === "broadcast" ? "active" : ""}" onclick="ui.adminTab='broadcast';render()">التنشيط العام</button>
+              <button class="tab-btn ${ui.adminTab === "posts" ? "active" : ""}" onclick="ui.adminTab='posts';render()">البوستات</button>
+              <button class="tab-btn ${ui.adminTab === "settings" ? "active" : ""}" onclick="ui.adminTab='settings';render()">الإعدادات</button>
+              <button class="tab-btn ${ui.adminTab === "mod" ? "active" : ""}" onclick="ui.adminTab='mod';render()">البلاغات</button>
             </div>
           </div>
           ${ui.adminTab === "users" ? `
@@ -1693,6 +1777,50 @@
                     ` : ""}
                   </div>
                 </div>`).join("")}
+            </div>` : ""}
+          ${ui.adminTab === "verify" ? `
+            <div class="card stack">
+              <h3>طلبات توثيق الحسابات المُقدمة</h3>
+              ${vReqs.map((r) => {
+                const applicant = getUser(r.userId);
+                return `<div style="padding:14px;background:var(--surface-soft);border-radius:12px" class="stack">
+                  <div class="row-between">
+                    <div>
+                      <strong>اسم المستخدم: ${esc(applicant ? applicant.username : "مستخدم")}</strong>
+                      <div class="muted tabular">تاريخ الطلب: ${relTime(r.createdAt)} · الحالة: <span style="color:${r.status==='approved'?'var(--teal)':r.status==='rejected'?'var(--danger)':'var(--warning-text)'}">${r.status==='approved'?'تم القبول':r.status==='rejected'?'مرفوض':'قيد المراجعة'}</span></div>
+                    </div>
+                    <div class="row">
+                      ${r.status === 'pending' ? `
+                        <button class="btn btn-primary" onclick="adminApproveVerify(${r.id})">قبول ومنح التوثيق</button>
+                        <button class="btn btn-danger" onclick="adminRejectVerify(${r.id})">رفض</button>
+                      ` : ''}
+                    </div>
+                  </div>
+                  <div style="font-size:13px;background:var(--surface);padding:10px;border-radius:8px;border:1px solid var(--border)">
+                    <div><strong>الاسم الثلاثي:</strong> ${esc(r.fullname)}</div>
+                    <div><strong>الرقم القومي:</strong> ${esc(r.nationalId)}</div>
+                    <div><strong>العنوان:</strong> ${esc(r.address)}</div>
+                    <div><strong>السن:</strong> ${esc(r.age)} سنة · <strong>تاريخ الميلاد:</strong> ${esc(r.birthDate)}</div>
+                    <div><strong>رقم الهاتف:</strong> ${esc(r.phone)}</div>
+                  </div>
+                </div>`;
+              }).join("") || `<div class="muted" style="text-align:center">لا توجد طلبات توثيق حالياً.</div>`}
+            </div>` : ""}
+          ${ui.adminTab === "broadcast" ? `
+            <div class="card stack">
+              <h3>إرسال تنشيط عام (إشعار جماعي لجميع المستخدمين)</h3>
+              <p class="muted">قم بكتابة الرسالة أدناه وسيقوم النظام فوراً بإرسالها في صندوق إشعارات كافة المستخدمين النشطين في المنصة.</p>
+              <form onsubmit="sendBroadcastNotification(event)" class="stack">
+                <div>
+                  <label class="muted">عنوان الإشعار العام</label>
+                  <input id="bc-title" class="input" required placeholder="مثال: تنبيه رسمي من الإدارة / تحديث جديد..." />
+                </div>
+                <div>
+                  <label class="muted">نص الرسالة</label>
+                  <textarea id="bc-msg" rows="4" required maxlength="500" placeholder="اكتب نص الإشعار هنا..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="align-self:flex-start">إرسال التنشيط العام لجميع المستخدمين</button>
+              </form>
             </div>` : ""}
           ${ui.adminTab === "posts" ? `
             <div class="card stack">
@@ -1747,6 +1875,50 @@
                 </div>`).join("") || `<div class="muted" style="text-align:center">لا توجد بلاغات نشطة حالياً.</div>`}
             </div>` : ""}
         </div>`;
+    }
+
+    function sendBroadcastNotification(e) {
+      e.preventDefault();
+      const title = document.getElementById("bc-title").value.trim();
+      const msg = document.getElementById("bc-msg").value.trim();
+      if (!title || !msg) return;
+
+      db.users.forEach(u => {
+        if (u.role !== "admin") {
+          notifyUser(u.id, "admin", null, msg, title);
+        }
+      });
+      save();
+      toast("تم إرسال التنشيط العام لجميع المستخدمين بنجاح");
+      document.getElementById("bc-title").value = "";
+      document.getElementById("bc-msg").value = "";
+    }
+
+    function adminApproveVerify(reqId) {
+      const r = (db.verificationRequests || []).find(x => x.id === reqId);
+      if (!r) return;
+      r.status = "approved";
+      const u = getUser(r.userId);
+      if (u) {
+        u.verified = true;
+        notifyUser(u.id, "admin", null, "تم قبول طلب توثيق حسابك ومنحك شارة التوثيق الزرقاء ✓", "تم توثيق الحساب");
+      }
+      save();
+      toast("تم قبول طلب التوثيق وتوثيق الحساب بنجاح");
+      render();
+    }
+
+    function adminRejectVerify(reqId) {
+      const r = (db.verificationRequests || []).find(x => x.id === reqId);
+      if (!r) return;
+      r.status = "rejected";
+      const u = getUser(r.userId);
+      if (u) {
+        notifyUser(u.id, "admin", null, "عذراً، تم رفض طلب توثيق الحساب المقدم من قِبل الإدارة.", "طلب التوثيق");
+      }
+      save();
+      toast("تم رفض الطلب");
+      render();
     }
 
     function adminVerify(id) {
