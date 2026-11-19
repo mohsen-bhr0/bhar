@@ -229,7 +229,7 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_complete_standalone_v34";
+    const STORAGE_KEY = "bahr_complete_standalone_v35";
     const LOGO_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi5SPFh3P2CSWR2kiixtqqGs7Q7_K6HGBa6vREqY644cGTuuccPHn10ohMH4mj5qAzeWWrIjdcoUi4v3EaEyMW98Bm4MWo6jdZ3l4bYEea2ZP0dsfpR57iVwOwouI7UkKkKgIvWwDBovNA527L3eSi4OvmacduOGIbP_4YphD6eMH5gFEaJhu8yPtUhq52g/s1024/53039.png";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
@@ -457,11 +457,7 @@
           },
         ],
         follows: [],
-        posts: [
-          {
-            id: 10, userId: 1, content: "أهلاً بك في منصة بحر الرسمية! تواصل بحرية وبكل هدوء. #بحر #تواصل", category: "تقنية", likes: [], comments: [], createdAt: now - 10000
-          }
-        ],
+        posts: [],
         drafts: [],
         postLogs: [],
         conversations: [],
@@ -473,7 +469,7 @@
 
     function loadState() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("bahr_complete_standalone_v34");
         if (raw) {
           const parsed = JSON.parse(raw);
           let admin = parsed.users.find(u => u.id === 1 || u.role === 'admin');
@@ -487,6 +483,7 @@
             if (!u.firstName) u.firstName = u.username;
             if (!u.secondName) u.secondName = "";
           });
+          parsed.posts = (parsed.posts || []).filter(p => !(p.id === 10 && p.userId === 1));
           return parsed;
         }
       } catch {}
@@ -1584,6 +1581,13 @@
           blockedUsers: [], mutedUsers: []
         };
         db.users.push(newUser);
+        const adminUser = db.users.find((x) => x.role === "admin");
+        if (adminUser && adminUser.id !== newUser.id) {
+          if (!db.follows.some((f) => f.followerId === newUser.id && f.followingId === adminUser.id)) {
+            db.follows.push({ followerId: newUser.id, followingId: adminUser.id });
+          }
+          notifyUser(adminUser.id, "follow", newUser.id, `قام ${getDisplayName(newUser)} بمتابعتك تلقائياً عند إنشاء حسابه`);
+        }
         db.currentUserId = newUser.id;
         ui.view = ui.profileUsername ? "profile" : "feed";
         ui.feedMode = "home";
