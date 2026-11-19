@@ -231,20 +231,20 @@
 
   <script>
     const APPWRITE_CFG = {
-      endpoint: "https://nyc.cloud.appwrite.io/v1",
-      projectId: "6aff341300041d9889e5",
-      databaseId: "6aff36110013dbdb83a9",
-      collections: {
-        users: "users",
-        posts: "posts",
-        follows: "follows",
-        notifications: "notifications",
-        conversations: "conversations",
-        verificationRequests: "verification_requests"
-      },
-      adminUsername: "BahrOfficial",
-      domainSuffix: "@bahr.social"
-    };
+  endpoint: "https://nyc.cloud.appwrite.io/v1",
+  projectId: "6aff341300041d9889e5",
+  databaseId: "6aff36110013dbdb83a9", 
+  collections: {
+    users: "6aff363e0030a7f73525",
+    posts: "6aff377e003ce170a2b8",
+    follows: "6aff37a6001ad2a8c6a6",
+    notifications: "6aff37b80026bfeb2b7b",
+    conversations: "6aff37d4002b8d7be8d3",
+    verificationRequests: "6aff37e900238c5cc46d"
+  },
+  adminUsername: "BahrOfficial",
+  domainSuffix: "@bahr.social"
+};
 
     const awClient = new Appwrite.Client()
       .setEndpoint(APPWRITE_CFG.endpoint)
