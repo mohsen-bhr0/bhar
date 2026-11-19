@@ -1,183 +1,137 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl" data-theme="light" data-lang="ar">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>بحر — منصة تواصل اجتماعي نصية متكاملة</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@500;600;700&display=swap" rel="stylesheet" />
+  <title>بحر — منصة تواصل اجتماعي</title>
   <style>
     :root {
-      --bg: #f6f9fc;
+      --bg: #f4f7fb;
       --surface: #ffffff;
-      --surface-soft: #f8fbfe;
-      --surface-tint: #edf5fc;
-      --border: #dce7f2;
-      --ink: #0d2238;
-      --muted: #5b748b;
+      --surface-soft: #f8fafc;
+      --surface-tint: #eef6ff;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
       --blue: #0d63a5;
-      --blue-hover: #0a4f85;
-      --teal: #0e8a8a;
+      --blue-hover: #094b7d;
+      --teal: #0f766e;
       --danger: #dc2626;
-      --danger-bg: #fef2f2;
-      --warning-bg: #fffbeb;
       --warning-text: #b45309;
     }
     [data-theme="dark"] {
-      --bg: #0b131e;
-      --surface: #131f30;
-      --surface-soft: #18263a;
-      --surface-tint: #1e314d;
-      --border: #233754;
-      --ink: #f0f4f8;
+      --bg: #070d16;
+      --surface: #0f172a;
+      --surface-soft: #162033;
+      --surface-tint: #132842;
+      --ink: #f8fafc;
       --muted: #94a3b8;
+      --border: #1e293b;
       --blue: #38bdf8;
-      --blue-hover: #7dd3fc;
+      --blue-hover: #0284c7;
       --teal: #2dd4bf;
       --danger: #f87171;
-      --danger-bg: #451a03;
-      --warning-bg: #451a03;
       --warning-text: #fbbf24;
     }
-    [data-lang="en"] { direction: ltr; font-family: system-ui, -apple-system, sans-serif; }
-    
     * { box-sizing: border-box; }
     body {
-      margin: 0;
-      font-family: "IBM Plex Sans Arabic", system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--ink);
-      line-height: 1.6;
-      transition: background 0.2s, color 0.2s;
-      padding-bottom: 90px;
+      margin: 0; font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--ink); padding-bottom: 84px;
     }
-    h1, h2, h3, .brand { font-family: "Readex Pro", "IBM Plex Sans Arabic", sans-serif; margin: 0; }
+    a { color: inherit; }
     button, input, textarea, select { font-family: inherit; }
     button { cursor: pointer; }
-    .tabular { font-variant-numeric: tabular-nums; }
-    .container { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
-
+    .container { max-width: 1040px; margin: 0 auto; padding: 16px; }
     header {
-      position: sticky; top: 0; z-index: 30;
-      background: var(--surface);
-      backdrop-filter: blur(6px);
-      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 40;
+      background: var(--surface); border-bottom: 1px solid var(--border);
     }
-    .topbar {
-      height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 14px;
-    }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 60px; }
     .brand-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: none; border: none; color: var(--ink); font-size: 19px; font-weight: 700;
-      white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 8px;
+      background: none; border: none; padding: 4px 6px; border-radius: 10px;
+      font-weight: 700; font-size: 18px; color: var(--ink);
     }
-    .brand-logo-img {
-      width: 36px; height: 36px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; background: var(--surface-soft);
+    .brand-logo-img { width: 32px; height: 32px; border-radius: 9px; object-fit: cover; border: 1px solid var(--border); }
+    .header-search {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface-soft); border: 1px solid var(--border);
+      border-radius: 99px; padding: 5px 12px; width: 220px;
     }
-    
+    @media (max-width: 640px) { .header-search { width: 135px; } }
+    .header-search svg { width: 15px; height: 15px; fill: var(--muted); flex-shrink: 0; }
+    .header-search input {
+      border: none; background: none; color: var(--ink); font-size: 12px; width: 100%; outline: none;
+    }
     .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-around;
-      padding: 8px 12px;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+      position: fixed; bottom: 0; inset-inline: 0; z-index: 45;
+      background: var(--surface); border-top: 1px solid var(--border);
+      display: flex; justify-content: space-around; padding: 6px 4px;
     }
     .bottom-nav-item {
-      background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 4px;
-      color: var(--muted); font-size: 11px; font-weight: 500; padding: 4px 8px; border-radius: 10px;
-      transition: 0.15s;
+      background: none; border: none; color: var(--muted);
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      font-size: 11px; padding: 4px 8px; border-radius: 10px;
     }
+    .bottom-nav-item.active { color: var(--blue); font-weight: 700; background: var(--surface-tint); }
     .bottom-nav-item svg { width: 20px; height: 20px; fill: currentColor; }
-    .bottom-nav-item.active { color: var(--blue); font-weight: 600; }
-    .bottom-nav-item:hover { color: var(--blue); }
-
-    .header-search {
-      position: relative; width: 220px; max-width: 35vw;
-    }
-    .header-search input {
-      width: 100%; padding: 7px 32px 7px 12px; font-size: 13px; color: var(--ink);
-      background: var(--surface-soft); border: 1px solid var(--border); border-radius: 20px;
-      outline: none;
-    }
-    [data-lang="en"] .header-search input { padding: 7px 12px 7px 32px; }
-    .header-search input:focus { border-color: var(--blue); }
-    .header-search svg {
-      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-      width: 15px; height: 15px; fill: var(--muted); pointer-events: none;
-    }
-    [data-lang="en"] .header-search svg { right: auto; left: 10px; }
-
-    main { padding: 26px 0 60px; }
-    .grid-2 { display: grid; grid-template-columns: 1fr; gap: 22px; align-items: start; }
-    @media (min-width: 960px) { .grid-2 { grid-template-columns: 2fr 1fr; } }
     .card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 16px;
     }
-    .stack { display: flex; flex-direction: column; gap: 16px; }
-    .row { display: flex; align-items: center; gap: 10px; }
-    .row-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-
+    .stack { display: flex; flex-direction: column; gap: 12px; }
+    .row { display: flex; align-items: center; gap: 8px; }
+    .row-between { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .grid-2 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 860px) { .grid-2 { grid-template-columns: 1.65fr 1fr; } }
+    .muted { color: var(--muted); font-size: 12px; }
+    .tabular { font-variant-numeric: tabular-nums; }
+    .divider { height: 1px; background: var(--border); margin: 12px 0; }
+    .input, textarea, select {
+      width: 100%; padding: 10px 12px; border-radius: 11px;
+      border: 1px solid var(--border); background: var(--surface-soft);
+      color: var(--ink); font-size: 14px; outline: none;
+    }
+    textarea { resize: vertical; }
     .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 8px 16px; border-radius: 11px; border: 1px solid transparent;
-      font-size: 13px; font-weight: 600; white-space: nowrap; transition: 0.15s;
+      border: none; border-radius: 11px; padding: 8px 14px;
+      font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;
     }
     .btn-primary { background: var(--blue); color: #fff; }
-    .btn-primary:hover { opacity: 0.9; }
+    .btn-primary:hover { background: var(--blue-hover); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
     .btn-soft { background: var(--surface-tint); color: var(--blue); }
     .btn-ghost { background: var(--surface-soft); color: var(--ink); border: 1px solid var(--border); }
-    .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); }
-    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-    .input, textarea, select {
-      width: 100%; padding: 10px 13px; font-size: 14px; color: var(--ink);
-      background: var(--surface-soft); border: 1px solid var(--border); border-radius: 11px;
-      outline: none;
-    }
-    .input:focus, textarea:focus, select:focus { border-color: var(--blue); }
-
-    .avatar {
-      border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center;
-      flex-shrink: 0; font-weight: 700; color: #fff; user-select: none; overflow: hidden;
-      object-fit: cover;
-    }
-    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .av-xs { width: 28px; height: 28px; font-size: 11px; }
-    .av-sm { width: 36px; height: 36px; font-size: 13px; }
-    .av-md { width: 44px; height: 44px; font-size: 15px; }
-    .av-lg { width: 72px; height: 72px; font-size: 26px; }
-    
-    .verified {
-      width: 16px; height: 16px; border-radius: 9999px; background: var(--blue); color: #fff;
-      display: inline-flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0;
-    }
-
-    .tabs {
-      display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px;
-      background: var(--surface-soft); border: 1px solid var(--border); border-radius: 12px;
-    }
+    .btn-danger { background: rgba(220, 38, 38, 0.12); color: var(--danger); }
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
     .tab-btn {
-      background: none; border: none; padding: 7px 14px; border-radius: 9px;
-      font-size: 12px; font-weight: 600; color: var(--muted);
+      background: var(--surface-soft); border: 1px solid var(--border);
+      color: var(--muted); border-radius: 10px; padding: 7px 12px; font-size: 12px; font-weight: 600;
     }
-    .tab-btn.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
-
-    .muted { color: var(--muted); font-size: 12px; }
-    .divider { border-top: 1px solid var(--border); margin: 14px 0; }
-    .post-text { font-size: 15.5px; line-height: 1.85; white-space: pre-wrap; word-break: break-word; margin: 14px 0 0; }
-    
+    .tab-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .avatar {
+      border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; overflow: hidden; flex-shrink: 0;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .av-xs { width: 24px; height: 24px; font-size: 11px; }
+    .av-sm { width: 34px; height: 34px; font-size: 13px; }
+    .av-md { width: 42px; height: 42px; font-size: 16px; }
+    .av-lg { width: 68px; height: 68px; font-size: 24px; }
+    .verified {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--blue); color: #fff; font-size: 10px; font-weight: 700;
+    }
+    .post-text { margin: 10px 0 0; font-size: 15px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
     .tag-badge {
-      display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
+      display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px;
       background: var(--surface-tint); color: var(--blue); border: 1px solid var(--border); cursor: pointer;
     }
     .tag-badge:hover { opacity: 0.85; }
-
     .hashtag-link, .mention-link { color: var(--blue); text-decoration: none; font-weight: 600; }
     .hashtag-link:hover, .mention-link:hover { text-decoration: underline; }
     .mention-link { background: var(--surface-tint); padding: 1px 5px; border-radius: 6px; }
-
     .mention-dropdown {
       position: absolute; z-index: 60; background: var(--surface); border: 1px solid var(--border);
       border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); max-height: 180px; overflow-y: auto;
@@ -188,12 +142,10 @@
       text-align: start; color: var(--ink); font-size: 13px;
     }
     .mention-item:hover { background: var(--surface-tint); }
-
     .legal-link-btn {
       background: none; border: none; color: var(--blue); font-size: 12px; padding: 0; cursor: pointer; text-decoration: underline;
     }
     .legal-link-btn:hover { color: var(--blue-hover); }
-
     .stats-grid {
       display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px;
     }
@@ -203,7 +155,6 @@
     }
     .stat-num { font-size: 18px; font-weight: 700; color: var(--blue); }
     .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
     .info-chips {
       display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
     }
@@ -213,12 +164,10 @@
       background: var(--surface-soft); border: 1px solid var(--border); color: var(--ink);
     }
     .info-chip svg { width: 14px; height: 14px; fill: currentColor; }
-
     .photo-upload-box {
       display: flex; align-items: center; gap: 14px; padding: 12px;
       background: var(--surface-soft); border: 1px dashed var(--border); border-radius: 12px;
     }
-
     .dropdown { position: relative; display: inline-block; }
     .menu-btn {
       background: var(--surface-soft); border: 1px solid var(--border); border-radius: 11px;
@@ -239,7 +188,6 @@
     }
     .dropdown-item:hover { background: var(--surface-soft); }
     .dropdown-item.danger { color: var(--danger); }
-
     .chat-box { display: grid; grid-template-columns: 1fr; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; background: var(--surface); min-height: 520px; }
     @media (min-width: 820px) { .chat-box { grid-template-columns: 300px 1fr; } }
     .chat-list { border-inline-end: 1px solid var(--border); display: flex; flex-direction: column; }
@@ -250,7 +198,6 @@
     [data-lang="en"] .bubble.mine { align-self: flex-end; }
     .bubble.theirs { align-self: flex-end; background: var(--surface); border: 1px solid var(--border); color: var(--ink); }
     [data-lang="en"] .bubble.theirs { align-self: flex-start; }
-    
     .toast {
       position: fixed; bottom: 85px; left: 20px; z-index: 90;
       background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 11px; font-size: 12px;
@@ -277,18 +224,16 @@
   </header>
 
   <main class="container" id="app"></main>
-  
   <div id="bottom-nav-container"></div>
-
   <div id="modal-root"></div>
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_complete_standalone_v32";
+    const STORAGE_KEY = "bahr_complete_standalone_v34";
     const LOGO_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi5SPFh3P2CSWR2kiixtqqGs7Q7_K6HGBa6vREqY644cGTuuccPHn10ohMH4mj5qAzeWWrIjdcoUi4v3EaEyMW98Bm4MWo6jdZ3l4bYEea2ZP0dsfpR57iVwOwouI7UkKkKgIvWwDBovNA527L3eSi4OvmacduOGIbP_4YphD6eMH5gFEaJhu8yPtUhq52g/s1024/53039.png";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
-    
+
     const I18N = {
       ar: {
         brandName: "بحر",
@@ -346,6 +291,10 @@
         profileShareSuccess: "تم نسخ رابط الحساب",
         bahrCharter: "ميثاق منصة بحر",
         bahrCharterText: "بوست نصي واحد كل 24 ساعة (500 حرف) مع إمكانية استخدام #الوسوم، @المنشن، وبطاقات الاقتباس القابلة للمشاركة.",
+        loginOrRegister: "تسجيل الدخول / إنشاء حساب",
+        authRequiredTitle: "تسجيل الدخول مطلوب",
+        authRequiredMsg: "سجّل دخولك أو أنشئ حساباً جديداً للمتابعة والإعجاب والتعليق والمراسلة.",
+        goToAuth: "الذهاب لتسجيل الدخول"
       },
       en: {
         brandName: "Bahr",
@@ -403,6 +352,10 @@
         profileShareSuccess: "Profile link copied",
         bahrCharter: "Bahr Charter",
         bahrCharterText: "One text post every 24 hours (500 chars) with #hashtags, @mentions, and shareable Quote Cards.",
+        loginOrRegister: "Login / Register",
+        authRequiredTitle: "Login Required",
+        authRequiredMsg: "Log in or create an account to follow, like, comment, and message.",
+        goToAuth: "Go to Login"
       }
     };
 
@@ -457,6 +410,29 @@
         </div>`;
     }
 
+    function openAuthPromptModal(customMsg = "") {
+      document.getElementById("modal-root").innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal-card stack">
+            <div class="row-between">
+              <h3>${t("authRequiredTitle")}</h3>
+              <button class="btn btn-ghost" style="padding:4px 10px" onclick="closeModal()">✕</button>
+            </div>
+            <p style="font-size:14px;margin:0;line-height:1.7">${esc(customMsg || t("authRequiredMsg"))}</p>
+            <div class="row" style="justify-content:flex-end">
+              <button type="button" class="btn btn-ghost" onclick="closeModal()">${ui.lang === 'en' ? 'Cancel' : 'إلغاء'}</button>
+              <button type="button" class="btn btn-primary" onclick="closeModal(); ui.view='auth'; render();">${t("goToAuth")}</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function requireAuth(customMsg = "") {
+      if (currentUser()) return true;
+      openAuthPromptModal(customMsg);
+      return false;
+    }
+
     const DEFAULT_CATEGORIES = ["تقنية", "خواطر", "طب وصحة", "ريادة أعمال", "كتب"];
     const COUNTRIES = [
       "مصر", "السعودية", "الإمارات", "الأردن", "فلسطين", "لبنان", "سوريا", "العراق",
@@ -469,7 +445,7 @@
       const now = Date.now();
       return {
         settings: { registrationOpen: true, autoDeleteEnabled: false, autoDeleteHours: 24, allowPostEdits: true },
-        currentUserId: 1,
+        currentUserId: null,
         nextId: 100,
         users: [
           {
@@ -500,7 +476,6 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          // تأكيد تعيين حساب الإدارة الأساسي بالاسم المطلوب وصورة الشعار
           let admin = parsed.users.find(u => u.id === 1 || u.role === 'admin');
           if (admin) {
             admin.username = "BahrOfficial";
@@ -522,7 +497,7 @@
 
     let db = loadState();
     let ui = {
-      view: "feed",
+      view: db.currentUserId ? "feed" : "auth",
       feedMode: "home",
       authMode: "login",
       profileUsername: null,
@@ -557,7 +532,7 @@
     function checkInitialHash() {
       const h = location.hash || "";
       if (h.startsWith("#u-")) {
-        const uname = h.replace("#u-", "").trim();
+        const uname = decodeURIComponent(h.replace("#u-", "")).trim();
         if (uname && db.users.some((u) => u.username.toLowerCase() === uname.toLowerCase())) {
           ui.profileUsername = uname;
           ui.view = "profile";
@@ -663,7 +638,7 @@
           if (w > h) {
             if (w > MAX) { h = Math.round((h * MAX) / w); w = MAX; }
           } else {
-            if (h > MAX) { w = Math.round((h * MAX) / h); h = MAX; }
+            if (h > MAX) { w = Math.round((w * MAX) / h); h = MAX; }
           }
           canvas.width = w;
           canvas.height = h;
@@ -723,7 +698,7 @@
       const query = atMatch[1].toLowerCase();
       const me = currentUser();
       const candidates = db.users
-        .filter((u) => u.id !== me.id && !u.disabled && (u.username.toLowerCase().includes(query) || getDisplayName(u).toLowerCase().includes(query)))
+        .filter((u) => (!me || u.id !== me.id) && !u.disabled && (u.username.toLowerCase().includes(query) || getDisplayName(u).toLowerCase().includes(query)))
         .slice(0, 5);
 
       if (!candidates.length) {
@@ -916,6 +891,7 @@
     }
 
     function filterByTag(tag) {
+      if (!requireAuth("سجّل دخولك أولاً لتصفح الوسوم والبحث.")) return;
       ui.filterTag = tag.trim();
       ui.view = "discover";
       render();
@@ -992,7 +968,7 @@
 
     function setView(v) {
       const me = currentUser();
-      if (!me && v !== "auth") {
+      if (!me && v !== "auth" && v !== "profile") {
         ui.view = "auth";
         render();
         return;
@@ -1002,10 +978,16 @@
     }
 
     function openProfileByUsername(uname) {
-      const me = currentUser();
-      if (!me) { ui.view = "auth"; render(); return; }
-      ui.profileUsername = uname;
+      const target = getUserByUsername(uname);
+      if (!target || target.disabled) {
+        toast("الحساب غير موجود");
+        return;
+      }
+      ui.profileUsername = target.username;
       ui.view = "profile";
+      try {
+        location.hash = `#u-${encodeURIComponent(target.username)}`;
+      } catch {}
       render();
     }
 
@@ -1056,8 +1038,12 @@
       const me = currentUser();
 
       if (!me) {
+        if (ui.view !== "profile" && ui.view !== "auth") {
+          ui.view = "auth";
+        }
         document.getElementById("bottom-nav-container").innerHTML = "";
         document.getElementById("auth-actions").innerHTML = `
+          <button class="btn btn-primary" style="padding:7px 14px;font-size:12px" onclick="ui.view='auth';render()">${t("loginOrRegister")}</button>
           <div class="dropdown">
             <button class="menu-btn" onclick="toggleUserMenu(event)" title="Menu">
               <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
@@ -1067,14 +1053,22 @@
                 <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
                 ${t("menuLang")}
               </button>
+              <button class="dropdown-item" onclick="toggleTheme()">
+                <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="${ui.theme === 'light' ? 'M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z' : 'M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z'}"/></svg>
+                ${t("menuTheme")}
+              </button>
               <div class="divider" style="margin:4px 0"></div>
               <button class="dropdown-item" onclick="openLegalModal('privacy')">${t("privacyPolicy")}</button>
               <button class="dropdown-item" onclick="openLegalModal('terms')">${t("termsOfUse")}</button>
               <button class="dropdown-item" onclick="openLegalModal('agreement')">${t("userAgreement")}</button>
             </div>
           </div>`;
-        document.getElementById("app").innerHTML = renderAuth();
+        document.getElementById("app").innerHTML = (ui.view === "profile" && ui.profileUsername) ? renderProfile() : renderAuth();
         return;
+      }
+
+      if (ui.view === "auth") {
+        ui.view = ui.profileUsername ? "profile" : "feed";
       }
 
       const unread = db.notifications.filter((n) => n.userId === me.id && !n.isRead).length;
@@ -1165,8 +1159,7 @@
         </div>`;
 
       const app = document.getElementById("app");
-      if (ui.view === "auth") app.innerHTML = renderAuth();
-      else if (ui.view === "profile") app.innerHTML = renderProfile();
+      if (ui.view === "profile") app.innerHTML = renderProfile();
       else if (ui.view === "chat") app.innerHTML = renderChat();
       else if (ui.view === "notifications") app.innerHTML = renderNotifications();
       else if (ui.view === "admin" && me.role === "admin") app.innerHTML = renderAdmin();
@@ -1462,7 +1455,7 @@
             : `<form onsubmit="submitAuth(event)" class="stack">
                 <div>
                   <label class="muted">اسم المستخدم (للتسجيل ورابط الحساب)</label>
-                  <input id="auth-u" class="input" required minlength="3" maxlength="24" placeholder="BahrOfficial" oninput="checkUsernameLive(this.value)" />
+                  <input id="auth-u" class="input" required minlength="3" maxlength="24" placeholder="username" oninput="checkUsernameLive(this.value)" />
                   <div id="u-suggest" style="margin-top:6px"></div>
                 </div>
                 ${ui.authMode === "register" ? `
@@ -1564,8 +1557,10 @@
         if (!found) return toast("بيانات تسجيل الدخول غير صحيحة");
         if (found.disabled) return toast("عذراً، هذا الحساب معطل من قِبل الإدارة");
         db.currentUserId = found.id;
+        ui.view = ui.profileUsername ? "profile" : "feed";
+        ui.feedMode = "home";
         save();
-        if (!ui.profileUsername) ui.view = "feed";
+        toast("تم تسجيل الدخول بنجاح");
         render();
       } else {
         if (!db.settings.registrationOpen) return toast("التسجيل مغلق حالياً");
@@ -1589,11 +1584,11 @@
           blockedUsers: [], mutedUsers: []
         };
         db.users.push(newUser);
-        
         db.currentUserId = newUser.id;
+        ui.view = ui.profileUsername ? "profile" : "feed";
+        ui.feedMode = "home";
         window.__regPhotoData = null;
         save();
-        if (!ui.profileUsername) ui.view = "feed";
         toast("تم إنشاء الحساب وتسجيل الدخول بنجاح");
         render();
       }
@@ -1601,8 +1596,8 @@
 
     function logout() {
       db.currentUserId = null;
-      save();
       ui.view = "auth";
+      save();
       toast("تم تسجيل الخروج");
       render();
     }
@@ -1610,7 +1605,7 @@
     function renderFeed() {
       const me = currentUser();
       const blocked = me.blockedUsers || [];
-      
+
       const posts = db.posts
         .filter((p) => {
           const author = getUser(p.userId);
@@ -1714,7 +1709,7 @@
 
     function getDiscoverHtml() {
       const me = currentUser();
-      const blocked = me.blockedUsers || [];
+      const blocked = me ? (me.blockedUsers || []) : [];
       let posts = db.posts.filter((p) => {
         const author = getUser(p.userId);
         return author && !author.disabled && !blocked.includes(p.userId);
@@ -1774,9 +1769,9 @@
       const author = getUser(p.userId);
       if (!author || author.disabled) return "";
       const me = currentUser();
-      const liked = p.likes.includes(me.id);
-      const canDel = (me.id === p.userId || me.role === "admin");
-      const canEdit = (me.id === p.userId && db.settings.allowPostEdits && (Date.now() - p.createdAt < 30 * 60 * 1000));
+      const liked = me ? p.likes.includes(me.id) : false;
+      const canDel = Boolean(me && (me.id === p.userId || me.role === "admin"));
+      const canEdit = Boolean(me && me.id === p.userId && db.settings.allowPostEdits && (Date.now() - p.createdAt < 30 * 60 * 1000));
       const openC = Boolean(ui.openComments[p.id]);
 
       return `
@@ -1792,7 +1787,7 @@
             <div class="row">
               ${canEdit ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="editPostModal(${p.id})">${t("edit")}</button>` : ""}
               ${canDel ? `<button class="btn btn-danger" style="padding:5px 10px;font-size:11px" onclick="deletePost(${p.id})">${t("delete")}</button>` : ""}
-              ${me.id !== author.id ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="reportPostPrompt(${p.id})">${t("report")}</button>` : ""}
+              ${(!me || me.id !== author.id) ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="reportPostPrompt(${p.id})">${t("report")}</button>` : ""}
             </div>
           </div>
           <p class="post-text">${formatRichText(p.content)}</p>
@@ -1825,6 +1820,7 @@
     }
 
     function saveAsDraft() {
+      if (!requireAuth()) return;
       const text = document.getElementById("post-input").value.trim();
       const catSelect = document.getElementById("post-cat").value;
       const catCustom = document.getElementById("post-cat-custom")?.value.trim();
@@ -1841,6 +1837,7 @@
     }
 
     function loadDraft(draftId) {
+      if (!requireAuth()) return;
       const d = db.drafts.find((x) => x.id === draftId);
       if (!d) return;
       db.drafts = db.drafts.filter((x) => x.id !== draftId);
@@ -1857,12 +1854,14 @@
     }
 
     function deleteDraft(draftId) {
+      if (!requireAuth()) return;
       db.drafts = db.drafts.filter((x) => x.id !== draftId);
       save();
       render();
     }
 
     function editPostModal(postId) {
+      if (!requireAuth()) return;
       const p = db.posts.find((x) => x.id === postId);
       if (!p) return;
       document.getElementById("modal-root").innerHTML = `
@@ -1890,6 +1889,7 @@
     }
 
     function reportPostPrompt(postId) {
+      if (!requireAuth("سجّل دخولك أولاً لتقديم بلاغ على المنشور.")) return;
       document.getElementById("modal-root").innerHTML = `
         <div class="modal-backdrop">
           <div class="modal-card stack">
@@ -1905,6 +1905,7 @@
 
     function confirmReportPost(postId) {
       const me = currentUser();
+      if (!me) return;
       const reason = document.getElementById("rep-post-reason").value.trim() || "مخالفة";
       db.reports.unshift({ id: uid(), reporterId: me.id, postId, reason, status: "open", createdAt: Date.now() });
       save();
@@ -1915,6 +1916,7 @@
     function publishPost(e) {
       e.preventDefault();
       const me = currentUser();
+      if (!me) return openAuthPromptModal("سجّل دخولك أولاً لنشر البوستات.");
       const text = document.getElementById("post-input").value.trim();
       const catSelect = document.getElementById("post-cat").value;
       const catCustom = document.getElementById("post-cat-custom")?.value.trim();
@@ -1936,6 +1938,7 @@
     }
 
     function deletePost(id) {
+      if (!requireAuth()) return;
       db.posts = db.posts.filter((p) => p.id !== id);
       save();
       toast("تم حذف البوست");
@@ -1944,6 +1947,7 @@
 
     function toggleLike(id) {
       const me = currentUser();
+      if (!me) return openAuthPromptModal("سجّل دخولك أولاً للإعجاب بالمنشورات.");
       const p = db.posts.find((x) => x.id === id);
       if (!p) return;
       const idx = p.likes.indexOf(me.id);
@@ -1959,6 +1963,7 @@
     function addComment(e, postId) {
       e.preventDefault();
       const me = currentUser();
+      if (!me) return openAuthPromptModal("سجّل دخولك أولاً لكتابة التعليقات.");
       const inp = document.getElementById(`cm-${postId}`);
       const text = inp.value.trim();
       if (!text || text.length > 500) return;
@@ -1978,13 +1983,14 @@
     }
 
     function shareProfileLink(username) {
-      const url = `${location.origin}${location.pathname}#u-${username}`;
+      const url = `${location.origin}${location.pathname}#u-${encodeURIComponent(username)}`;
       navigator.clipboard?.writeText(url).catch(() => {});
       toast(t("profileShareSuccess"));
     }
 
     function toggleFollow(targetId) {
       const me = currentUser();
+      if (!me) return openAuthPromptModal("سجّل دخولك أولاً لمتابعة الحسابات.");
       if (targetId === me.id) return;
       const idx = db.follows.findIndex((f) => f.followerId === me.id && f.followingId === targetId);
       if (idx >= 0) db.follows.splice(idx, 1);
@@ -1998,6 +2004,7 @@
 
     function toggleBlockUser(targetId) {
       const me = currentUser();
+      if (!me) return openAuthPromptModal("سجّل دخولك أولاً لحظر المستخدمين.");
       if (!me.blockedUsers) me.blockedUsers = [];
       const idx = me.blockedUsers.indexOf(targetId);
       if (idx >= 0) {
@@ -2015,10 +2022,10 @@
       const u = getUserByUsername(ui.profileUsername);
       if (!u || u.disabled) return `<div class="card">المستخدم غير موجود أو حسابه معطل</div>`;
       const me = currentUser();
-      const isOwn = me.id === u.id;
-      const isF = db.follows.some((f) => f.followerId === me.id && f.followingId === u.id);
-      const isBlocked = (me.blockedUsers || []).includes(u.id);
-      
+      const isOwn = Boolean(me && me.id === u.id);
+      const isF = Boolean(me && db.follows.some((f) => f.followerId === me.id && f.followingId === u.id));
+      const isBlocked = Boolean(me && (me.blockedUsers || []).includes(u.id));
+
       const followersCount = db.follows.filter((f) => f.followingId === u.id).length;
       const followingCount = db.follows.filter((f) => f.followerId === u.id).length;
       const userPosts = db.posts.filter((p) => p.userId === u.id).sort((a, b) => b.createdAt - a.createdAt);
@@ -2026,10 +2033,15 @@
       const thirtyDaysAgo = Date.now() - (30 * DAY_MS);
       const postsLastMonth = userPosts.filter((p) => p.createdAt > thirtyDaysAgo).length;
 
-      const canChat = !isOwn && u.role !== "admin" && me.role !== "admin" && !isBlocked;
+      const canChat = !isOwn && u.role !== "admin" && (!me || me.role !== "admin") && !isBlocked;
 
       return `
         <div class="stack">
+          ${!me ? `
+            <div class="card row-between" style="background:var(--surface-tint);padding:12px 16px">
+              <span style="font-size:13px">${t("authRequiredMsg")}</span>
+              <button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="ui.view='auth';render()">${t("loginOrRegister")}</button>
+            </div>` : ""}
           <div class="card">
             <div class="row-between">
               <div class="row" style="gap:16px;align-items:flex-start">
@@ -2083,6 +2095,7 @@
 
     function startChat(targetId) {
       const me = currentUser();
+      if (!me) return openAuthPromptModal("سجّل دخولك أولاً لبدء مراسلة مباشرة.");
       const target = getUser(targetId);
       if (me.role === "admin" || target.role === "admin") return toast("عذراً، الحساب الإداري لا يستخدم المحادثات المباشرة");
       const u1 = Math.min(me.id, targetId);
@@ -2100,6 +2113,7 @@
 
     function renderChat() {
       const me = currentUser();
+      if (!me) return renderAuth();
       if (me.role === "admin") return `<div class="card">حساب الإدارة لا يدعم المحادثات المباشرة.</div>`;
       const myConvs = db.conversations.filter((c) => c.user1Id === me.id || c.user2Id === me.id)
         .sort((a, b) => b.lastMessageAt - a.lastMessageAt);
@@ -2161,6 +2175,7 @@
     function sendMsg(e, convId) {
       e.preventDefault();
       const me = currentUser();
+      if (!me) return openAuthPromptModal();
       const conv = db.conversations.find((c) => c.id === convId);
       if (!conv || conv.messages.length >= 100) return;
       const text = document.getElementById("msg-in").value.trim();
@@ -2173,6 +2188,7 @@
     }
 
     function reportChat(convId) {
+      if (!requireAuth()) return;
       const conv = db.conversations.find((c) => c.id === convId);
       if (!conv) return;
       document.getElementById("modal-root").innerHTML = `
@@ -2190,6 +2206,7 @@
 
     function confirmReport(convId) {
       const me = currentUser();
+      if (!me) return;
       const conv = db.conversations.find((c) => c.id === convId);
       if (!conv) return closeModal();
       const reason = document.getElementById("rep-reason").value.trim() || "مخالفة";
@@ -2209,6 +2226,7 @@
 
     function renderNotifications() {
       const me = currentUser();
+      if (!me) return renderAuth();
       const list = db.notifications.filter((n) => n.userId === me.id);
       return `
         <div class="card">
@@ -2231,6 +2249,7 @@
 
     function markAllRead() {
       const me = currentUser();
+      if (!me) return;
       db.notifications.forEach((n) => { if (n.userId === me.id) n.isRead = true; });
       save();
       render();
