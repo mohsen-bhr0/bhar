@@ -246,6 +246,8 @@
       domainSuffix: "@bahr.social"
     };
 
+    const RESERVED_NEW_USERNAMES = ["bahr", "bahrofficial"];
+
     const awClient = new Appwrite.Client()
       .setEndpoint(APPWRITE_CFG.endpoint)
       .setProject(APPWRITE_CFG.projectId);
@@ -254,7 +256,7 @@
     const AW_ID = Appwrite.ID;
     const AW_Query = Appwrite.Query;
 
-    const STORAGE_KEY = "bahr_appwrite_cache_v37";
+    const STORAGE_KEY = "bahr_appwrite_cache_v38";
     const LOGO_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi5SPFh3P2CSWR2kiixtqqGs7Q7_K6HGBa6vREqY644cGTuuccPHn10ohMH4mj5qAzeWWrIjdcoUi4v3EaEyMW98Bm4MWo6jdZ3l4bYEea2ZP0dsfpR57iVwOwouI7UkKkKgIvWwDBovNA527L3eSi4OvmacduOGIbP_4YphD6eMH5gFEaJhu8yPtUhq52g/s1024/53039.png";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
@@ -422,6 +424,11 @@
       return err.message || err.response?.message || fallbackMsg;
     }
 
+    function isReservedNewUsername(uname) {
+      const clean = String(uname || "").trim().toLowerCase();
+      return RESERVED_NEW_USERNAMES.includes(clean);
+    }
+
     function openLegalModal(type) {
       const lang = ui.lang;
       const content = LEGAL_CONTENTS[type][lang];
@@ -474,6 +481,7 @@
     function initialData() {
       return {
         settings: { registrationOpen: true, autoDeleteEnabled: false, autoDeleteHours: 24, allowPostEdits: true },
+        postAutoDeleteOverrides: {},
         currentUserId: null,
         nextId: 100,
         users: [],
@@ -785,6 +793,7 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
           settings: db.settings,
+          postAutoDeleteOverrides: db.postAutoDeleteOverrides || {},
           drafts: db.drafts,
           reports: db.reports
         }));
@@ -808,22 +817,54 @@
       return db.users.find((u) => u.username.toLowerCase() === uname.toLowerCase()) || null;
     }
 
-    function cleanupSweep() {
-      const now = Date.now();
+    function getPostAutoDeleteMode(post, author) {
+      const overrides = db.postAutoDeleteOverrides || {};
+      if (post && overrides[post.id]) {
+        return overrides[post.id];
+      }
+      if (author && (author.autoDeleteMode === "enabled" || author.autoDeleteMode === "disabled")) {
+        return author.autoDeleteMode;
+      }
+      return "inherit";
+    }
+
+    function isPostExpiredByAutoDelete(post, author, now = Date.now()) {
       const gEnabled = db.settings.autoDeleteEnabled;
       const gHours = db.settings.autoDeleteHours || 24;
+      const mode = getPostAutoDeleteMode(post, author);
 
-      db.posts = db.posts.filter((p) => {
+      if (mode === "disabled") return false;
+      if (mode === "enabled") {
+        const hrs = (author && author.autoDeleteHours) ? author.autoDeleteHours : 24;
+        return now - post.createdAt >= hrs * HOUR_MS;
+      }
+      if (gEnabled) {
+        return now - post.createdAt >= gHours * HOUR_MS;
+      }
+      return false;
+    }
+
+    function cleanupSweep() {
+      const now = Date.now();
+      const expiredPosts = db.posts.filter((p) => {
         const author = getUser(p.userId);
-        if (!author || author.disabled) return false;
-        if (author.autoDeleteMode === "disabled") return true;
-        if (author.autoDeleteMode === "enabled") {
-          const hrs = author.autoDeleteHours || gHours;
-          return now - p.createdAt < hrs * HOUR_MS;
-        }
-        if (gEnabled) return now - p.createdAt < gHours * HOUR_MS;
-        return true;
+        if (!author || author.disabled) return true;
+        return isPostExpiredByAutoDelete(p, author, now);
       });
+
+      if (expiredPosts.length) {
+        const expiredIds = new Set(expiredPosts.map((p) => p.id));
+        db.posts = db.posts.filter((p) => !expiredIds.has(p.id));
+        expiredPosts.forEach((p) => {
+          if (db.postAutoDeleteOverrides && db.postAutoDeleteOverrides[p.id]) {
+            delete db.postAutoDeleteOverrides[p.id];
+          }
+          if (p.id && !p.id.startsWith("local_") && currentUser()) {
+            awDB.deleteDocument(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.posts, p.id).catch(() => {});
+          }
+        });
+        save();
+      }
 
       db.conversations = db.conversations.filter((c) => now - c.lastMessageAt < DAY_MS);
     }
@@ -1181,9 +1222,12 @@
     }
 
     function suggestUsernames(name) {
-      const base = name.trim().replace(/\s+/g, "_").slice(0, 16) || "user";
-      const pool = [`${base}_1`, `${base}_bahr`, `${base}_26`, `${base}_vip`, `${base}_${Math.floor(10 + Math.random() * 89)}`];
-      return pool.filter((c) => !db.users.some((u) => u.username.toLowerCase() === c.toLowerCase())).slice(0, 4);
+      let base = name.trim().replace(/\s+/g, "_").slice(0, 16) || "member";
+      if (isReservedNewUsername(base)) {
+        base = "bahr_member";
+      }
+      const pool = [`${base}_1`, `${base}_26`, `${base}_vip`, `${base}_${Math.floor(10 + Math.random() * 89)}`];
+      return pool.filter((c) => !isReservedNewUsername(c) && !db.users.some((u) => u.username.toLowerCase() === c.toLowerCase())).slice(0, 4);
     }
 
     async function notifyUser(userId, type, actorId, message, title = "", postId = "") {
@@ -1635,6 +1679,9 @@
       const newBirth = document.getElementById("acc-birth").value;
 
       if (newUname.length < 3) return toast("اسم المستخدم يجب ألا يقل عن 3 أحرف");
+      if (me.role !== "admin" && isReservedNewUsername(newUname)) {
+        return toast("هذا الاسم محجوز ولا يمكن استخدامه في الحسابات الجديدة");
+      }
       const exists = db.users.some((u) => u.id !== me.id && u.username.toLowerCase() === newUname.toLowerCase());
       if (exists) return toast("اسم المستخدم مستخدم مسبقاً");
 
@@ -1858,6 +1905,12 @@
         if (prev) prev.innerHTML = avatarHtml({ username: trimmed || "B", firstName: fVal, photoData: null }, "av-md");
       }
       if (trimmed.length < 3) { box.innerHTML = ""; return; }
+      if (isReservedNewUsername(trimmed)) {
+        const sugs = suggestUsernames(trimmed);
+        box.innerHTML = `<div style="font-size:12px;color:var(--danger);margin-bottom:4px">غير مسموح بإنشاء حساب جديد باسم Bahr أو Bahrofficial، اقتراحات متاحة:</div>` +
+          sugs.map((s) => `<button type="button" class="btn btn-soft" style="padding:4px 9px;font-size:11px;margin-inline-end:4px" onclick="document.getElementById('auth-u').value='${esc(s)}';checkUsernameLive('${esc(s)}')">${esc(s)}</button>`).join("");
+        return;
+      }
       const taken = db.users.some((u) => u.username.toLowerCase() === trimmed);
       if (!taken) { box.innerHTML = `<span style="font-size:12px;color:var(--teal)">✓ اسم المستخدم متاح</span>`; return; }
       const sugs = suggestUsernames(trimmed);
@@ -1895,6 +1948,10 @@
         }
       } else {
         if (!db.settings.registrationOpen) return toast("التسجيل مغلق حالياً");
+        if (isReservedNewUsername(u)) {
+          checkUsernameLive(u);
+          return toast("يُمنع إنشاء حساب جديد بالاسم Bahr أو Bahrofficial");
+        }
         if (db.users.some((x) => x.username.toLowerCase() === u.toLowerCase())) {
           checkUsernameLive(u);
           return toast("اسم المستخدم مستخدم مسبقاً");
@@ -2384,6 +2441,10 @@
       try {
         await awDB.deleteDocument(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.posts, id);
         db.posts = db.posts.filter((p) => p.id !== id);
+        if (db.postAutoDeleteOverrides && db.postAutoDeleteOverrides[id]) {
+          delete db.postAutoDeleteOverrides[id];
+          save();
+        }
         toast("تم حذف البوست");
         render();
       } catch (err) {
@@ -2809,6 +2870,79 @@
       render();
     }
 
+    function openUserPostsControlModal(userId) {
+      const targetUser = getUser(userId);
+      if (!targetUser) return;
+      const userPosts = db.posts.filter((p) => p.userId === userId).sort((a, b) => b.createdAt - a.createdAt);
+
+      document.getElementById("modal-root").innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal-card stack">
+            <div class="row-between">
+              <div>
+                <h3>التحكم ببوستات: ${esc(getDisplayName(targetUser))}</h3>
+                <div class="muted tabular">@${esc(targetUser.username)} · عدد البوستات الحالية: ${userPosts.length}</div>
+              </div>
+              <button class="btn btn-ghost" style="padding:4px 10px" onclick="closeModal()">✕</button>
+            </div>
+            <div class="row" style="flex-wrap:wrap">
+              <button class="btn btn-danger" style="padding:6px 10px;font-size:11px" onclick="adminSetAllUserPostsAutoDelete('${esc(userId)}', 'enabled')">تفعيل حذف 24س لكل بوستاته</button>
+              <button class="btn btn-soft" style="padding:6px 10px;font-size:11px" onclick="adminSetAllUserPostsAutoDelete('${esc(userId)}', 'disabled')">تعطيل حذف 24س لكل بوستاته</button>
+              <button class="btn btn-ghost" style="padding:6px 10px;font-size:11px" onclick="adminSetAllUserPostsAutoDelete('${esc(userId)}', 'inherit')">إرجاع الكل لوضع المستخدم</button>
+            </div>
+            <div class="stack" style="gap:8px;max-height:380px;overflow-y:auto">
+              ${userPosts.map((p) => {
+                const mode = getPostAutoDeleteMode(p, targetUser);
+                const statusLabel = mode === "enabled" ? "حذف بعد 24س: مفعّل" : (mode === "disabled" ? "حذف بعد 24س: معطّل" : "حذف بعد 24س: حسب المستخدم");
+                return `<div style="padding:12px;background:var(--surface-soft);border:1px solid var(--border);border-radius:12px" class="stack">
+                  <div class="row-between">
+                    <span class="muted tabular">${relTime(p.createdAt)} · <strong>${statusLabel}</strong></span>
+                  </div>
+                  <div style="font-size:13px">${esc(p.content)}</div>
+                  <div class="row" style="flex-wrap:wrap">
+                    <button class="btn ${mode === 'enabled' ? 'btn-danger' : 'btn-ghost'}" style="padding:4px 9px;font-size:11px" onclick="adminSetSinglePostAutoDelete('${esc(userId)}', '${esc(p.id)}', 'enabled')">تفعيل (24س)</button>
+                    <button class="btn ${mode === 'disabled' ? 'btn-primary' : 'btn-ghost'}" style="padding:4px 9px;font-size:11px" onclick="adminSetSinglePostAutoDelete('${esc(userId)}', '${esc(p.id)}', 'disabled')">تعطيل</button>
+                    <button class="btn ${mode === 'inherit' ? 'btn-soft' : 'btn-ghost'}" style="padding:4px 9px;font-size:11px" onclick="adminSetSinglePostAutoDelete('${esc(userId)}', '${esc(p.id)}', 'inherit')">افتراضي</button>
+                  </div>
+                </div>`;
+              }).join("") || `<div class="muted" style="text-align:center;padding:16px">لا توجد بوستات منشورة لهذا المستخدم حالياً.</div>`}
+            </div>
+            <div class="row" style="justify-content:flex-end">
+              <button class="btn btn-primary" onclick="closeModal()">إغلاق</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function adminSetSinglePostAutoDelete(userId, postId, mode) {
+      if (!db.postAutoDeleteOverrides) db.postAutoDeleteOverrides = {};
+      if (mode === "inherit") {
+        delete db.postAutoDeleteOverrides[postId];
+      } else {
+        db.postAutoDeleteOverrides[postId] = mode;
+      }
+      save();
+      render();
+      openUserPostsControlModal(userId);
+      toast("تم تحديث إعداد الحذف لهذا البوست");
+    }
+
+    function adminSetAllUserPostsAutoDelete(userId, mode) {
+      if (!db.postAutoDeleteOverrides) db.postAutoDeleteOverrides = {};
+      const userPosts = db.posts.filter((p) => p.userId === userId);
+      userPosts.forEach((p) => {
+        if (mode === "inherit") {
+          delete db.postAutoDeleteOverrides[p.id];
+        } else {
+          db.postAutoDeleteOverrides[p.id] = mode;
+        }
+      });
+      save();
+      render();
+      openUserPostsControlModal(userId);
+      toast("تم تحديث إعداد الحذف لجميع بوستات المستخدم");
+    }
+
     function renderNotifications() {
       const me = currentUser();
       if (!me) return renderAuth();
@@ -2877,8 +3011,10 @@
           </div>
           ${ui.adminTab === "users" ? `
             <div class="card stack">
-              <h3>إدارة المستخدمين، الحصص، وتفعيل/تعطيل الحسابات</h3>
-              ${db.users.map((u) => `
+              <h3>إدارة المستخدمين، الحصص، والتحكم بحذف البوستات بعد 24 ساعة</h3>
+              ${db.users.map((u) => {
+                const uMode = u.autoDeleteMode || "inherit";
+                return `
                 <div class="row-between" style="padding:12px 0;border-bottom:1px solid var(--border)">
                   <div class="row">
                     ${avatarHtml(u, "av-sm")}
@@ -2892,13 +3028,20 @@
                       <span class="muted">حصة البوستات اليومية:</span>
                       <input type="number" min="1" max="100" class="input" style="width:70px;padding:4px 8px;font-size:12px" value="${u.dailyPostLimit || 1}" onchange="adminUpdateQuota('${esc(u.id)}', this.value)" />
                     </div>
+                    <select class="input" style="width:auto;padding:5px 8px;font-size:11px" onchange="adminUpdateUserAutoDelete('${esc(u.id)}', this.value)" title="حذف بوستات المستخدم بعد 24 ساعة">
+                      <option value="inherit" ${uMode === "inherit" ? "selected" : ""}>حذف 24س: حسب المنصة</option>
+                      <option value="enabled" ${uMode === "enabled" ? "selected" : ""}>حذف 24س: مفعّل للمستخدم</option>
+                      <option value="disabled" ${uMode === "disabled" ? "selected" : ""}>حذف 24س: معطّل للمستخدم</option>
+                    </select>
+                    <button class="btn btn-soft" style="padding:5px 10px;font-size:11px" onclick="openUserPostsControlModal('${esc(u.id)}')">تحكم ببوستات المستخدم</button>
                     <button class="btn ${u.verified ? "btn-primary" : "btn-soft"}" style="padding:5px 10px;font-size:11px" onclick="adminVerify('${esc(u.id)}')">${u.verified ? "موثق ✓" : "توثيق"}</button>
                     ${u.role !== "admin" ? `
                       <button class="btn ${u.disabled ? "btn-primary" : "btn-ghost"}" style="padding:5px 10px;font-size:11px" onclick="adminToggleDisable('${esc(u.id)}')">${u.disabled ? "تنشيط الحساب" : "تعطيل الحساب"}</button>
                       <button class="btn btn-danger" style="padding:5px 10px;font-size:11px" onclick="adminDeleteUser('${esc(u.id)}')">حذف</button>
                     ` : ""}
                   </div>
-                </div>`).join("")}
+                </div>`;
+              }).join("")}
             </div>` : ""}
           ${ui.adminTab === "chats" ? `
             <div class="chat-box">
@@ -3041,6 +3184,26 @@
                 </div>`).join("") || `<div class="muted" style="text-align:center">لا توجد بلاغات نشطة حالياً.</div>`}
             </div>` : ""}
         </div>`;
+    }
+
+    async function adminUpdateUserAutoDelete(id, mode) {
+      const u = getUser(id);
+      if (!u) return;
+      const hours = mode === "enabled" ? 24 : 0;
+      try {
+        await awDB.updateDocument(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.users,
+          id,
+          { autoDeleteMode: mode, autoDeleteHours: hours }
+        );
+        u.autoDeleteMode = mode;
+        u.autoDeleteHours = hours;
+        toast("تم تحديث وضع الحذف بعد 24 ساعة للمستخدم");
+        render();
+      } catch (err) {
+        toast("تعذر تحديث وضع الحذف للمستخدم: " + formatAppwriteError(err));
+      }
     }
 
     async function sendBroadcastNotification(e) {
