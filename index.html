@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>بحر — منصة تواصل اجتماعي</title>
+  <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
   <style>
     :root {
       --bg: #f4f7fb;
@@ -229,7 +230,31 @@
   <div id="toast-root"></div>
 
   <script>
-    const STORAGE_KEY = "bahr_complete_standalone_v35";
+    const APPWRITE_CFG = {
+      endpoint: "https://nyc.cloud.appwrite.io/v1",
+      projectId: "6aff341300041d9889e5",
+      databaseId: "6aff36110013dbdb83a9",
+      collections: {
+        users: "users",
+        posts: "posts",
+        follows: "follows",
+        notifications: "notifications",
+        conversations: "conversations",
+        verificationRequests: "verification_requests"
+      },
+      adminUsername: "BahrOfficial",
+      domainSuffix: "@bahr.social"
+    };
+
+    const awClient = new Appwrite.Client()
+      .setEndpoint(APPWRITE_CFG.endpoint)
+      .setProject(APPWRITE_CFG.projectId);
+    const awAccount = new Appwrite.Account(awClient);
+    const awDB = new Appwrite.Databases(awClient);
+    const AW_ID = Appwrite.ID;
+    const AW_Query = Appwrite.Query;
+
+    const STORAGE_KEY = "bahr_appwrite_cache_v36";
     const LOGO_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi5SPFh3P2CSWR2kiixtqqGs7Q7_K6HGBa6vREqY644cGTuuccPHn10ohMH4mj5qAzeWWrIjdcoUi4v3EaEyMW98Bm4MWo6jdZ3l4bYEea2ZP0dsfpR57iVwOwouI7UkKkKgIvWwDBovNA527L3eSi4OvmacduOGIbP_4YphD6eMH5gFEaJhu8yPtUhq52g/s1024/53039.png";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
@@ -442,20 +467,11 @@
     const LETTER_COLORS = ["#0d63a5", "#0e7490", "#1e40af", "#0f766e", "#0369a1", "#1d4ed8", "#155e75"];
 
     function initialData() {
-      const now = Date.now();
       return {
         settings: { registrationOpen: true, autoDeleteEnabled: false, autoDeleteHours: 24, allowPostEdits: true },
         currentUserId: null,
         nextId: 100,
-        users: [
-          {
-            id: 1, username: "BahrOfficial", firstName: "بحر", secondName: "", password: "BahrAdmin123", role: "admin", verified: true, disabled: false,
-            photoData: LOGO_URL, gender: "رجل", birthDate: "1995-01-01", country: "مصر",
-            bio: "الحساب الرسمي لمنصة بحر.",
-            dailyPostLimit: 10, autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: now,
-            blockedUsers: [], mutedUsers: []
-          },
-        ],
+        users: [],
         follows: [],
         posts: [],
         drafts: [],
@@ -463,38 +479,24 @@
         conversations: [],
         reports: [],
         verificationRequests: [],
-        notifications: [],
+        notifications: []
       };
     }
 
     function loadState() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("bahr_complete_standalone_v34");
+        const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          let admin = parsed.users.find(u => u.id === 1 || u.role === 'admin');
-          if (admin) {
-            admin.username = "BahrOfficial";
-            admin.firstName = "بحر";
-            admin.secondName = "";
-            admin.photoData = LOGO_URL;
-          }
-          parsed.users.forEach(u => {
-            if (!u.firstName) u.firstName = u.username;
-            if (!u.secondName) u.secondName = "";
-          });
-          parsed.posts = (parsed.posts || []).filter(p => !(p.id === 10 && p.userId === 1));
-          return parsed;
+          return { ...initialData(), ...parsed };
         }
       } catch {}
-      const fresh = initialData();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
-      return fresh;
+      return initialData();
     }
 
     let db = loadState();
     let ui = {
-      view: db.currentUserId ? "feed" : "auth",
+      view: "auth",
       feedMode: "home",
       authMode: "login",
       profileUsername: null,
@@ -508,6 +510,127 @@
       theme: localStorage.getItem("bahr_theme") || "light",
       lang: localStorage.getItem("bahr_lang") || "ar"
     };
+
+    function toAuthEmail(username) {
+      return `${username.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "")}${APPWRITE_CFG.domainSuffix}`;
+    }
+
+    function parseComments(raw) {
+      if (!Array.isArray(raw)) return [];
+      return raw.map((item) => {
+        if (typeof item === "string") {
+          try { return JSON.parse(item); } catch { return null; }
+        }
+        return item;
+      }).filter(Boolean);
+    }
+
+    function parseMessages(rawStr) {
+      if (!rawStr) return [];
+      try {
+        const arr = JSON.parse(rawStr);
+        return Array.isArray(arr) ? arr : [];
+      } catch {
+        return [];
+      }
+    }
+
+    async function syncAllFromAppwrite() {
+      try {
+        const [usersRes, postsRes, followsRes, notifsRes, convsRes, verifsRes] = await Promise.all([
+          awDB.listDocuments(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.users, [AW_Query.limit(200)]),
+          awDB.listDocuments(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.posts, [AW_Query.orderDesc("createdAt"), AW_Query.limit(200)]),
+          awDB.listDocuments(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.follows, [AW_Query.limit(500)]),
+          awDB.listDocuments(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.notifications, [AW_Query.orderDesc("createdAt"), AW_Query.limit(200)]),
+          awDB.listDocuments(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.conversations, [AW_Query.orderDesc("lastMessageAt"), AW_Query.limit(200)]),
+          awDB.listDocuments(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.verificationRequests, [AW_Query.orderDesc("createdAt"), AW_Query.limit(200)])
+        ]);
+
+        db.users = usersRes.documents.map((d) => ({
+          id: d.$id,
+          authUserId: d.authUserId,
+          username: d.username,
+          firstName: d.firstName || d.username,
+          secondName: d.secondName || "",
+          role: d.role || "user",
+          verified: Boolean(d.verified),
+          disabled: Boolean(d.disabled),
+          photoData: d.photoData || null,
+          gender: d.gender || "",
+          birthDate: d.birthDate || "",
+          country: d.country || "",
+          bio: d.bio || "",
+          dailyPostLimit: Number(d.dailyPostLimit || 1),
+          autoDeleteMode: d.autoDeleteMode || "inherit",
+          autoDeleteHours: Number(d.autoDeleteHours || 0),
+          blockedUsers: Array.isArray(d.blockedUsers) ? d.blockedUsers : [],
+          mutedUsers: [],
+          createdAt: Date.now()
+        }));
+
+        db.posts = postsRes.documents.map((d) => ({
+          id: d.$id,
+          userId: d.userId,
+          content: d.content,
+          category: d.category || "",
+          likes: Array.isArray(d.likes) ? d.likes : [],
+          comments: parseComments(d.commentsJson),
+          createdAt: Number(d.createdAt || Date.now())
+        }));
+
+        db.follows = followsRes.documents.map((d) => ({
+          id: d.$id,
+          followerId: d.followerId,
+          followingId: d.followingId,
+          createdAt: Number(d.createdAt || Date.now())
+        }));
+
+        db.notifications = notifsRes.documents.map((d) => ({
+          id: d.$id,
+          userId: d.userId,
+          type: d.type,
+          actorId: d.actorId || null,
+          postId: d.postId || null,
+          title: d.title || "",
+          message: d.message,
+          isRead: Boolean(d.isRead),
+          createdAt: Number(d.createdAt || Date.now())
+        }));
+
+        db.conversations = convsRes.documents.map((d) => ({
+          id: d.$id,
+          user1Id: d.user1Id,
+          user2Id: d.user2Id,
+          messages: parseMessages(d.messagesJson),
+          lastMessageAt: Number(d.lastMessageAt || Date.now())
+        }));
+
+        db.verificationRequests = verifsRes.documents.map((d) => ({
+          id: d.$id,
+          userId: d.userId,
+          fullname: d.fullname,
+          nationalId: d.nationalId,
+          address: d.address,
+          age: d.age,
+          birthDate: d.birthDate,
+          phone: d.phone,
+          status: d.status || "pending",
+          createdAt: Number(d.createdAt || Date.now())
+        }));
+
+        try {
+          const authUser = await awAccount.get();
+          const meDoc = db.users.find((u) => u.authUserId === authUser.$id);
+          db.currentUserId = meDoc ? meDoc.id : null;
+        } catch {
+          db.currentUserId = null;
+        }
+
+        save();
+      } catch (err) {
+        console.error("Appwrite sync error:", err);
+      }
+    }
 
     function t(key) {
       return (I18N[ui.lang] && I18N[ui.lang][key]) || I18N["ar"][key] || key;
@@ -536,7 +659,6 @@
         }
       }
     }
-    checkInitialHash();
 
     document.documentElement.setAttribute("data-theme", ui.theme);
     document.documentElement.setAttribute("data-lang", ui.lang);
@@ -551,15 +673,16 @@
 
     function save() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-      } catch (err) {
-        toast("Storage quota exceeded");
-      }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          settings: db.settings,
+          drafts: db.drafts,
+          reports: db.reports
+        }));
+      } catch {}
     }
 
     function uid() {
-      db.nextId += 1;
-      return db.nextId;
+      return AW_ID.unique();
     }
 
     function currentUser() {
@@ -593,8 +716,6 @@
       });
 
       db.conversations = db.conversations.filter((c) => now - c.lastMessageAt < DAY_MS);
-      db.postLogs = db.postLogs.filter((l) => now - l.createdAt < 2 * DAY_MS);
-      save();
     }
 
     function toast(msg) {
@@ -641,7 +762,7 @@
           canvas.height = h;
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, w, h);
-          callback(canvas.toDataURL("image/jpeg", 0.8));
+          callback(canvas.toDataURL("image/jpeg", 0.75));
         };
         img.src = ev.target.result;
       };
@@ -665,7 +786,7 @@
       return safe;
     }
 
-    function processMentionsAndNotify(text, actor, postId) {
+    async function processMentionsAndNotify(text, actor, postId) {
       const regex = /@([a-zA-Z0-9_]{3,24})/g;
       const notifiedIds = new Set();
       let match;
@@ -674,7 +795,7 @@
         const target = getUserByUsername(uname);
         if (target && !target.disabled && target.id !== actor.id && !notifiedIds.has(target.id)) {
           notifiedIds.add(target.id);
-          notifyUser(target.id, "mention", actor.id, `قام ${getDisplayName(actor)} بذكرك في منشور أو تعليق (@${actor.username})`, "", postId);
+          await notifyUser(target.id, "mention", actor.id, `قام ${getDisplayName(actor)} بذكرك في منشور أو تعليق (@${actor.username})`, "", postId);
         }
       }
     }
@@ -937,10 +1058,16 @@
 
     function getQuota(user) {
       const win = Date.now() - DAY_MS;
-      const logs = db.postLogs.filter((l) => l.userId === user.id && l.createdAt > win).sort((a, b) => a.createdAt - b.createdAt);
+      const userPostsInWin = db.posts
+        .filter((p) => p.userId === user.id && p.createdAt > win)
+        .sort((a, b) => a.createdAt - b.createdAt);
       const limit = Math.max(1, user.dailyPostLimit || 1);
-      const remaining = Math.max(0, limit - logs.length);
-      return { limit, remaining, nextAt: remaining === 0 && logs[0] ? logs[0].createdAt + DAY_MS : null };
+      const remaining = Math.max(0, limit - userPostsInWin.length);
+      return {
+        limit,
+        remaining,
+        nextAt: remaining === 0 && userPostsInWin[0] ? userPostsInWin[0].createdAt + DAY_MS : null
+      };
     }
 
     function suggestUsernames(name) {
@@ -949,10 +1076,37 @@
       return pool.filter((c) => !db.users.some((u) => u.username.toLowerCase() === c.toLowerCase())).slice(0, 4);
     }
 
-    function notifyUser(userId, type, actorId, message, title = "", postId = null) {
-      db.notifications.unshift({
-        id: uid(), userId, type, actorId, postId, title, message, isRead: false, createdAt: Date.now(),
-      });
+    async function notifyUser(userId, type, actorId, message, title = "", postId = "") {
+      try {
+        const doc = await awDB.createDocument(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.notifications,
+          AW_ID.unique(),
+          {
+            userId: String(userId),
+            type: String(type),
+            actorId: actorId ? String(actorId) : "",
+            postId: postId ? String(postId) : "",
+            title: String(title || ""),
+            message: String(message),
+            isRead: false,
+            createdAt: Date.now()
+          }
+        );
+        db.notifications.unshift({
+          id: doc.$id,
+          userId: doc.userId,
+          type: doc.type,
+          actorId: doc.actorId || null,
+          postId: doc.postId || null,
+          title: doc.title || "",
+          message: doc.message,
+          isRead: Boolean(doc.isRead),
+          createdAt: Number(doc.createdAt || Date.now())
+        });
+      } catch (err) {
+        console.error("Notification create error:", err);
+      }
     }
 
     function goHome() {
@@ -1210,7 +1364,7 @@
         </div>`;
     }
 
-    function submitVerificationRequest(e) {
+    async function submitVerificationRequest(e) {
       e.preventDefault();
       const me = currentUser();
       if (!me) return;
@@ -1221,21 +1375,49 @@
       const birthDate = document.getElementById("vr-birth").value.trim();
       const phone = document.getElementById("vr-phone").value.trim();
 
-      if (!db.verificationRequests) db.verificationRequests = [];
-      const reqId = uid();
-      db.verificationRequests.unshift({
-        id: reqId, userId: me.id, fullname, nationalId, address, age, birthDate, phone, status: "pending", createdAt: Date.now()
-      });
+      try {
+        const doc = await awDB.createDocument(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.verificationRequests,
+          AW_ID.unique(),
+          {
+            userId: me.id,
+            fullname,
+            nationalId,
+            address,
+            age: String(age),
+            birthDate,
+            phone,
+            status: "pending",
+            createdAt: Date.now()
+          }
+        );
 
-      const adminUser = db.users.find(u => u.role === "admin");
-      if (adminUser) {
-        notifyUser(adminUser.id, "admin", me.id, `قام المستخدم ${getDisplayName(me)} بتقديم طلب توثيق حساب جديد (الاسم: ${fullname})`, "طلب توثيق جديد");
+        if (!db.verificationRequests) db.verificationRequests = [];
+        db.verificationRequests.unshift({
+          id: doc.$id,
+          userId: me.id,
+          fullname,
+          nationalId,
+          address,
+          age,
+          birthDate,
+          phone,
+          status: "pending",
+          createdAt: Number(doc.createdAt || Date.now())
+        });
+
+        const adminUser = db.users.find((u) => u.role === "admin");
+        if (adminUser) {
+          await notifyUser(adminUser.id, "admin", me.id, `قام المستخدم ${getDisplayName(me)} بتقديم طلب توثيق حساب جديد (الاسم: ${fullname})`, "طلب توثيق جديد");
+        }
+
+        closeModal();
+        toast("تم إرسال طلب التوثيق إلى الإدارة بنجاح");
+        render();
+      } catch (err) {
+        toast("تعذر إرسال طلب التوثيق: " + (err.message || ""));
       }
-
-      save();
-      closeModal();
-      toast("تم إرسال طلب التوثيق إلى الإدارة بنجاح");
-      render();
     }
 
     function openAccountSettingsModal() {
@@ -1330,7 +1512,7 @@
       if (prev) prev.innerHTML = avatarHtml({ ...me, photoData: null }, "av-md");
     }
 
-    function saveAccountSettings(e) {
+    async function saveAccountSettings(e) {
       e.preventDefault();
       const me = currentUser();
       if (!me) return;
@@ -1346,18 +1528,41 @@
       const exists = db.users.some((u) => u.id !== me.id && u.username.toLowerCase() === newUname.toLowerCase());
       if (exists) return toast("اسم المستخدم مستخدم مسبقاً");
 
-      me.username = newUname;
-      me.firstName = newFirst;
-      me.secondName = newSecond;
-      me.bio = newBio;
-      me.gender = newGender;
-      me.country = newCountry;
-      me.birthDate = newBirth;
-      me.photoData = window.__editPhotoData || null;
-      save();
-      closeModal();
-      toast("تم التحديث بنجاح");
-      render();
+      try {
+        const photoVal = window.__editPhotoData || "";
+        await awDB.updateDocument(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.users,
+          me.id,
+          {
+            username: newUname,
+            firstName: newFirst,
+            secondName: newSecond,
+            bio: newBio,
+            gender: newGender,
+            country: newCountry,
+            birthDate: newBirth,
+            photoData: photoVal
+          }
+        );
+
+        me.username = newUname;
+        me.firstName = newFirst;
+        me.secondName = newSecond;
+        me.bio = newBio;
+        me.gender = newGender;
+        me.country = newCountry;
+        me.birthDate = newBirth;
+        me.photoData = window.__editPhotoData || null;
+        if (ui.profileUsername === me.username || ui.view === "profile") {
+          ui.profileUsername = newUname;
+        }
+        closeModal();
+        toast("تم التحديث بنجاح");
+        render();
+      } catch (err) {
+        toast("تعذر حفظ الإعدادات: " + (err.message || ""));
+      }
     }
 
     function openChangePasswordModal() {
@@ -1372,7 +1577,7 @@
               </div>
               <div>
                 <label class="muted">${ui.lang === 'en' ? 'New Password' : 'كلمة المرور الجديدة'}</label>
-                <input id="new-pass" type="password" class="input" required minlength="6" />
+                <input id="new-pass" type="password" class="input" required minlength="8" />
               </div>
               <div class="row" style="justify-content:flex-end">
                 <button type="button" class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
@@ -1383,28 +1588,31 @@
         </div>`;
     }
 
-    function submitChangePassword(e) {
+    async function submitChangePassword(e) {
       e.preventDefault();
-      const me = currentUser();
       const oldP = document.getElementById("old-pass").value;
       const newP = document.getElementById("new-pass").value;
-      if (me.password !== oldP) return toast("كلمة المرور الحالية غير صحيحة");
-      if (newP.length < 6) return toast("كلمة المرور قصيرة جداً");
-      me.password = newP;
-      save();
-      closeModal();
-      toast("تم تغيير كلمة المرور بنجاح");
+      if (newP.length < 8) return toast("كلمة المرور يجب أن تكون 8 أحرف على الأقل");
+      try {
+        await awAccount.updatePassword(newP, oldP);
+        closeModal();
+        toast("تم تغيير كلمة المرور بنجاح");
+      } catch (err) {
+        toast("تعذر تغيير كلمة المرور: " + (err.message || ""));
+      }
     }
 
     function openDeleteAccountModal() {
       const me = currentUser();
-      if (me.id === 1 && me.role === "admin") return toast("لا يمكن حذف حساب الإدارة الرئيسي");
+      if (!me) return;
+      if (me.role === "admin" && me.username === APPWRITE_CFG.adminUsername) {
+        return toast("لا يمكن حذف حساب الإدارة الرئيسي");
+      }
       document.getElementById("modal-root").innerHTML = `
         <div class="modal-backdrop">
           <div class="modal-card stack">
             <h3 style="color:var(--danger)">${t("menuDelete")}</h3>
-            <p style="font-size:14px;margin:0">هل أنت متأكد؟ سيتم حذف حسابك وجميع بياناتك نهائياً.</p>
-            <input id="del-confirm-pw" type="password" class="input" placeholder="أدخل كلمة المرور للتأكيد..." />
+            <p style="font-size:14px;margin:0">هل أنت متأكد؟ سيتم حذف ملفك الشخصي من المنصة وتسجيل خروجك.</p>
             <div class="row" style="justify-content:flex-end">
               <button type="button" class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
               <button type="button" class="btn btn-danger" onclick="confirmDeleteMyAccount()">حذف الحساب</button>
@@ -1413,21 +1621,23 @@
         </div>`;
     }
 
-    function confirmDeleteMyAccount() {
+    async function confirmDeleteMyAccount() {
       const me = currentUser();
-      const pw = document.getElementById("del-confirm-pw").value;
-      if (me.password !== pw) return toast("كلمة المرور غير صحيحة");
-      const myId = me.id;
-      db.users = db.users.filter((u) => u.id !== myId);
-      db.posts = db.posts.filter((p) => p.userId !== myId);
-      db.follows = db.follows.filter((f) => f.followerId !== myId && f.followingId !== myId);
-      db.drafts = db.drafts.filter((d) => d.userId !== myId);
-      db.currentUserId = null;
-      save();
-      closeModal();
-      ui.view = "auth";
-      toast("تم حذف الحساب");
-      render();
+      if (!me) return;
+      try {
+        await awDB.deleteDocument(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.users, me.id);
+        try { await awAccount.deleteSession("current"); } catch {}
+        db.users = db.users.filter((u) => u.id !== me.id);
+        db.posts = db.posts.filter((p) => p.userId !== me.id);
+        db.follows = db.follows.filter((f) => f.followerId !== me.id && f.followingId !== me.id);
+        db.currentUserId = null;
+        closeModal();
+        ui.view = "auth";
+        toast("تم حذف الحساب");
+        render();
+      } catch (err) {
+        toast("تعذر حذف الحساب: " + (err.message || ""));
+      }
     }
 
     function renderAuth() {
@@ -1468,7 +1678,7 @@
                   </div>` : ""}
                 <div>
                   <label class="muted">${ui.lang === 'en' ? 'Password' : 'كلمة المرور'}</label>
-                  <input id="auth-p" type="password" class="input" required minlength="6" placeholder="******" />
+                  <input id="auth-p" type="password" class="input" required minlength="8" placeholder="********" />
                 </div>
                 ${ui.authMode === "register" ? `
                   <div class="row">
@@ -1545,20 +1755,34 @@
         sugs.map((s) => `<button type="button" class="btn btn-soft" style="padding:4px 9px;font-size:11px;margin-inline-end:4px" onclick="document.getElementById('auth-u').value='${esc(s)}';checkUsernameLive('${esc(s)}')">${esc(s)}</button>`).join("");
     }
 
-    function submitAuth(e) {
+    async function submitAuth(e) {
       e.preventDefault();
       const u = document.getElementById("auth-u").value.trim();
       const p = document.getElementById("auth-p").value;
+
       if (ui.authMode === "login") {
-        const found = db.users.find((x) => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
-        if (!found) return toast("بيانات تسجيل الدخول غير صحيحة");
-        if (found.disabled) return toast("عذراً، هذا الحساب معطل من قِبل الإدارة");
-        db.currentUserId = found.id;
-        ui.view = ui.profileUsername ? "profile" : "feed";
-        ui.feedMode = "home";
-        save();
-        toast("تم تسجيل الدخول بنجاح");
-        render();
+        try {
+          try { await awAccount.deleteSession("current"); } catch {}
+          await awAccount.createEmailPasswordSession(toAuthEmail(u), p);
+          await syncAllFromAppwrite();
+          const me = currentUser();
+          if (!me) {
+            toast("تم تسجيل الدخول ولكن ملف المستخدم غير موجود في قاعدة البيانات");
+            return;
+          }
+          if (me.disabled) {
+            try { await awAccount.deleteSession("current"); } catch {}
+            db.currentUserId = null;
+            render();
+            return toast("عذراً، هذا الحساب معطل من قِبل الإدارة");
+          }
+          ui.view = ui.profileUsername ? "profile" : "feed";
+          ui.feedMode = "home";
+          toast("تم تسجيل الدخول بنجاح");
+          render();
+        } catch (err) {
+          toast("بيانات تسجيل الدخول غير صحيحة أو الحساب غير موجود");
+        }
       } else {
         if (!db.settings.registrationOpen) return toast("التسجيل مغلق حالياً");
         if (db.users.some((x) => x.username.toLowerCase() === u.toLowerCase())) {
@@ -1572,36 +1796,73 @@
         const country = document.getElementById("reg-country").value;
         if (!firstName || !gender || !birthDate || !country) return toast("يرجى إكمال كافة الحقول المطلوبة");
 
-        const newUser = {
-          id: uid(), username: u, firstName, secondName: secondName || "", password: p, role: "user", verified: false, disabled: false,
-          photoData: window.__regPhotoData || null,
-          gender, birthDate, country,
-          bio: "", dailyPostLimit: 1,
-          autoDeleteMode: "inherit", autoDeleteHours: null, createdAt: Date.now(),
-          blockedUsers: [], mutedUsers: []
-        };
-        db.users.push(newUser);
-        const adminUser = db.users.find((x) => x.role === "admin");
-        if (adminUser && adminUser.id !== newUser.id) {
-          if (!db.follows.some((f) => f.followerId === newUser.id && f.followingId === adminUser.id)) {
-            db.follows.push({ followerId: newUser.id, followingId: adminUser.id });
+        try {
+          try { await awAccount.deleteSession("current"); } catch {}
+          const authUser = await awAccount.create(AW_ID.unique(), toAuthEmail(u), p, `${firstName} ${secondName}`.trim() || u);
+          await awAccount.createEmailPasswordSession(toAuthEmail(u), p);
+
+          const isFirstAdmin = u.toLowerCase() === APPWRITE_CFG.adminUsername.toLowerCase();
+          const userDoc = await awDB.createDocument(
+            APPWRITE_CFG.databaseId,
+            APPWRITE_CFG.collections.users,
+            AW_ID.unique(),
+            {
+              authUserId: authUser.$id,
+              username: u,
+              firstName,
+              secondName: secondName || "",
+              role: isFirstAdmin ? "admin" : "user",
+              verified: isFirstAdmin,
+              disabled: false,
+              photoData: window.__regPhotoData || (isFirstAdmin ? LOGO_URL : ""),
+              gender,
+              birthDate,
+              country,
+              bio: "",
+              dailyPostLimit: isFirstAdmin ? 10 : 1,
+              autoDeleteMode: "inherit",
+              autoDeleteHours: 0,
+              blockedUsers: []
+            }
+          );
+
+          await syncAllFromAppwrite();
+          const newUser = getUser(userDoc.$id);
+          const adminUser = db.users.find((x) => x.username.toLowerCase() === APPWRITE_CFG.adminUsername.toLowerCase());
+          if (adminUser && newUser && adminUser.id !== newUser.id) {
+            const alreadyFollows = db.follows.some((f) => f.followerId === newUser.id && f.followingId === adminUser.id);
+            if (!alreadyFollows) {
+              const fDoc = await awDB.createDocument(
+                APPWRITE_CFG.databaseId,
+                APPWRITE_CFG.collections.follows,
+                AW_ID.unique(),
+                {
+                  followerId: newUser.id,
+                  followingId: adminUser.id,
+                  createdAt: Date.now()
+                }
+              );
+              db.follows.push({ id: fDoc.$id, followerId: newUser.id, followingId: adminUser.id, createdAt: Number(fDoc.createdAt || Date.now()) });
+              await notifyUser(adminUser.id, "follow", newUser.id, `قام ${getDisplayName(newUser)} بمتابعتك تلقائياً عند إنشاء حسابه`);
+            }
           }
-          notifyUser(adminUser.id, "follow", newUser.id, `قام ${getDisplayName(newUser)} بمتابعتك تلقائياً عند إنشاء حسابه`);
+
+          db.currentUserId = userDoc.$id;
+          ui.view = ui.profileUsername ? "profile" : "feed";
+          ui.feedMode = "home";
+          window.__regPhotoData = null;
+          toast("تم إنشاء الحساب وتسجيل الدخول بنجاح");
+          render();
+        } catch (err) {
+          toast("تعذر إنشاء الحساب: " + (err.message || ""));
         }
-        db.currentUserId = newUser.id;
-        ui.view = ui.profileUsername ? "profile" : "feed";
-        ui.feedMode = "home";
-        window.__regPhotoData = null;
-        save();
-        toast("تم إنشاء الحساب وتسجيل الدخول بنجاح");
-        render();
       }
     }
 
-    function logout() {
+    async function logout() {
+      try { await awAccount.deleteSession("current"); } catch {}
       db.currentUserId = null;
       ui.view = "auth";
-      save();
       toast("تم تسجيل الخروج");
       render();
     }
@@ -1649,8 +1910,8 @@
               <div class="row-between" style="background:var(--surface-soft);padding:8px 12px;border-radius:10px">
                 <span style="font-size:13px;max-width:65%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><strong>[${esc(d.category || 'عام' )}]</strong> ${esc(d.content)}</span>
                 <div class="row">
-                  <button class="btn btn-soft" style="padding:4px 8px;font-size:11px" onclick="loadDraft(${d.id})">نشر</button>
-                  <button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deleteDraft(${d.id})">حذف</button>
+                  <button class="btn btn-soft" style="padding:4px 8px;font-size:11px" onclick="loadDraft('${esc(d.id)}')">نشر</button>
+                  <button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deleteDraft('${esc(d.id)}')">حذف</button>
                 </div>
               </div>`).join("")}
           </div>` : ""}
@@ -1685,7 +1946,7 @@
                       ${avatarHtml(u, "av-sm")} <span>${esc(getDisplayName(u))}</span> ${badgeHtml(u)}
                     </button>
                     <div class="row">
-                      <button class="btn btn-primary" style="padding:5px 10px;font-size:11px" onclick="toggleFollow(${u.id})">${t("follow")}</button>
+                      <button class="btn btn-primary" style="padding:5px 10px;font-size:11px" onclick="toggleFollow('${esc(u.id)}')">${t("follow")}</button>
                     </div>
                   </div>`;
                 }).join("") : `<div class="muted" style="text-align:center">${t("noWriters")}</div>`}
@@ -1789,18 +2050,18 @@
               </div>
             </button>
             <div class="row">
-              ${canEdit ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="editPostModal(${p.id})">${t("edit")}</button>` : ""}
-              ${canDel ? `<button class="btn btn-danger" style="padding:5px 10px;font-size:11px" onclick="deletePost(${p.id})">${t("delete")}</button>` : ""}
-              ${(!me || me.id !== author.id) ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="reportPostPrompt(${p.id})">${t("report")}</button>` : ""}
+              ${canEdit ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="editPostModal('${esc(p.id)}')">${t("edit")}</button>` : ""}
+              ${canDel ? `<button class="btn btn-danger" style="padding:5px 10px;font-size:11px" onclick="deletePost('${esc(p.id)}')">${t("delete")}</button>` : ""}
+              ${(!me || me.id !== author.id) ? `<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="reportPostPrompt('${esc(p.id)}')">${t("report")}</button>` : ""}
             </div>
           </div>
           <p class="post-text">${formatRichText(p.content)}</p>
           <div class="divider"></div>
           <div class="row" style="gap:8px;flex-wrap:wrap">
-            <button class="btn ${liked ? "btn-soft" : "btn-ghost"}" style="padding:6px 12px;font-size:12px" onclick="toggleLike(${p.id})">♥ ${p.likes.length}</button>
-            <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="ui.openComments[${p.id}]=!ui.openComments[${p.id}];render()">💬 ${p.comments.length}</button>
-            <button class="btn btn-soft" style="padding:6px 12px;font-size:12px" onclick="openQuoteCardModal(${p.id})">🖼️ ${t("quoteCard")}</button>
-            <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="sharePost(${p.id})">${t("share")}</button>
+            <button class="btn ${liked ? "btn-soft" : "btn-ghost"}" style="padding:6px 12px;font-size:12px" onclick="toggleLike('${esc(p.id)}')">♥ ${p.likes.length}</button>
+            <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="ui.openComments['${esc(p.id)}']=!ui.openComments['${esc(p.id)}'];render()">💬 ${p.comments.length}</button>
+            <button class="btn btn-soft" style="padding:6px 12px;font-size:12px" onclick="openQuoteCardModal('${esc(p.id)}')">🖼️ ${t("quoteCard")}</button>
+            <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="sharePost('${esc(p.id)}')">${t("share")}</button>
           </div>
           ${openC ? `
             <div class="divider"></div>
@@ -1812,10 +2073,10 @@
                   <div style="font-size:13px;margin-top:4px">${formatRichText(c.content)}</div>
                 </div>`;
               }).join("") || `<div class="muted">${t("noComments")}</div>`}
-              <form class="row" style="position:relative" onsubmit="addComment(event, ${p.id})">
+              <form class="row" style="position:relative" onsubmit="addComment(event, '${esc(p.id)}')">
                 <div style="flex:1;position:relative">
-                  <input id="cm-${p.id}" class="input" maxlength="500" placeholder="${t("commentPlaceholder")}" oninput="handleMentionAutocomplete(this, 'cm-mention-box-${p.id}')" />
-                  <div id="cm-mention-box-${p.id}" class="mention-dropdown" style="display:none;bottom:44px;top:auto"></div>
+                  <input id="cm-${esc(p.id)}" class="input" maxlength="500" placeholder="${t("commentPlaceholder")}" oninput="handleMentionAutocomplete(this, 'cm-mention-box-${esc(p.id)}')" />
+                  <div id="cm-mention-box-${esc(p.id)}" class="mention-dropdown" style="display:none;bottom:44px;top:auto"></div>
                 </div>
                 <button class="btn btn-primary" type="submit">${t("comment")}</button>
               </form>
@@ -1832,7 +2093,7 @@
 
       if (!text) return toast("المسودة فارغة");
       const me = currentUser();
-      db.drafts.push({ id: uid(), userId: me.id, content: text, category: cat, createdAt: Date.now() });
+      db.drafts.push({ id: AW_ID.unique(), userId: me.id, content: text, category: cat, createdAt: Date.now() });
       save();
       document.getElementById("post-input").value = "";
       document.getElementById("char-c").textContent = "0";
@@ -1840,7 +2101,7 @@
       render();
     }
 
-    function loadDraft(draftId) {
+    async function loadDraft(draftId) {
       if (!requireAuth()) return;
       const d = db.drafts.find((x) => x.id === draftId);
       if (!d) return;
@@ -1848,13 +2109,36 @@
       save();
       const me = currentUser();
       const now = Date.now();
-      const post = { id: uid(), userId: me.id, content: d.content, category: d.category || "", likes: [], comments: [], createdAt: now };
-      db.posts.unshift(post);
-      db.postLogs.push({ userId: me.id, createdAt: now });
-      processMentionsAndNotify(d.content, me, post.id);
-      save();
-      toast("تم نشر المسودة");
-      render();
+      try {
+        const doc = await awDB.createDocument(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.posts,
+          AW_ID.unique(),
+          {
+            userId: me.id,
+            content: d.content,
+            category: d.category || "",
+            likes: [],
+            commentsJson: [],
+            createdAt: now
+          }
+        );
+        const post = {
+          id: doc.$id,
+          userId: me.id,
+          content: d.content,
+          category: d.category || "",
+          likes: [],
+          comments: [],
+          createdAt: now
+        };
+        db.posts.unshift(post);
+        await processMentionsAndNotify(d.content, me, post.id);
+        toast("تم نشر المسودة");
+        render();
+      } catch (err) {
+        toast("تعذر نشر المسودة");
+      }
     }
 
     function deleteDraft(draftId) {
@@ -1875,21 +2159,30 @@
             <textarea id="edit-content" rows="4" maxlength="500">${esc(p.content)}</textarea>
             <div class="row" style="justify-content:flex-end">
               <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
-              <button class="btn btn-primary" onclick="confirmEdit(${postId})">حفظ</button>
+              <button class="btn btn-primary" onclick="confirmEdit('${esc(postId)}')">حفظ</button>
             </div>
           </div>
         </div>`;
     }
 
-    function confirmEdit(postId) {
+    async function confirmEdit(postId) {
       const p = db.posts.find((x) => x.id === postId);
       const text = document.getElementById("edit-content").value.trim();
       if (!text || text.length > 500) return toast("النص غير صالح");
-      p.content = text;
-      save();
-      closeModal();
-      toast("تم التعديل بنجاح");
-      render();
+      try {
+        await awDB.updateDocument(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.posts,
+          postId,
+          { content: text }
+        );
+        p.content = text;
+        closeModal();
+        toast("تم التعديل بنجاح");
+        render();
+      } catch (err) {
+        toast("تعذر تعديل البوست");
+      }
     }
 
     function reportPostPrompt(postId) {
@@ -1901,7 +2194,7 @@
             <textarea id="rep-post-reason" rows="3" placeholder="سبب الإبلاغ..."></textarea>
             <div class="row" style="justify-content:flex-end">
               <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
-              <button class="btn btn-danger" onclick="confirmReportPost(${postId})">إرسال البلاغ</button>
+              <button class="btn btn-danger" onclick="confirmReportPost('${esc(postId)}')">إرسال البلاغ</button>
             </div>
           </div>
         </div>`;
@@ -1911,13 +2204,13 @@
       const me = currentUser();
       if (!me) return;
       const reason = document.getElementById("rep-post-reason").value.trim() || "مخالفة";
-      db.reports.unshift({ id: uid(), reporterId: me.id, postId, reason, status: "open", createdAt: Date.now() });
+      db.reports.unshift({ id: AW_ID.unique(), reporterId: me.id, postId, reason, status: "open", createdAt: Date.now() });
       save();
       closeModal();
       toast("تم إرسال البلاغ للإدارة");
     }
 
-    function publishPost(e) {
+    async function publishPost(e) {
       e.preventDefault();
       const me = currentUser();
       if (!me) return openAuthPromptModal("سجّل دخولك أولاً لنشر البوستات.");
@@ -1929,42 +2222,86 @@
       if (!text || text.length > 500) return;
       if (getQuota(me).remaining <= 0) return toast("لقد استنفذت حد النشر المسموح اليوم");
       const now = Date.now();
-      const post = { id: uid(), userId: me.id, content: text, category: cat, likes: [], comments: [], createdAt: now };
-      db.posts.unshift(post);
-      db.postLogs.push({ userId: me.id, createdAt: now });
-      db.follows.filter((f) => f.followingId === me.id).forEach((f) => {
-        notifyUser(f.followerId, "post", me.id, `قام ${getDisplayName(me)} بنشر بوست جديد`, "", post.id);
-      });
-      processMentionsAndNotify(text, me, post.id);
-      save();
-      toast("تم نشر البوست بنجاح");
-      render();
+
+      try {
+        const doc = await awDB.createDocument(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.posts,
+          AW_ID.unique(),
+          {
+            userId: me.id,
+            content: text,
+            category: cat,
+            likes: [],
+            commentsJson: [],
+            createdAt: now
+          }
+        );
+
+        const post = {
+          id: doc.$id,
+          userId: me.id,
+          content: text,
+          category: cat,
+          likes: [],
+          comments: [],
+          createdAt: now
+        };
+        db.posts.unshift(post);
+
+        const followers = db.follows.filter((f) => f.followingId === me.id);
+        for (const f of followers) {
+          await notifyUser(f.followerId, "post", me.id, `قام ${getDisplayName(me)} بنشر بوست جديد`, "", post.id);
+        }
+        await processMentionsAndNotify(text, me, post.id);
+        toast("تم نشر البوست بنجاح");
+        render();
+      } catch (err) {
+        toast("تعذر نشر البوست: " + (err.message || ""));
+      }
     }
 
-    function deletePost(id) {
+    async function deletePost(id) {
       if (!requireAuth()) return;
-      db.posts = db.posts.filter((p) => p.id !== id);
-      save();
-      toast("تم حذف البوست");
-      render();
+      try {
+        await awDB.deleteDocument(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.posts, id);
+        db.posts = db.posts.filter((p) => p.id !== id);
+        toast("تم حذف البوست");
+        render();
+      } catch (err) {
+        toast("تعذر حذف البوست");
+      }
     }
 
-    function toggleLike(id) {
+    async function toggleLike(id) {
       const me = currentUser();
       if (!me) return openAuthPromptModal("سجّل دخولك أولاً للإعجاب بالمنشورات.");
       const p = db.posts.find((x) => x.id === id);
       if (!p) return;
-      const idx = p.likes.indexOf(me.id);
-      if (idx >= 0) p.likes.splice(idx, 1);
-      else {
-        p.likes.push(me.id);
-        if (p.userId !== me.id) notifyUser(p.userId, "like", me.id, `أعجب ${getDisplayName(me)} بوستك`, "", p.id);
+      const nextLikes = [...p.likes];
+      const idx = nextLikes.indexOf(me.id);
+      const isAdding = idx < 0;
+      if (idx >= 0) nextLikes.splice(idx, 1);
+      else nextLikes.push(me.id);
+
+      try {
+        await awDB.updateDocument(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.posts,
+          id,
+          { likes: nextLikes }
+        );
+        p.likes = nextLikes;
+        if (isAdding && p.userId !== me.id) {
+          await notifyUser(p.userId, "like", me.id, `أعجب ${getDisplayName(me)} بوستك`, "", p.id);
+        }
+        render();
+      } catch (err) {
+        toast("تعذر تحديث الإعجاب");
       }
-      save();
-      render();
     }
 
-    function addComment(e, postId) {
+    async function addComment(e, postId) {
       e.preventDefault();
       const me = currentUser();
       if (!me) return openAuthPromptModal("سجّل دخولك أولاً لكتابة التعليقات.");
@@ -1973,11 +2310,32 @@
       if (!text || text.length > 500) return;
       const p = db.posts.find((x) => x.id === postId);
       if (!p) return;
-      p.comments.push({ id: uid(), userId: me.id, content: text, createdAt: Date.now() });
-      if (p.userId !== me.id) notifyUser(p.userId, "comment", me.id, `علق ${getDisplayName(me)} على بوستك`, "", p.id);
-      processMentionsAndNotify(text, me, p.id);
-      save();
-      render();
+
+      const newComment = {
+        id: AW_ID.unique(),
+        userId: me.id,
+        content: text,
+        createdAt: Date.now()
+      };
+      const updatedComments = [...p.comments, newComment];
+      const commentsJsonPayload = updatedComments.map((c) => JSON.stringify(c));
+
+      try {
+        await awDB.updateDocument(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.posts,
+          postId,
+          { commentsJson: commentsJsonPayload }
+        );
+        p.comments = updatedComments;
+        if (p.userId !== me.id) {
+          await notifyUser(p.userId, "comment", me.id, `علق ${getDisplayName(me)} على بوستك`, "", p.id);
+        }
+        await processMentionsAndNotify(text, me, p.id);
+        render();
+      } catch (err) {
+        toast("تعذر إضافة التعليق");
+      }
     }
 
     function sharePost(id) {
@@ -1992,34 +2350,59 @@
       toast(t("profileShareSuccess"));
     }
 
-    function toggleFollow(targetId) {
+    async function toggleFollow(targetId) {
       const me = currentUser();
       if (!me) return openAuthPromptModal("سجّل دخولك أولاً لمتابعة الحسابات.");
       if (targetId === me.id) return;
-      const idx = db.follows.findIndex((f) => f.followerId === me.id && f.followingId === targetId);
-      if (idx >= 0) db.follows.splice(idx, 1);
-      else {
-        db.follows.push({ followerId: me.id, followingId: targetId });
-        notifyUser(targetId, "follow", me.id, `بدأ ${getDisplayName(me)} بمتابعتك`);
+      const existing = db.follows.find((f) => f.followerId === me.id && f.followingId === targetId);
+      try {
+        if (existing) {
+          if (existing.id) {
+            await awDB.deleteDocument(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.follows, existing.id);
+          }
+          db.follows = db.follows.filter((f) => !(f.followerId === me.id && f.followingId === targetId));
+        } else {
+          const doc = await awDB.createDocument(
+            APPWRITE_CFG.databaseId,
+            APPWRITE_CFG.collections.follows,
+            AW_ID.unique(),
+            {
+              followerId: me.id,
+              followingId: targetId,
+              createdAt: Date.now()
+            }
+          );
+          db.follows.push({ id: doc.$id, followerId: me.id, followingId: targetId, createdAt: Number(doc.createdAt || Date.now()) });
+          await notifyUser(targetId, "follow", me.id, `بدأ ${getDisplayName(me)} بمتابعتك`);
+        }
+        render();
+      } catch (err) {
+        toast("تعذر تحديث المتابعة");
       }
-      save();
-      render();
     }
 
-    function toggleBlockUser(targetId) {
+    async function toggleBlockUser(targetId) {
       const me = currentUser();
       if (!me) return openAuthPromptModal("سجّل دخولك أولاً لحظر المستخدمين.");
-      if (!me.blockedUsers) me.blockedUsers = [];
-      const idx = me.blockedUsers.indexOf(targetId);
-      if (idx >= 0) {
-        me.blockedUsers.splice(idx, 1);
-        toast("تم إلغاء الحظر");
-      } else {
-        me.blockedUsers.push(targetId);
-        toast("تم حظر المستخدم");
+      const nextBlocked = [...(me.blockedUsers || [])];
+      const idx = nextBlocked.indexOf(targetId);
+      const isBlocking = idx < 0;
+      if (idx >= 0) nextBlocked.splice(idx, 1);
+      else nextBlocked.push(targetId);
+
+      try {
+        await awDB.updateDocument(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.users,
+          me.id,
+          { blockedUsers: nextBlocked }
+        );
+        me.blockedUsers = nextBlocked;
+        toast(isBlocking ? "تم حظر المستخدم" : "تم إلغاء الحظر");
+        render();
+      } catch (err) {
+        toast("تعذر تحديث الحظر");
       }
-      save();
-      render();
     }
 
     function renderProfile() {
@@ -2067,9 +2450,9 @@
                   ${t("charShare")}
                 </button>
                 ${!isOwn ? `
-                  <button class="btn ${isF ? "btn-soft" : "btn-primary"}" onclick="toggleFollow(${u.id})">${isF ? t("followingState") : t("follow")}</button>
-                  ${canChat ? `<button class="btn btn-ghost" onclick="startChat(${u.id})">${t("messageBtn")}</button>` : ""}
-                  <button class="btn ${isBlocked ? "btn-primary" : "btn-danger"}" onclick="toggleBlockUser(${u.id})">${isBlocked ? t("unblock") : t("block")}</button>
+                  <button class="btn ${isF ? "btn-soft" : "btn-primary"}" onclick="toggleFollow('${esc(u.id)}')">${isF ? t("followingState") : t("follow")}</button>
+                  ${canChat ? `<button class="btn btn-ghost" onclick="startChat('${esc(u.id)}')">${t("messageBtn")}</button>` : ""}
+                  <button class="btn ${isBlocked ? "btn-primary" : "btn-danger"}" onclick="toggleBlockUser('${esc(u.id)}')">${isBlocked ? t("unblock") : t("block")}</button>
                 ` : ""}
               </div>
             </div>
@@ -2097,18 +2480,42 @@
         </div>`;
     }
 
-    function startChat(targetId) {
+    async function startChat(targetId) {
       const me = currentUser();
       if (!me) return openAuthPromptModal("سجّل دخولك أولاً لبدء مراسلة مباشرة.");
       const target = getUser(targetId);
-      if (me.role === "admin" || target.role === "admin") return toast("عذراً، الحساب الإداري لا يستخدم المحادثات المباشرة");
-      const u1 = Math.min(me.id, targetId);
-      const u2 = Math.max(me.id, targetId);
-      let conv = db.conversations.find((c) => c.user1Id === u1 && c.user2Id === u2);
+      if (!target || me.role === "admin" || target.role === "admin") {
+        return toast("عذراً، الحساب الإداري لا يستخدم المحادثات المباشرة");
+      }
+      let conv = db.conversations.find((c) =>
+        (c.user1Id === me.id && c.user2Id === targetId) ||
+        (c.user1Id === targetId && c.user2Id === me.id)
+      );
       if (!conv) {
-        conv = { id: uid(), user1Id: u1, user2Id: u2, lastMessageAt: Date.now(), messages: [] };
-        db.conversations.unshift(conv);
-        save();
+        try {
+          const now = Date.now();
+          const doc = await awDB.createDocument(
+            APPWRITE_CFG.databaseId,
+            APPWRITE_CFG.collections.conversations,
+            AW_ID.unique(),
+            {
+              user1Id: me.id,
+              user2Id: targetId,
+              messagesJson: JSON.stringify([]),
+              lastMessageAt: now
+            }
+          );
+          conv = {
+            id: doc.$id,
+            user1Id: me.id,
+            user2Id: targetId,
+            lastMessageAt: now,
+            messages: []
+          };
+          db.conversations.unshift(conv);
+        } catch (err) {
+          return toast("تعذر فتح المحادثة");
+        }
       }
       ui.activeChatId = conv.id;
       ui.view = "chat";
@@ -2131,15 +2538,15 @@
           <aside class="chat-list">
             <div class="row-between" style="padding:14px;border-bottom:1px solid var(--border)">
               <strong style="font-size:15px">${t("chat")}</strong>
-              <select class="input" style="width:auto;padding:5px 8px;font-size:12px" onchange="if(this.value) startChat(Number(this.value))">
+              <select class="input" style="width:auto;padding:5px 8px;font-size:12px" onchange="if(this.value) startChat(this.value)">
                 <option value="">+ محادثة جديدة</option>
-                ${peers.map((p) => `<option value="${p.id}">${esc(getDisplayName(p))}</option>`).join("")}
+                ${peers.map((p) => `<option value="${esc(p.id)}">${esc(getDisplayName(p))}</option>`).join("")}
               </select>
             </div>
             <div>
               ${myConvs.map((c) => {
                 const o = getUser(c.user1Id === me.id ? c.user2Id : c.user1Id);
-                return `<button onclick="ui.activeChatId=${c.id};render()" style="width:100%;text-align:start;border:none;border-bottom:1px solid var(--border);padding:12px 14px;background:${active && active.id === c.id ? "var(--surface-tint)" : "var(--surface)"}; color:var(--ink)">
+                return `<button onclick="ui.activeChatId='${esc(c.id)}';render()" style="width:100%;text-align:start;border:none;border-bottom:1px solid var(--border);padding:12px 14px;background:${active && active.id === c.id ? "var(--surface-tint)" : "var(--surface)"}; color:var(--ink)">
                   <div class="row-between"><strong>${esc(o ? getDisplayName(o) : "")}</strong><span class="muted tabular">${c.messages.length}/100</span></div>
                   <div class="muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.messages[c.messages.length - 1]?.content || "محادثة جديدة")}</div>
                 </button>`;
@@ -2154,8 +2561,8 @@
                   <div class="muted tabular">${active.messages.length} / 100 رسالة (تحذف تلقائياً بعد 24 ساعة)</div>
                 </div>
                 <div class="row">
-                  <button class="btn btn-danger" onclick="reportChat(${active.id})">${t("report")}</button>
-                  <button class="btn btn-ghost" onclick="toggleBlockUser(${other.id})">${t("block")}</button>
+                  <button class="btn btn-danger" onclick="reportChat('${esc(active.id)}')">${t("report")}</button>
+                  <button class="btn btn-ghost" onclick="toggleBlockUser('${esc(other.id)}')">${t("block")}</button>
                 </div>
               </div>
               <div class="chat-msgs">
@@ -2167,7 +2574,7 @@
               </div>
               ${active.messages.length >= 100
                 ? `<div class="muted" style="padding:14px;text-align:center;background:var(--surface)">تم الوصول للحد الأقصى للمحادثة</div>`
-                : `<form class="row" style="padding:12px;background:var(--surface);border-top:1px solid var(--border)" onsubmit="sendMsg(event, ${active.id})">
+                : `<form class="row" style="padding:12px;background:var(--surface);border-top:1px solid var(--border)" onsubmit="sendMsg(event, '${esc(active.id)}')">
                     <input id="msg-in" class="input" maxlength="500" placeholder="اكتب رسالة نصية..." />
                     <button class="btn btn-primary" type="submit">إرسال</button>
                   </form>`}
@@ -2176,7 +2583,7 @@
         </div>`;
     }
 
-    function sendMsg(e, convId) {
+    async function sendMsg(e, convId) {
       e.preventDefault();
       const me = currentUser();
       if (!me) return openAuthPromptModal();
@@ -2185,10 +2592,24 @@
       const text = document.getElementById("msg-in").value.trim();
       if (!text || text.length > 500) return;
       const now = Date.now();
-      conv.messages.push({ id: uid(), senderId: me.id, content: text, createdAt: now });
-      conv.lastMessageAt = now;
-      save();
-      render();
+      const nextMsgs = [...conv.messages, { id: AW_ID.unique(), senderId: me.id, content: text, createdAt: now }];
+
+      try {
+        await awDB.updateDocument(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.conversations,
+          convId,
+          {
+            messagesJson: JSON.stringify(nextMsgs),
+            lastMessageAt: now
+          }
+        );
+        conv.messages = nextMsgs;
+        conv.lastMessageAt = now;
+        render();
+      } catch (err) {
+        toast("تعذر إرسال الرسالة");
+      }
     }
 
     function reportChat(convId) {
@@ -2202,7 +2623,7 @@
             <textarea id="rep-reason" rows="3" maxlength="300" placeholder="سبب الإبلاغ..."></textarea>
             <div class="row" style="justify-content:flex-end">
               <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
-              <button class="btn btn-danger" onclick="confirmReport(${convId})">إرسال البلاغ</button>
+              <button class="btn btn-danger" onclick="confirmReport('${esc(convId)}')">إرسال البلاغ</button>
             </div>
           </div>
         </div>`;
@@ -2215,7 +2636,7 @@
       if (!conv) return closeModal();
       const reason = document.getElementById("rep-reason").value.trim() || "مخالفة";
       db.reports.unshift({
-        id: uid(), reporterId: me.id, conversationId: convId, reason, status: "open",
+        id: AW_ID.unique(), reporterId: me.id, conversationId: convId, reason, status: "open",
         snapshot: conv.messages.slice(-15).map((m) => ({ username: getDisplayName(getUser(m.senderId)) || "مستخدم", content: m.content })),
         createdAt: Date.now(),
       });
@@ -2251,11 +2672,21 @@
         </div>`;
     }
 
-    function markAllRead() {
+    async function markAllRead() {
       const me = currentUser();
       if (!me) return;
-      db.notifications.forEach((n) => { if (n.userId === me.id) n.isRead = true; });
-      save();
+      const unreadList = db.notifications.filter((n) => n.userId === me.id && !n.isRead);
+      for (const n of unreadList) {
+        try {
+          await awDB.updateDocument(
+            APPWRITE_CFG.databaseId,
+            APPWRITE_CFG.collections.notifications,
+            n.id,
+            { isRead: true }
+          );
+          n.isRead = true;
+        } catch {}
+      }
       render();
     }
 
@@ -2295,12 +2726,12 @@
                   <div class="row" style="flex-wrap:wrap">
                     <div class="row" style="gap:4px">
                       <span class="muted">حصة البوستات اليومية:</span>
-                      <input type="number" min="1" max="100" class="input" style="width:70px;padding:4px 8px;font-size:12px" value="${u.dailyPostLimit || 1}" onchange="adminUpdateQuota(${u.id}, this.value)" />
+                      <input type="number" min="1" max="100" class="input" style="width:70px;padding:4px 8px;font-size:12px" value="${u.dailyPostLimit || 1}" onchange="adminUpdateQuota('${esc(u.id)}', this.value)" />
                     </div>
-                    <button class="btn ${u.verified ? "btn-primary" : "btn-soft"}" style="padding:5px 10px;font-size:11px" onclick="adminVerify(${u.id})">${u.verified ? "موثق ✓" : "توثيق"}</button>
+                    <button class="btn ${u.verified ? "btn-primary" : "btn-soft"}" style="padding:5px 10px;font-size:11px" onclick="adminVerify('${esc(u.id)}')">${u.verified ? "موثق ✓" : "توثيق"}</button>
                     ${u.role !== "admin" ? `
-                      <button class="btn ${u.disabled ? "btn-primary" : "btn-ghost"}" style="padding:5px 10px;font-size:11px" onclick="adminToggleDisable(${u.id})">${u.disabled ? "تنشيط الحساب" : "تعطيل الحساب"}</button>
-                      <button class="btn btn-danger" style="padding:5px 10px;font-size:11px" onclick="adminDeleteUser(${u.id})">حذف</button>
+                      <button class="btn ${u.disabled ? "btn-primary" : "btn-ghost"}" style="padding:5px 10px;font-size:11px" onclick="adminToggleDisable('${esc(u.id)}')">${u.disabled ? "تنشيط الحساب" : "تعطيل الحساب"}</button>
+                      <button class="btn btn-danger" style="padding:5px 10px;font-size:11px" onclick="adminDeleteUser('${esc(u.id)}')">حذف</button>
                     ` : ""}
                   </div>
                 </div>`).join("")}
@@ -2318,8 +2749,8 @@
                     </div>
                     <div class="row">
                       ${r.status === 'pending' ? `
-                        <button class="btn btn-primary" onclick="adminApproveVerify(${r.id})">قبول ومنح التوثيق</button>
-                        <button class="btn btn-danger" onclick="adminRejectVerify(${r.id})">رفض</button>
+                        <button class="btn btn-primary" onclick="adminApproveVerify('${esc(r.id)}')">قبول ومنح التوثيق</button>
+                        <button class="btn btn-danger" onclick="adminRejectVerify('${esc(r.id)}')">رفض</button>
                       ` : ''}
                     </div>
                   </div>
@@ -2363,7 +2794,7 @@
                     </div>
                     <div style="font-size:14px">${esc(p.content)}</div>
                   </div>
-                  <button class="btn btn-danger" onclick="deletePost(${p.id})">حذف البوست</button>
+                  <button class="btn btn-danger" onclick="deletePost('${esc(p.id)}')">حذف البوست</button>
                 </div>`;
               }).join("") || `<div class="muted" style="text-align:center">لا توجد منشورات حالياً.</div>`}
             </div>` : ""}
@@ -2394,8 +2825,8 @@
                       <div class="muted tabular">تاريخ البلاغ: ${relTime(r.createdAt)}</div>
                     </div>
                     <div class="row">
-                      ${r.postId ? `<button class="btn btn-soft" style="padding:6px 12px;font-size:12px" onclick="deletePost(${r.postId});toggleRep(${r.id})">حذف البوست المبلغ عنه</button>` : ""}
-                      <button class="btn ${r.status === 'open' ? 'btn-danger' : 'btn-soft'}" style="padding:6px 12px;font-size:12px" onclick="toggleRep(${r.id})">${r.status === 'open' ? 'قيد المراجعة' : 'محلول'}</button>
+                      ${r.postId ? `<button class="btn btn-soft" style="padding:6px 12px;font-size:12px" onclick="deletePost('${esc(r.postId)}');toggleRep('${esc(r.id)}')">حذف البوست المبلغ عنه</button>` : ""}
+                      <button class="btn ${r.status === 'open' ? 'btn-danger' : 'btn-soft'}" style="padding:6px 12px;font-size:12px" onclick="toggleRep('${esc(r.id)}')">${r.status === 'open' ? 'قيد المراجعة' : 'محلول'}</button>
                     </div>
                   </div>
                   ${r.snapshot ? `<div style="font-size:12px;background:var(--surface);padding:8px;border-radius:8px;border:1px solid var(--border);max-height:120px;overflow-y:auto"><strong>سجل المحادثة:</strong><br>${r.snapshot.map(m=>`<span>${esc(m.username)}: ${esc(m.content)}</span>`).join("<br>")}</div>` : ""}
@@ -2404,74 +2835,132 @@
         </div>`;
     }
 
-    function sendBroadcastNotification(e) {
+    async function sendBroadcastNotification(e) {
       e.preventDefault();
       const title = document.getElementById("bc-title").value.trim();
       const msg = document.getElementById("bc-msg").value.trim();
       if (!title || !msg) return;
 
-      db.users.forEach(u => {
+      for (const u of db.users) {
         if (u.role !== "admin") {
-          notifyUser(u.id, "admin", null, msg, title);
+          await notifyUser(u.id, "admin", null, msg, title);
         }
-      });
-      save();
+      }
       toast("تم إرسال التنشيط العام لجميع المستخدمين بنجاح");
       document.getElementById("bc-title").value = "";
       document.getElementById("bc-msg").value = "";
     }
 
-    function adminApproveVerify(reqId) {
-      const r = (db.verificationRequests || []).find(x => x.id === reqId);
+    async function adminApproveVerify(reqId) {
+      const r = (db.verificationRequests || []).find((x) => x.id === reqId);
       if (!r) return;
-      r.status = "approved";
-      const u = getUser(r.userId);
-      if (u) {
-        u.verified = true;
-        notifyUser(u.id, "admin", null, "تم قبول طلب توثيق حسابك ومنحك شارة التوثيق الزرقاء ✓", "تم توثيق الحساب");
+      try {
+        await awDB.updateDocument(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.verificationRequests,
+          reqId,
+          { status: "approved" }
+        );
+        r.status = "approved";
+        const u = getUser(r.userId);
+        if (u) {
+          await awDB.updateDocument(
+            APPWRITE_CFG.databaseId,
+            APPWRITE_CFG.collections.users,
+            u.id,
+            { verified: true }
+          );
+          u.verified = true;
+          await notifyUser(u.id, "admin", null, "تم قبول طلب توثيق حسابك ومنحك شارة التوثيق الزرقاء ✓", "تم توثيق الحساب");
+        }
+        toast("تم قبول طلب التوثيق وتوثيق الحساب بنجاح");
+        render();
+      } catch (err) {
+        toast("تعذر قبول طلب التوثيق");
       }
-      save();
-      toast("تم قبول طلب التوثيق وتوثيق الحساب بنجاح");
-      render();
     }
 
-    function adminRejectVerify(reqId) {
-      const r = (db.verificationRequests || []).find(x => x.id === reqId);
+    async function adminRejectVerify(reqId) {
+      const r = (db.verificationRequests || []).find((x) => x.id === reqId);
       if (!r) return;
-      r.status = "rejected";
-      const u = getUser(r.userId);
-      if (u) {
-        notifyUser(u.id, "admin", null, "عذراً، تم رفض طلب توثيق الحساب المقدم من قِبل الإدارة.", "طلب التوثيق");
+      try {
+        await awDB.updateDocument(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.verificationRequests,
+          reqId,
+          { status: "rejected" }
+        );
+        r.status = "rejected";
+        const u = getUser(r.userId);
+        if (u) {
+          await notifyUser(u.id, "admin", null, "عذراً، تم رفض طلب توثيق الحساب المقدم من قِبل الإدارة.", "طلب التوثيق");
+        }
+        toast("تم رفض الطلب");
+        render();
+      } catch (err) {
+        toast("تعذر رفض الطلب");
       }
-      save();
-      toast("تم رفض الطلب");
-      render();
     }
 
-    function adminVerify(id) {
+    async function adminVerify(id) {
       const u = getUser(id); if (!u) return;
-      u.verified = !u.verified; save(); render();
+      const nextVal = !u.verified;
+      try {
+        await awDB.updateDocument(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.users, id, { verified: nextVal });
+        u.verified = nextVal;
+        render();
+      } catch {
+        toast("تعذر تحديث حالة التوثيق");
+      }
     }
-    function adminToggleDisable(id) {
+
+    async function adminToggleDisable(id) {
       const u = getUser(id); if (!u || u.role === "admin") return;
-      u.disabled = !u.disabled; save(); toast(u.disabled ? "تم تعطيل الحساب" : "تم تنشيط الحساب"); render();
+      const nextVal = !u.disabled;
+      try {
+        await awDB.updateDocument(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.users, id, { disabled: nextVal });
+        u.disabled = nextVal;
+        toast(u.disabled ? "تم تعطيل الحساب" : "تم تنشيط الحساب");
+        render();
+      } catch {
+        toast("تعذر تحديث حالة الحساب");
+      }
     }
-    function adminUpdateQuota(id, val) {
+
+    async function adminUpdateQuota(id, val) {
       const u = getUser(id); if (!u) return;
       const limit = Math.max(1, parseInt(val) || 1);
-      u.dailyPostLimit = limit; save(); toast("تم تحديث الحصة اليومية");
+      try {
+        await awDB.updateDocument(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.users, id, { dailyPostLimit: limit });
+        u.dailyPostLimit = limit;
+        toast("تم تحديث الحصة اليومية");
+      } catch {
+        toast("تعذر تحديث الحصة");
+      }
     }
-    function adminDeleteUser(id) {
-      db.users = db.users.filter((u) => u.id !== id);
-      db.posts = db.posts.filter((p) => p.userId !== id);
-      save(); render();
+
+    async function adminDeleteUser(id) {
+      try {
+        await awDB.deleteDocument(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.users, id);
+        db.users = db.users.filter((u) => u.id !== id);
+        db.posts = db.posts.filter((p) => p.userId !== id);
+        render();
+      } catch {
+        toast("تعذر حذف المستخدم");
+      }
     }
+
     function toggleRep(id) {
       const r = db.reports.find((x) => x.id === id);
       if (r) { r.status = r.status === "open" ? "resolved" : "open"; save(); render(); }
     }
 
-    render();
+    (async function initApp() {
+      render();
+      await syncAllFromAppwrite();
+      checkInitialHash();
+      render();
+    })();
   </script>
 </body>
 </html>
