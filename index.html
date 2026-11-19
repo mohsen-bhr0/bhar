@@ -209,7 +209,7 @@
       position: fixed; inset: 0; z-index: 80; background: rgba(0,0,0,0.65);
       display: flex; align-items: center; justify-content: center; padding: 16px;
     }
-    .modal-card { width: 100%; max-width: 520px; background: var(--surface); border-radius: 16px; padding: 22px; border: 1px solid var(--border); color: var(--ink); max-height: 90vh; overflow-y: auto; }
+    .modal-card { width: 100%; max-width: 560px; background: var(--surface); border-radius: 16px; padding: 22px; border: 1px solid var(--border); color: var(--ink); max-height: 90vh; overflow-y: auto; }
     .quote-preview-img { width: 100%; border-radius: 12px; border: 1px solid var(--border); display: block; box-shadow: 0 10px 25px rgba(0,0,0,0.25); }
   </style>
 </head>
@@ -254,7 +254,7 @@
     const AW_ID = Appwrite.ID;
     const AW_Query = Appwrite.Query;
 
-    const STORAGE_KEY = "bahr_appwrite_cache_v36";
+    const STORAGE_KEY = "bahr_appwrite_cache_v37";
     const LOGO_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi5SPFh3P2CSWR2kiixtqqGs7Q7_K6HGBa6vREqY644cGTuuccPHn10ohMH4mj5qAzeWWrIjdcoUi4v3EaEyMW98Bm4MWo6jdZ3l4bYEea2ZP0dsfpR57iVwOwouI7UkKkKgIvWwDBovNA527L3eSi4OvmacduOGIbP_4YphD6eMH5gFEaJhu8yPtUhq52g/s1024/53039.png";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
@@ -419,11 +419,7 @@
 
     function formatAppwriteError(err, fallbackMsg = "حدث خطأ غير معروف") {
       if (!err) return fallbackMsg;
-      const msg = err.message || err.response?.message || fallbackMsg;
-      const code = err.code ?? err.response?.code;
-      const type = err.type || err.response?.type;
-      const meta = [code ? `Code ${code}` : "", type || ""].filter(Boolean).join(" · ");
-      return meta ? `${msg} (${meta})` : msg;
+      return err.message || err.response?.message || fallbackMsg;
     }
 
     function openLegalModal(type) {
@@ -510,6 +506,7 @@
       authMode: "login",
       profileUsername: null,
       activeChatId: null,
+      adminChatInspectId: null,
       adminTab: "users",
       highlightPostId: null,
       openComments: {},
@@ -564,7 +561,7 @@
 
     async function ensureUserProfileFromAuth(authUser, extraProfile = {}) {
       if (!authUser || !authUser.$id) {
-        throw new Error("بيانات جلسة المصادقة فارغة (authUser غير متوفر)");
+        throw new Error("بيانات جلسة المصادقة غير متوفرة");
       }
 
       let existing = db.users.find((u) => u.authUserId === authUser.$id);
@@ -582,7 +579,7 @@
             }
           }
         } catch (err) {
-          throw new Error(`فشل البحث عن ملف المستخدم في قاعدة البيانات: ${formatAppwriteError(err)}`);
+          throw new Error(`فشل البحث عن ملف المستخدم: ${formatAppwriteError(err)}`);
         }
       }
 
@@ -629,7 +626,7 @@
         db.users.push(mapped);
         return mapped;
       } catch (err) {
-        throw new Error(`فشل إنشاء ملف المستخدم في قاعدة البيانات: ${formatAppwriteError(err)}`);
+        throw new Error(`فشل إنشاء ملف المستخدم: ${formatAppwriteError(err)}`);
       }
     }
 
@@ -2759,6 +2756,48 @@
       document.getElementById("modal-root").innerHTML = "";
     }
 
+    function openAdminChatModal(convId) {
+      const conv = db.conversations.find((c) => c.id === convId);
+      if (!conv) {
+        return toast("المحادثة غير موجودة أو تم حذفها تلقائياً بعد 24 ساعة");
+      }
+      const u1 = getUser(conv.user1Id);
+      const u2 = getUser(conv.user2Id);
+      const title = `${u1 ? getDisplayName(u1) : "مستخدم"} ↔ ${u2 ? getDisplayName(u2) : "مستخدم"}`;
+
+      document.getElementById("modal-root").innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal-card stack">
+            <div class="row-between">
+              <div>
+                <h3>مراجعة محادثة: ${esc(title)}</h3>
+                <div class="muted tabular">عدد الرسائل: ${conv.messages.length} · آخر نشاط: ${relTime(conv.lastMessageAt)}</div>
+              </div>
+              <button class="btn btn-ghost" style="padding:4px 10px" onclick="closeModal()">✕</button>
+            </div>
+            <div class="chat-msgs" style="background:var(--surface-soft);border:1px solid var(--border);border-radius:12px;max-height:400px">
+              ${conv.messages.map((m) => {
+                const sender = getUser(m.senderId);
+                return `<div class="bubble theirs" style="max-width:88%">
+                  <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:2px">${esc(sender ? `${getDisplayName(sender)} (@${sender.username})` : "مستخدم")}</div>
+                  <div>${esc(m.content)}</div>
+                  <div style="font-size:10px;opacity:0.7;margin-top:3px">${relTime(m.createdAt)}</div>
+                </div>`;
+              }).join("") || `<div class="muted" style="text-align:center;margin:auto">لا توجد رسائل في هذه المحادثة بعد.</div>`}
+            </div>
+            <div class="row" style="justify-content:flex-end">
+              <button class="btn btn-primary" onclick="closeModal()">إغلاق</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function inspectConversationInAdmin(convId) {
+      ui.adminChatInspectId = convId;
+      ui.adminTab = "chats";
+      render();
+    }
+
     function renderNotifications() {
       const me = currentUser();
       if (!me) return renderAuth();
@@ -2804,21 +2843,25 @@
       const s = db.settings;
       const allPosts = db.posts.sort((a, b) => b.createdAt - a.createdAt);
       const vReqs = db.verificationRequests || [];
+      const allConvs = db.conversations.slice().sort((a, b) => b.lastMessageAt - a.lastMessageAt);
+      const selectedConv = allConvs.find((c) => c.id === ui.adminChatInspectId) || allConvs[0] || null;
+      if (selectedConv) ui.adminChatInspectId = selectedConv.id;
 
       return `
         <div class="stack">
           <div class="card row-between">
             <div>
               <h2>${t("adminPanel")}</h2>
-              <div class="muted tabular">إجمالي المستخدمين: ${db.users.length} · البوستات: ${db.posts.length} · طلبات التوثيق: ${vReqs.length}</div>
+              <div class="muted tabular">إجمالي المستخدمين: ${db.users.length} · البوستات: ${db.posts.length} · المحادثات: ${allConvs.length} · طلبات التوثيق: ${vReqs.length}</div>
             </div>
             <div class="tabs">
               <button class="tab-btn ${ui.adminTab === "users" ? "active" : ""}" onclick="ui.adminTab='users';render()">المستخدمين والحصص</button>
+              <button class="tab-btn ${ui.adminTab === "chats" ? "active" : ""}" onclick="ui.adminTab='chats';render()">مراقبة الشاتات (${allConvs.length})</button>
               <button class="tab-btn ${ui.adminTab === "verify" ? "active" : ""}" onclick="ui.adminTab='verify';render()">طلبات التوثيق (${vReqs.filter(r=>r.status==='pending').length})</button>
               <button class="tab-btn ${ui.adminTab === "broadcast" ? "active" : ""}" onclick="ui.adminTab='broadcast';render()">التنشيط العام</button>
               <button class="tab-btn ${ui.adminTab === "posts" ? "active" : ""}" onclick="ui.adminTab='posts';render()">البوستات</button>
               <button class="tab-btn ${ui.adminTab === "settings" ? "active" : ""}" onclick="ui.adminTab='settings';render()">الإعدادات</button>
-              <button class="tab-btn ${ui.adminTab === "mod" ? "active" : ""}" onclick="ui.adminTab='mod';render()">البلاغات</button>
+              <button class="tab-btn ${ui.adminTab === "mod" ? "active" : ""}" onclick="ui.adminTab='mod';render()">البلاغات (${db.reports.length})</button>
             </div>
           </div>
           ${ui.adminTab === "users" ? `
@@ -2845,6 +2888,49 @@
                     ` : ""}
                   </div>
                 </div>`).join("")}
+            </div>` : ""}
+          ${ui.adminTab === "chats" ? `
+            <div class="chat-box">
+              <aside class="chat-list">
+                <div class="row-between" style="padding:14px;border-bottom:1px solid var(--border)">
+                  <strong style="font-size:15px">جميع محادثات المستخدمين (${allConvs.length})</strong>
+                </div>
+                <div>
+                  ${allConvs.map((c) => {
+                    const u1 = getUser(c.user1Id);
+                    const u2 = getUser(c.user2Id);
+                    const isSel = selectedConv && selectedConv.id === c.id;
+                    return `<button onclick="ui.adminChatInspectId='${esc(c.id)}';render()" style="width:100%;text-align:start;border:none;border-bottom:1px solid var(--border);padding:12px 14px;background:${isSel ? "var(--surface-tint)" : "var(--surface)"}; color:var(--ink)">
+                      <div class="row-between"><strong>${esc(u1 ? getDisplayName(u1) : "مستخدم")} × ${esc(u2 ? getDisplayName(u2) : "مستخدم")}</strong><span class="muted tabular">${c.messages.length} رسالة</span></div>
+                      <div class="muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.messages[c.messages.length - 1]?.content || "بدون رسائل")}</div>
+                    </button>`;
+                  }).join("") || `<div class="muted" style="padding:20px;text-align:center">لا توجد محادثات حالياً</div>`}
+                </div>
+              </aside>
+              <section class="chat-thread">
+                ${!selectedConv ? `<div class="muted" style="margin:auto">لا توجد محادثات لعرضها.</div>` : (() => {
+                  const u1 = getUser(selectedConv.user1Id);
+                  const u2 = getUser(selectedConv.user2Id);
+                  return `
+                    <div class="row-between" style="padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border)">
+                      <div>
+                        <strong>${esc(u1 ? getDisplayName(u1) : "مستخدم")}</strong> (@${esc(u1?.username || "")}) ↔ <strong>${esc(u2 ? getDisplayName(u2) : "مستخدم")}</strong> (@${esc(u2?.username || "")})
+                        <div class="muted tabular">${selectedConv.messages.length} رسالة · آخر تحديث ${relTime(selectedConv.lastMessageAt)}</div>
+                      </div>
+                      <button class="btn btn-soft" style="padding:5px 10px;font-size:11px" onclick="openAdminChatModal('${esc(selectedConv.id)}')">فتح في نافذة</button>
+                    </div>
+                    <div class="chat-msgs">
+                      ${selectedConv.messages.map((m) => {
+                        const sender = getUser(m.senderId);
+                        return `<div class="bubble theirs" style="max-width:86%">
+                          <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:2px">${esc(sender ? `${getDisplayName(sender)} (@${sender.username})` : "مستخدم")}</div>
+                          <div>${esc(m.content)}</div>
+                          <div style="font-size:10px;opacity:0.7;margin-top:3px">${relTime(m.createdAt)}</div>
+                        </div>`;
+                      }).join("") || `<div class="muted" style="text-align:center;margin:auto">لا توجد رسائل في هذه المحادثة.</div>`}
+                    </div>`;
+                })()}
+              </section>
             </div>` : ""}
           ${ui.adminTab === "verify" ? `
             <div class="card stack">
@@ -2935,6 +3021,7 @@
                       <div class="muted tabular">تاريخ البلاغ: ${relTime(r.createdAt)}</div>
                     </div>
                     <div class="row">
+                      ${r.conversationId ? `<button class="btn btn-soft" style="padding:6px 12px;font-size:12px" onclick="inspectConversationInAdmin('${esc(r.conversationId)}')">فتح الشات</button>` : ""}
                       ${r.postId ? `<button class="btn btn-soft" style="padding:6px 12px;font-size:12px" onclick="deletePost('${esc(r.postId)}');toggleRep('${esc(r.id)}')">حذف البوست المبلغ عنه</button>` : ""}
                       <button class="btn ${r.status === 'open' ? 'btn-danger' : 'btn-soft'}" style="padding:6px 12px;font-size:12px" onclick="toggleRep('${esc(r.id)}')">${r.status === 'open' ? 'قيد المراجعة' : 'محلول'}</button>
                     </div>
