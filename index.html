@@ -231,20 +231,20 @@
 
   <script>
     const APPWRITE_CFG = {
-  endpoint: "https://nyc.cloud.appwrite.io/v1",
-  projectId: "6aff341300041d9889e5",
-  databaseId: "6aff36110013dbdb83a9", 
-  collections: {
-    users: "6aff363e0030a7f73525",
-    posts: "6aff377e003ce170a2b8",
-    follows: "6aff37a6001ad2a8c6a6",
-    notifications: "6aff37b80026bfeb2b7b",
-    conversations: "6aff37d4002b8d7be8d3",
-    verificationRequests: "6aff37e900238c5cc46d"
-  },
-  adminUsername: "BahrOfficial",
-  domainSuffix: "@bahr.social"
-};
+      endpoint: "https://nyc.cloud.appwrite.io/v1",
+      projectId: "6aff341300041d9889e5",
+      databaseId: "6aff36110013dbdb83a9",
+      collections: {
+        users: "6aff363e0030a7f73525",
+        posts: "6aff377e003ce170a2b8",
+        follows: "6aff37a6001ad2a8c6a6",
+        notifications: "6aff37b80026bfeb2b7b",
+        conversations: "6aff37d4002b8d7be8d3",
+        verificationRequests: "6aff37e900238c5cc46d"
+      },
+      adminUsername: "BahrOfficial",
+      domainSuffix: "@bahr.social"
+    };
 
     const awClient = new Appwrite.Client()
       .setEndpoint(APPWRITE_CFG.endpoint)
@@ -515,6 +515,105 @@
       return `${username.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "")}${APPWRITE_CFG.domainSuffix}`;
     }
 
+    function mapUserDoc(d) {
+      return {
+        id: d.$id,
+        authUserId: d.authUserId,
+        username: d.username,
+        firstName: d.firstName || d.username,
+        secondName: d.secondName || "",
+        role: d.role || "user",
+        verified: Boolean(d.verified),
+        disabled: Boolean(d.disabled),
+        photoData: d.photoData || null,
+        gender: d.gender || "",
+        birthDate: d.birthDate || "",
+        country: d.country || "",
+        bio: d.bio || "",
+        dailyPostLimit: Number(d.dailyPostLimit || 1),
+        autoDeleteMode: d.autoDeleteMode || "inherit",
+        autoDeleteHours: Number(d.autoDeleteHours || 0),
+        blockedUsers: Array.isArray(d.blockedUsers) ? d.blockedUsers : [],
+        mutedUsers: [],
+        createdAt: Date.now()
+      };
+    }
+
+    function deriveUsernameFromAuth(authUser, preferredUsername = "") {
+      if (preferredUsername && preferredUsername.trim().length >= 3) {
+        return preferredUsername.trim();
+      }
+      if (authUser.email && authUser.email.endsWith(APPWRITE_CFG.domainSuffix)) {
+        const prefix = authUser.email.slice(0, -APPWRITE_CFG.domainSuffix.length).trim();
+        if (prefix.length >= 3) return prefix;
+      }
+      if (authUser.name && authUser.name.trim().length >= 3) {
+        return authUser.name.trim().replace(/\s+/g, "_").slice(0, 24);
+      }
+      return `user_${String(authUser.$id || "").slice(-6) || "member"}`;
+    }
+
+    async function ensureUserProfileFromAuth(authUser, extraProfile = {}) {
+      if (!authUser || !authUser.$id) return null;
+
+      let existing = db.users.find((u) => u.authUserId === authUser.$id);
+      if (!existing) {
+        const lookup = await awDB.listDocuments(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.users,
+          [AW_Query.equal("authUserId", authUser.$id), AW_Query.limit(1)]
+        );
+        if (lookup.documents && lookup.documents[0]) {
+          existing = mapUserDoc(lookup.documents[0]);
+          if (!db.users.some((u) => u.id === existing.id)) {
+            db.users.push(existing);
+          }
+        }
+      }
+
+      if (existing) return existing;
+
+      let baseUsername = deriveUsernameFromAuth(authUser, extraProfile.username);
+      let candidateUsername = baseUsername;
+      let suffix = 1;
+      while (db.users.some((u) => u.username.toLowerCase() === candidateUsername.toLowerCase())) {
+        candidateUsername = `${baseUsername.slice(0, 19)}_${suffix++}`;
+      }
+
+      const fullNameParts = (extraProfile.firstName || authUser.name || candidateUsername).trim().split(/\s+/);
+      const firstName = extraProfile.firstName || fullNameParts[0] || candidateUsername;
+      const secondName = extraProfile.secondName ?? fullNameParts.slice(1).join(" ") ?? "";
+      const isAdmin = candidateUsername.toLowerCase() === APPWRITE_CFG.adminUsername.toLowerCase();
+
+      const userDoc = await awDB.createDocument(
+        APPWRITE_CFG.databaseId,
+        APPWRITE_CFG.collections.users,
+        AW_ID.unique(),
+        {
+          authUserId: authUser.$id,
+          username: candidateUsername,
+          firstName,
+          secondName,
+          role: isAdmin ? "admin" : "user",
+          verified: isAdmin,
+          disabled: false,
+          photoData: extraProfile.photoData || (isAdmin ? LOGO_URL : ""),
+          gender: extraProfile.gender || "",
+          birthDate: extraProfile.birthDate || "",
+          country: extraProfile.country || "",
+          bio: extraProfile.bio || "",
+          dailyPostLimit: isAdmin ? 10 : 1,
+          autoDeleteMode: "inherit",
+          autoDeleteHours: 0,
+          blockedUsers: []
+        }
+      );
+
+      const mapped = mapUserDoc(userDoc);
+      db.users.push(mapped);
+      return mapped;
+    }
+
     function parseComments(raw) {
       if (!Array.isArray(raw)) return [];
       return raw.map((item) => {
@@ -535,7 +634,7 @@
       }
     }
 
-    async function syncAllFromAppwrite() {
+    async function syncAllFromAppwrite(extraProfile = {}) {
       try {
         const [usersRes, postsRes, followsRes, notifsRes, convsRes, verifsRes] = await Promise.all([
           awDB.listDocuments(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.users, [AW_Query.limit(200)]),
@@ -546,27 +645,7 @@
           awDB.listDocuments(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.verificationRequests, [AW_Query.orderDesc("createdAt"), AW_Query.limit(200)])
         ]);
 
-        db.users = usersRes.documents.map((d) => ({
-          id: d.$id,
-          authUserId: d.authUserId,
-          username: d.username,
-          firstName: d.firstName || d.username,
-          secondName: d.secondName || "",
-          role: d.role || "user",
-          verified: Boolean(d.verified),
-          disabled: Boolean(d.disabled),
-          photoData: d.photoData || null,
-          gender: d.gender || "",
-          birthDate: d.birthDate || "",
-          country: d.country || "",
-          bio: d.bio || "",
-          dailyPostLimit: Number(d.dailyPostLimit || 1),
-          autoDeleteMode: d.autoDeleteMode || "inherit",
-          autoDeleteHours: Number(d.autoDeleteHours || 0),
-          blockedUsers: Array.isArray(d.blockedUsers) ? d.blockedUsers : [],
-          mutedUsers: [],
-          createdAt: Date.now()
-        }));
+        db.users = usersRes.documents.map(mapUserDoc);
 
         db.posts = postsRes.documents.map((d) => ({
           id: d.$id,
@@ -620,7 +699,7 @@
 
         try {
           const authUser = await awAccount.get();
-          const meDoc = db.users.find((u) => u.authUserId === authUser.$id);
+          const meDoc = await ensureUserProfileFromAuth(authUser, extraProfile);
           db.currentUserId = meDoc ? meDoc.id : null;
         } catch {
           db.currentUserId = null;
@@ -1764,10 +1843,10 @@
         try {
           try { await awAccount.deleteSession("current"); } catch {}
           await awAccount.createEmailPasswordSession(toAuthEmail(u), p);
-          await syncAllFromAppwrite();
+          await syncAllFromAppwrite({ username: u });
           const me = currentUser();
           if (!me) {
-            toast("تم تسجيل الدخول ولكن ملف المستخدم غير موجود في قاعدة البيانات");
+            toast("تعذر إنشاء أو تحميل ملف المستخدم من قاعدة البيانات");
             return;
           }
           if (me.disabled) {
@@ -1826,7 +1905,15 @@
             }
           );
 
-          await syncAllFromAppwrite();
+          await syncAllFromAppwrite({
+            username: u,
+            firstName,
+            secondName: secondName || "",
+            gender,
+            birthDate,
+            country,
+            photoData: window.__regPhotoData || ""
+          });
           const newUser = getUser(userDoc.$id);
           const adminUser = db.users.find((x) => x.username.toLowerCase() === APPWRITE_CFG.adminUsername.toLowerCase());
           if (adminUser && newUser && adminUser.id !== newUser.id) {
