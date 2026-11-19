@@ -631,13 +631,24 @@
     }
 
     function parseComments(raw) {
-      if (!Array.isArray(raw)) return [];
-      return raw.map((item) => {
-        if (typeof item === "string") {
-          try { return JSON.parse(item); } catch { return null; }
+      if (!raw) return [];
+      if (typeof raw === "string") {
+        try {
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
         }
-        return item;
-      }).filter(Boolean);
+      }
+      if (Array.isArray(raw)) {
+        return raw.map((item) => {
+          if (typeof item === "string") {
+            try { return JSON.parse(item); } catch { return null; }
+          }
+          return item;
+        }).filter(Boolean);
+      }
+      return [];
     }
 
     function parseMessages(rawStr) {
@@ -2226,7 +2237,7 @@
             content: d.content,
             category: d.category || "",
             likes: [],
-            commentsJson: [],
+            commentsJson: "[]",
             createdAt: now
           }
         );
@@ -2340,7 +2351,7 @@
             content: text,
             category: cat,
             likes: [],
-            commentsJson: [],
+            commentsJson: "[]",
             createdAt: now
           }
         );
@@ -2425,7 +2436,7 @@
         createdAt: Date.now()
       };
       const updatedComments = [...p.comments, newComment];
-      const commentsJsonPayload = updatedComments.map((c) => JSON.stringify(c));
+      const commentsJsonPayload = JSON.stringify(updatedComments);
 
       try {
         await awDB.updateDocument(
