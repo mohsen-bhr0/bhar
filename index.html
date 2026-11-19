@@ -202,7 +202,7 @@
     .toast {
       position: fixed; bottom: 85px; left: 20px; z-index: 90;
       background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 11px; font-size: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3); border: 1px solid var(--border);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3); border: 1px solid var(--border); max-width: 90vw;
     }
     [data-lang="en"] .toast { left: auto; right: 20px; }
     .modal-backdrop {
@@ -417,6 +417,15 @@
       }
     };
 
+    function formatAppwriteError(err, fallbackMsg = "حدث خطأ غير معروف") {
+      if (!err) return fallbackMsg;
+      const msg = err.message || err.response?.message || fallbackMsg;
+      const code = err.code ?? err.response?.code;
+      const type = err.type || err.response?.type;
+      const meta = [code ? `Code ${code}` : "", type || ""].filter(Boolean).join(" · ");
+      return meta ? `${msg} (${meta})` : msg;
+    }
+
     function openLegalModal(type) {
       const lang = ui.lang;
       const content = LEGAL_CONTENTS[type][lang];
@@ -554,20 +563,26 @@
     }
 
     async function ensureUserProfileFromAuth(authUser, extraProfile = {}) {
-      if (!authUser || !authUser.$id) return null;
+      if (!authUser || !authUser.$id) {
+        throw new Error("بيانات جلسة المصادقة فارغة (authUser غير متوفر)");
+      }
 
       let existing = db.users.find((u) => u.authUserId === authUser.$id);
       if (!existing) {
-        const lookup = await awDB.listDocuments(
-          APPWRITE_CFG.databaseId,
-          APPWRITE_CFG.collections.users,
-          [AW_Query.equal("authUserId", authUser.$id), AW_Query.limit(1)]
-        );
-        if (lookup.documents && lookup.documents[0]) {
-          existing = mapUserDoc(lookup.documents[0]);
-          if (!db.users.some((u) => u.id === existing.id)) {
-            db.users.push(existing);
+        try {
+          const lookup = await awDB.listDocuments(
+            APPWRITE_CFG.databaseId,
+            APPWRITE_CFG.collections.users,
+            [AW_Query.equal("authUserId", authUser.$id), AW_Query.limit(1)]
+          );
+          if (lookup.documents && lookup.documents[0]) {
+            existing = mapUserDoc(lookup.documents[0]);
+            if (!db.users.some((u) => u.id === existing.id)) {
+              db.users.push(existing);
+            }
           }
+        } catch (err) {
+          throw new Error(`فشل البحث عن ملف المستخدم في قاعدة البيانات: ${formatAppwriteError(err)}`);
         }
       }
 
@@ -585,33 +600,37 @@
       const secondName = extraProfile.secondName ?? fullNameParts.slice(1).join(" ") ?? "";
       const isAdmin = candidateUsername.toLowerCase() === APPWRITE_CFG.adminUsername.toLowerCase();
 
-      const userDoc = await awDB.createDocument(
-        APPWRITE_CFG.databaseId,
-        APPWRITE_CFG.collections.users,
-        AW_ID.unique(),
-        {
-          authUserId: authUser.$id,
-          username: candidateUsername,
-          firstName,
-          secondName,
-          role: isAdmin ? "admin" : "user",
-          verified: isAdmin,
-          disabled: false,
-          photoData: extraProfile.photoData || (isAdmin ? LOGO_URL : ""),
-          gender: extraProfile.gender || "",
-          birthDate: extraProfile.birthDate || "",
-          country: extraProfile.country || "",
-          bio: extraProfile.bio || "",
-          dailyPostLimit: isAdmin ? 10 : 1,
-          autoDeleteMode: "inherit",
-          autoDeleteHours: 0,
-          blockedUsers: []
-        }
-      );
+      try {
+        const userDoc = await awDB.createDocument(
+          APPWRITE_CFG.databaseId,
+          APPWRITE_CFG.collections.users,
+          AW_ID.unique(),
+          {
+            authUserId: authUser.$id,
+            username: candidateUsername,
+            firstName,
+            secondName,
+            role: isAdmin ? "admin" : "user",
+            verified: isAdmin,
+            disabled: false,
+            photoData: extraProfile.photoData || (isAdmin ? LOGO_URL : ""),
+            gender: extraProfile.gender || "",
+            birthDate: extraProfile.birthDate || "",
+            country: extraProfile.country || "",
+            bio: extraProfile.bio || "",
+            dailyPostLimit: isAdmin ? 10 : 1,
+            autoDeleteMode: "inherit",
+            autoDeleteHours: 0,
+            blockedUsers: []
+          }
+        );
 
-      const mapped = mapUserDoc(userDoc);
-      db.users.push(mapped);
-      return mapped;
+        const mapped = mapUserDoc(userDoc);
+        db.users.push(mapped);
+        return mapped;
+      } catch (err) {
+        throw new Error(`فشل إنشاء ملف المستخدم في قاعدة البيانات: ${formatAppwriteError(err)}`);
+      }
     }
 
     function parseComments(raw) {
@@ -635,6 +654,7 @@
     }
 
     async function syncAllFromAppwrite(extraProfile = {}) {
+      window.__lastProfileError = null;
       try {
         const [usersRes, postsRes, followsRes, notifsRes, convsRes, verifsRes] = await Promise.all([
           awDB.listDocuments(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.users, [AW_Query.limit(200)]),
@@ -701,12 +721,15 @@
           const authUser = await awAccount.get();
           const meDoc = await ensureUserProfileFromAuth(authUser, extraProfile);
           db.currentUserId = meDoc ? meDoc.id : null;
-        } catch {
+        } catch (profileErr) {
           db.currentUserId = null;
+          window.__lastProfileError = formatAppwriteError(profileErr, "تعذر التحقق من ملف المستخدم");
+          console.error("Profile load/create error:", profileErr);
         }
 
         save();
       } catch (err) {
+        window.__lastProfileError = formatAppwriteError(err, "فشل الاتصال بقاعدة بيانات Appwrite");
         console.error("Appwrite sync error:", err);
       }
     }
@@ -801,7 +824,7 @@
       const root = document.getElementById("toast-root");
       root.innerHTML = `<div class="toast">${esc(msg)}</div>`;
       clearTimeout(window.__toastT);
-      window.__toastT = setTimeout(() => { root.innerHTML = ""; }, 3000);
+      window.__toastT = setTimeout(() => { root.innerHTML = ""; }, 5000);
     }
 
     function relTime(ts) {
@@ -1495,7 +1518,7 @@
         toast("تم إرسال طلب التوثيق إلى الإدارة بنجاح");
         render();
       } catch (err) {
-        toast("تعذر إرسال طلب التوثيق: " + (err.message || ""));
+        toast("تعذر إرسال طلب التوثيق: " + formatAppwriteError(err));
       }
     }
 
@@ -1640,7 +1663,7 @@
         toast("تم التحديث بنجاح");
         render();
       } catch (err) {
-        toast("تعذر حفظ الإعدادات: " + (err.message || ""));
+        toast("تعذر حفظ الإعدادات: " + formatAppwriteError(err));
       }
     }
 
@@ -1677,7 +1700,7 @@
         closeModal();
         toast("تم تغيير كلمة المرور بنجاح");
       } catch (err) {
-        toast("تعذر تغيير كلمة المرور: " + (err.message || ""));
+        toast("تعذر تغيير كلمة المرور: " + formatAppwriteError(err));
       }
     }
 
@@ -1715,7 +1738,7 @@
         toast("تم حذف الحساب");
         render();
       } catch (err) {
-        toast("تعذر حذف الحساب: " + (err.message || ""));
+        toast("تعذر حذف الحساب: " + formatAppwriteError(err));
       }
     }
 
@@ -1846,7 +1869,7 @@
           await syncAllFromAppwrite({ username: u });
           const me = currentUser();
           if (!me) {
-            toast("تعذر إنشاء أو تحميل ملف المستخدم من قاعدة البيانات");
+            toast(`السبب: ${window.__lastProfileError || "تعذر إنشاء أو تحميل ملف المستخدم من قاعدة البيانات"}`);
             return;
           }
           if (me.disabled) {
@@ -1860,7 +1883,7 @@
           toast("تم تسجيل الدخول بنجاح");
           render();
         } catch (err) {
-          toast("بيانات تسجيل الدخول غير صحيحة أو الحساب غير موجود");
+          toast("فشل تسجيل الدخول: " + formatAppwriteError(err, "بيانات تسجيل الدخول غير صحيحة أو الحساب غير موجود"));
         }
       } else {
         if (!db.settings.registrationOpen) return toast("التسجيل مغلق حالياً");
@@ -1941,7 +1964,7 @@
           toast("تم إنشاء الحساب وتسجيل الدخول بنجاح");
           render();
         } catch (err) {
-          toast("تعذر إنشاء الحساب: " + (err.message || ""));
+          toast("تعذر إنشاء الحساب: " + formatAppwriteError(err));
         }
       }
     }
@@ -2224,7 +2247,7 @@
         toast("تم نشر المسودة");
         render();
       } catch (err) {
-        toast("تعذر نشر المسودة");
+        toast("تعذر نشر المسودة: " + formatAppwriteError(err));
       }
     }
 
@@ -2268,7 +2291,7 @@
         toast("تم التعديل بنجاح");
         render();
       } catch (err) {
-        toast("تعذر تعديل البوست");
+        toast("تعذر تعديل البوست: " + formatAppwriteError(err));
       }
     }
 
@@ -2344,7 +2367,7 @@
         toast("تم نشر البوست بنجاح");
         render();
       } catch (err) {
-        toast("تعذر نشر البوست: " + (err.message || ""));
+        toast("تعذر نشر البوست: " + formatAppwriteError(err));
       }
     }
 
@@ -2356,7 +2379,7 @@
         toast("تم حذف البوست");
         render();
       } catch (err) {
-        toast("تعذر حذف البوست");
+        toast("تعذر حذف البوست: " + formatAppwriteError(err));
       }
     }
 
@@ -2384,7 +2407,7 @@
         }
         render();
       } catch (err) {
-        toast("تعذر تحديث الإعجاب");
+        toast("تعذر تحديث الإعجاب: " + formatAppwriteError(err));
       }
     }
 
@@ -2421,7 +2444,7 @@
         await processMentionsAndNotify(text, me, p.id);
         render();
       } catch (err) {
-        toast("تعذر إضافة التعليق");
+        toast("تعذر إضافة التعليق: " + formatAppwriteError(err));
       }
     }
 
@@ -2464,7 +2487,7 @@
         }
         render();
       } catch (err) {
-        toast("تعذر تحديث المتابعة");
+        toast("تعذر تحديث المتابعة: " + formatAppwriteError(err));
       }
     }
 
@@ -2488,7 +2511,7 @@
         toast(isBlocking ? "تم حظر المستخدم" : "تم إلغاء الحظر");
         render();
       } catch (err) {
-        toast("تعذر تحديث الحظر");
+        toast("تعذر تحديث الحظر: " + formatAppwriteError(err));
       }
     }
 
@@ -2601,7 +2624,7 @@
           };
           db.conversations.unshift(conv);
         } catch (err) {
-          return toast("تعذر فتح المحادثة");
+          return toast("تعذر فتح المحادثة: " + formatAppwriteError(err));
         }
       }
       ui.activeChatId = conv.id;
@@ -2695,7 +2718,7 @@
         conv.lastMessageAt = now;
         render();
       } catch (err) {
-        toast("تعذر إرسال الرسالة");
+        toast("تعذر إرسال الرسالة: " + formatAppwriteError(err));
       }
     }
 
@@ -2963,7 +2986,7 @@
         toast("تم قبول طلب التوثيق وتوثيق الحساب بنجاح");
         render();
       } catch (err) {
-        toast("تعذر قبول طلب التوثيق");
+        toast("تعذر قبول طلب التوثيق: " + formatAppwriteError(err));
       }
     }
 
@@ -2985,7 +3008,7 @@
         toast("تم رفض الطلب");
         render();
       } catch (err) {
-        toast("تعذر رفض الطلب");
+        toast("تعذر رفض الطلب: " + formatAppwriteError(err));
       }
     }
 
@@ -2996,8 +3019,8 @@
         await awDB.updateDocument(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.users, id, { verified: nextVal });
         u.verified = nextVal;
         render();
-      } catch {
-        toast("تعذر تحديث حالة التوثيق");
+      } catch (err) {
+        toast("تعذر تحديث حالة التوثيق: " + formatAppwriteError(err));
       }
     }
 
@@ -3009,8 +3032,8 @@
         u.disabled = nextVal;
         toast(u.disabled ? "تم تعطيل الحساب" : "تم تنشيط الحساب");
         render();
-      } catch {
-        toast("تعذر تحديث حالة الحساب");
+      } catch (err) {
+        toast("تعذر تحديث حالة الحساب: " + formatAppwriteError(err));
       }
     }
 
@@ -3021,8 +3044,8 @@
         await awDB.updateDocument(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.users, id, { dailyPostLimit: limit });
         u.dailyPostLimit = limit;
         toast("تم تحديث الحصة اليومية");
-      } catch {
-        toast("تعذر تحديث الحصة");
+      } catch (err) {
+        toast("تعذر تحديث الحصة: " + formatAppwriteError(err));
       }
     }
 
@@ -3032,8 +3055,8 @@
         db.users = db.users.filter((u) => u.id !== id);
         db.posts = db.posts.filter((p) => p.userId !== id);
         render();
-      } catch {
-        toast("تعذر حذف المستخدم");
+      } catch (err) {
+        toast("تعذر حذف المستخدم: " + formatAppwriteError(err));
       }
     }
 
