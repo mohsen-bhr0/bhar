@@ -125,6 +125,10 @@
       background: var(--blue); color: #fff; font-size: 10px; font-weight: 700;
     }
     .post-text { margin: 10px 0 0; font-size: 15px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+    .post-img {
+      margin-top: 10px; width: 100%; max-height: 420px; object-fit: cover;
+      border-radius: 12px; border: 1px solid var(--border); display: block;
+    }
     .tag-badge {
       display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px;
       background: var(--surface-tint); color: var(--blue); border: 1px solid var(--border); cursor: pointer;
@@ -165,6 +169,25 @@
       background: var(--surface-soft); border: 1px solid var(--border); color: var(--ink);
     }
     .info-chip svg { width: 14px; height: 14px; fill: currentColor; }
+    .bio-links-box {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+    }
+    .bio-link-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 11px; border-radius: 99px; font-size: 12px; font-weight: 600;
+      background: var(--surface-tint); color: var(--blue); border: 1px solid var(--border);
+      text-decoration: none;
+    }
+    .bio-link-chip:hover { opacity: 0.88; }
+    .admin-notice-banner {
+      background: rgba(180, 83, 9, 0.12); border: 1px solid rgba(180, 83, 9, 0.35);
+      color: var(--warning-text); border-radius: 14px; padding: 12px 16px;
+      font-size: 13px; font-weight: 600; line-height: 1.7;
+    }
+    .reply-quote {
+      background: var(--surface-tint); border-inline-start: 3px solid var(--blue);
+      padding: 5px 9px; border-radius: 8px; font-size: 11px; color: var(--muted); margin-bottom: 6px;
+    }
     .photo-upload-box {
       display: flex; align-items: center; gap: 14px; padding: 12px;
       background: var(--surface-soft); border: 1px dashed var(--border); border-radius: 12px;
@@ -256,7 +279,7 @@
     const AW_ID = Appwrite.ID;
     const AW_Query = Appwrite.Query;
 
-    const STORAGE_KEY = "bahr_appwrite_cache_v38";
+    const STORAGE_KEY = "bahr_appwrite_cache_v39";
     const LOGO_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi5SPFh3P2CSWR2kiixtqqGs7Q7_K6HGBa6vREqY644cGTuuccPHn10ohMH4mj5qAzeWWrIjdcoUi4v3EaEyMW98Bm4MWo6jdZ3l4bYEea2ZP0dsfpR57iVwOwouI7UkKkKgIvWwDBovNA527L3eSi4OvmacduOGIbP_4YphD6eMH5gFEaJhu8yPtUhq52g/s1024/53039.png";
     const HOUR_MS = 3600000;
     const DAY_MS = 24 * HOUR_MS;
@@ -271,9 +294,10 @@
         notifications: "الإشعارات",
         adminPanel: "لوحة الإدارة الشاملة",
         searchPlaceholder: "ابحث عن أشخاص أو بوستات أو #هاشتاج...",
-        menuAccount: "إعدادات الحساب (الاسم والنبذة والصورة)",
+        menuAccount: "إعدادات الحساب (الاسم والنبذة والروابط)",
         menuPass: "تغيير كلمة المرور",
         menuVerifyRequest: "طلب توثيق الحساب",
+        menuTechSupport: "الإبلاغ عن مشكلة أو مقترح",
         menuLang: "English / العربية",
         menuTheme: "تبديل الوضع الليلي/النهاري",
         privacyPolicy: "سياسة الخصوصية",
@@ -308,6 +332,7 @@
         report: "إبلاغ",
         like: "إعجاب",
         comment: "تعليق",
+        reply: "رد",
         share: "مشاركة",
         quoteCard: "بطاقة اقتباس",
         downloadCard: "تحميل الصورة",
@@ -316,8 +341,6 @@
         commentPlaceholder: "اكتب تعليقاً نصياً (استخدم @ للمنشن)...",
         postShareSuccess: "تم نسخ رابط البوست",
         profileShareSuccess: "تم نسخ رابط الحساب",
-        bahrCharter: "ميثاق منصة بحر",
-        bahrCharterText: "بوست نصي واحد كل 24 ساعة (500 حرف) مع إمكانية استخدام #الوسوم، @المنشن، وبطاقات الاقتباس القابلة للمشاركة.",
         loginOrRegister: "تسجيل الدخول / إنشاء حساب",
         authRequiredTitle: "تسجيل الدخول مطلوب",
         authRequiredMsg: "سجّل دخولك أو أنشئ حساباً جديداً للمتابعة والإعجاب والتعليق والمراسلة.",
@@ -332,9 +355,10 @@
         notifications: "Notifications",
         adminPanel: "Admin Panel",
         searchPlaceholder: "Search people, posts or #hashtags...",
-        menuAccount: "Account Settings (Name & Photo)",
+        menuAccount: "Account Settings (Name, Bio & Links)",
         menuPass: "Change Password",
         menuVerifyRequest: "Request Verification",
+        menuTechSupport: "Report Issue / Suggestion",
         menuLang: "العربية / English",
         menuTheme: "Toggle Dark/Light Mode",
         privacyPolicy: "Privacy Policy",
@@ -369,6 +393,7 @@
         report: "Report",
         like: "Like",
         comment: "Comment",
+        reply: "Reply",
         share: "Share",
         quoteCard: "Quote Card",
         downloadCard: "Download Image",
@@ -377,8 +402,6 @@
         commentPlaceholder: "Write a text comment (use @ to mention)...",
         postShareSuccess: "Post link copied",
         profileShareSuccess: "Profile link copied",
-        bahrCharter: "Bahr Charter",
-        bahrCharterText: "One text post every 24 hours (500 chars) with #hashtags, @mentions, and shareable Quote Cards.",
         loginOrRegister: "Login / Register",
         authRequiredTitle: "Login Required",
         authRequiredMsg: "Log in or create an account to follow, like, comment, and message.",
@@ -480,8 +503,19 @@
 
     function initialData() {
       return {
-        settings: { registrationOpen: true, autoDeleteEnabled: false, autoDeleteHours: 24, allowPostEdits: true },
+        settings: {
+          registrationOpen: true,
+          autoDeleteEnabled: false,
+          autoDeleteHours: 24,
+          allowPostEdits: true,
+          allowPostImages: true
+        },
         postAutoDeleteOverrides: {},
+        postImages: {},
+        userLinks: {},
+        userRestrictions: {},
+        techTickets: [],
+        replyTarget: {},
         currentUserId: null,
         nextId: 100,
         users: [],
@@ -501,7 +535,7 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          return { ...initialData(), ...parsed };
+          return { ...initialData(), ...parsed, settings: { ...initialData().settings, ...(parsed.settings || {}) } };
         }
       } catch {}
       return initialData();
@@ -509,7 +543,7 @@
 
     let db = loadState();
     let ui = {
-      view: "auth",
+      view: db.currentUserId ? "feed" : "auth",
       feedMode: "home",
       authMode: "login",
       profileUsername: null,
@@ -738,7 +772,9 @@
           const meDoc = await ensureUserProfileFromAuth(authUser, extraProfile);
           db.currentUserId = meDoc ? meDoc.id : null;
         } catch (profileErr) {
-          db.currentUserId = null;
+          if (profileErr && (profileErr.code === 401 || String(profileErr.message || "").includes("missing scope"))) {
+            db.currentUserId = null;
+          }
           window.__lastProfileError = formatAppwriteError(profileErr, "تعذر التحقق من ملف المستخدم");
           console.error("Profile load/create error:", profileErr);
         }
@@ -794,6 +830,12 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
           settings: db.settings,
           postAutoDeleteOverrides: db.postAutoDeleteOverrides || {},
+          postImages: db.postImages || {},
+          userLinks: db.userLinks || {},
+          userRestrictions: db.userRestrictions || {},
+          techTickets: db.techTickets || [],
+          currentUserId: db.currentUserId,
+          users: db.users || [],
           drafts: db.drafts,
           reports: db.reports
         }));
@@ -815,6 +857,33 @@
     function getUserByUsername(uname) {
       if (!uname) return null;
       return db.users.find((u) => u.username.toLowerCase() === uname.toLowerCase()) || null;
+    }
+
+    function getUserRestriction(userId) {
+      const r = (db.userRestrictions && db.userRestrictions[userId]) || {};
+      const now = Date.now();
+      const postBanUntil = Number(r.postBanUntil || 0);
+      const chatBanUntil = Number(r.chatBanUntil || 0);
+      const postBanned = postBanUntil > now;
+      const chatBanned = chatBanUntil > now;
+      return {
+        postBanned,
+        postBanUntil: postBanned ? postBanUntil : 0,
+        chatBanned,
+        chatBanUntil: chatBanned ? chatBanUntil : 0,
+        notice: String(r.notice || "").trim()
+      };
+    }
+
+    function canUserPublishImageToday(userId) {
+      if (!db.settings.allowPostImages) return { allowed: false, reason: "نشر الصور معطل حالياً من قِبل الإدارة" };
+      const win = Date.now() - DAY_MS;
+      const imgs = db.postImages || {};
+      const countToday = db.posts.filter((p) => p.userId === userId && p.createdAt > win && Boolean(imgs[p.id])).length;
+      if (countToday >= 1) {
+        return { allowed: false, reason: "الحد المسموح صورة واحدة كل 24 ساعة" };
+      }
+      return { allowed: true, reason: "" };
     }
 
     function getPostAutoDeleteMode(post, author) {
@@ -859,6 +928,9 @@
           if (db.postAutoDeleteOverrides && db.postAutoDeleteOverrides[p.id]) {
             delete db.postAutoDeleteOverrides[p.id];
           }
+          if (db.postImages && db.postImages[p.id]) {
+            delete db.postImages[p.id];
+          }
           if (p.id && !p.id.startsWith("local_") && currentUser()) {
             awDB.deleteDocument(APPWRITE_CFG.databaseId, APPWRITE_CFG.collections.posts, p.id).catch(() => {});
           }
@@ -892,7 +964,7 @@
       return h > 0 ? `${h}h ${m}m` : `${m}m`;
     }
 
-    function compressImageFile(file, callback) {
+    function compressImageFile(file, callback, maxDim = 220, quality = 0.75) {
       if (!file || !file.type.startsWith("image/")) {
         toast("Invalid image file");
         return;
@@ -902,18 +974,17 @@
         const img = new Image();
         img.onload = function () {
           const canvas = document.createElement("canvas");
-          const MAX = 220;
           let w = img.width, h = img.height;
           if (w > h) {
-            if (w > MAX) { h = Math.round((h * MAX) / w); w = MAX; }
+            if (w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
           } else {
-            if (h > MAX) { w = Math.round((w * MAX) / h); h = MAX; }
+            if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
           }
           canvas.width = w;
           canvas.height = h;
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, w, h);
-          callback(canvas.toDataURL("image/jpeg", 0.75));
+          callback(canvas.toDataURL("image/jpeg", quality));
         };
         img.src = ev.target.result;
       };
@@ -922,6 +993,17 @@
 
     function esc(str) {
       return String(str || "").replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function sanitizeUrl(raw) {
+      const s = String(raw || "").trim();
+      if (!s) return "";
+      const withProto = /^https?:\/\//i.test(s) ? s : `https://${s}`;
+      try {
+        const u = new URL(withProto);
+        if (u.protocol === "https:" || u.protocol === "http:") return u.href;
+      } catch {}
+      return "";
     }
 
     function formatRichText(text) {
@@ -1191,6 +1273,21 @@
         .map(([tag, count]) => ({ tag, count }));
     }
 
+    function renderTrendingCardHtml() {
+      const trending = getTrendingHashtags();
+      return `
+        <div class="card">
+          <h3 style="font-size:15px;margin-bottom:12px">${t("trendingTags")}</h3>
+          <div class="stack" style="gap:8px">
+            ${trending.length ? trending.map((item) => `
+              <div class="row-between" style="background:var(--surface-soft);padding:8px 12px;border-radius:10px;cursor:pointer" onclick="filterByTag('${esc(item.tag)}')">
+                <span style="color:var(--blue);font-weight:600;font-size:13px">${esc(item.tag)}</span>
+                <span class="muted tabular" style="font-size:11px">${item.count} بوست</span>
+              </div>`).join("") : `<div class="muted" style="text-align:center">${t("noTrending")}</div>`}
+          </div>
+        </div>`;
+    }
+
     function avatarHtml(user, size = "av-md") {
       if (!user) return "";
       if (user.photoData) {
@@ -1435,6 +1532,10 @@
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
               ${t("menuVerifyRequest")}
             </button>
+            <button class="dropdown-item" onclick="openTechReportModal()">
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 13h-2v-2h2v2zm0-4h-2V6h2v5z"/></svg>
+              ${t("menuTechSupport")}
+            </button>
             <button class="dropdown-item" onclick="switchLanguage()">
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
               ${t("menuLang")}
@@ -1463,13 +1564,92 @@
           </div>
         </div>`;
 
+      const rest = getUserRestriction(me.id);
+      const noticeHtml = rest.notice
+        ? `<div class="admin-notice-banner" style="margin-bottom:14px">تنويه إداري: ${esc(rest.notice)}</div>`
+        : "";
+
       const app = document.getElementById("app");
-      if (ui.view === "profile") app.innerHTML = renderProfile();
-      else if (ui.view === "chat") app.innerHTML = renderChat();
-      else if (ui.view === "notifications") app.innerHTML = renderNotifications();
-      else if (ui.view === "admin" && me.role === "admin") app.innerHTML = renderAdmin();
-      else if (ui.view === "discover") app.innerHTML = renderDiscover();
-      else app.innerHTML = renderFeed();
+      let viewHtml = "";
+      if (ui.view === "profile") viewHtml = renderProfile();
+      else if (ui.view === "chat") viewHtml = renderChat();
+      else if (ui.view === "notifications") viewHtml = renderNotifications();
+      else if (ui.view === "admin" && me.role === "admin") viewHtml = renderAdmin();
+      else if (ui.view === "discover") viewHtml = renderDiscover();
+      else viewHtml = renderFeed();
+
+      app.innerHTML = noticeHtml + viewHtml;
+    }
+
+    function openTechReportModal() {
+      const me = currentUser();
+      if (!me) return;
+      document.getElementById("modal-root").innerHTML = `
+        <div class="modal-backdrop">
+          <div class="modal-card stack">
+            <div class="row-between">
+              <h3>${t("menuTechSupport")}</h3>
+              <button class="btn btn-ghost" style="padding:4px 10px" onclick="closeModal()">✕</button>
+            </div>
+            <div class="muted">سيتم إرسال بلاغك أو مقترحك للإدارة مرفقاً ببيانات حسابك (@${esc(me.username)}).</div>
+            <form onsubmit="submitTechTicket(event)" class="stack">
+              <div>
+                <label class="muted">النوع</label>
+                <select id="tt-kind" class="input">
+                  <option value="مشكلة تقنية">مشكلة تقنية في التصفح أو الحساب</option>
+                  <option value="مقترح">مقترح تطوير للمنصة</option>
+                </select>
+              </div>
+              <div>
+                <label class="muted">عنوان مختصر</label>
+                <input id="tt-title" class="input" required maxlength="100" placeholder="مثال: مشكلة في تحميل الصفحات أو فكرة إضافة..." />
+              </div>
+              <div>
+                <label class="muted">التفاصيل</label>
+                <textarea id="tt-desc" rows="4" required maxlength="600" placeholder="اشرح ما واجهته أو فكرتك بالتفصيل..."></textarea>
+              </div>
+              <div class="row" style="justify-content:flex-end">
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+                <button type="submit" class="btn btn-primary">إرسال للإدارة</button>
+              </div>
+            </form>
+          </div>
+        </div>`;
+    }
+
+    async function submitTechTicket(e) {
+      e.preventDefault();
+      const me = currentUser();
+      if (!me) return;
+      const kind = document.getElementById("tt-kind").value;
+      const title = document.getElementById("tt-title").value.trim();
+      const desc = document.getElementById("tt-desc").value.trim();
+      if (!title || !desc) return;
+
+      const ticket = {
+        id: AW_ID.unique(),
+        userId: me.id,
+        username: me.username,
+        displayName: getDisplayName(me),
+        kind,
+        title,
+        description: desc,
+        status: kind === "مقترح" ? "قيد الدراسة" : "مفتوح",
+        createdAt: Date.now()
+      };
+
+      if (!db.techTickets) db.techTickets = [];
+      db.techTickets.unshift(ticket);
+      save();
+
+      const adminUser = db.users.find((u) => u.role === "admin");
+      if (adminUser) {
+        await notifyUser(adminUser.id, "admin", me.id, `${kind} جديد من ${getDisplayName(me)} (@${me.username}): ${title}`, kind);
+      }
+
+      closeModal();
+      toast("تم إرسال بلاغك/مقترحك إلى الإدارة بنجاح");
+      render();
     }
 
     function openVerificationRequestModal() {
@@ -1578,6 +1758,7 @@
       const me = currentUser();
       if (!me) return;
       window.__editPhotoData = me.photoData || null;
+      const links = (db.userLinks && db.userLinks[me.id]) || [];
 
       document.getElementById("modal-root").innerHTML = `
         <div class="modal-backdrop">
@@ -1619,6 +1800,14 @@
               <div>
                 <label class="muted">${ui.lang === 'en' ? 'Bio' : 'النبذة التعريفية'}</label>
                 <input id="acc-bio" class="input" maxlength="160" value="${esc(me.bio)}" placeholder="..." />
+              </div>
+              <div class="stack" style="gap:6px;background:var(--surface-soft);padding:10px;border-radius:12px;border:1px solid var(--border)">
+                <label class="muted">روابطك الخارجية (حتى 3 روابط: موقعك، قناتك، متجرك)</label>
+                ${[0, 1, 2].map((i) => `
+                  <div class="row">
+                    <input id="acc-link-title-${i}" class="input" style="flex:1;padding:7px 10px;font-size:12px" maxlength="30" value="${esc(links[i]?.title || "")}" placeholder="اسم الرابط ${i + 1} (مثال: متجري)" />
+                    <input id="acc-link-url-${i}" class="input" style="flex:1.6;padding:7px 10px;font-size:12px" value="${esc(links[i]?.url || "")}" placeholder="https://..." />
+                  </div>`).join("")}
               </div>
               <div class="row">
                 <div style="flex:1">
@@ -1678,6 +1867,16 @@
       const newCountry = document.getElementById("acc-country").value;
       const newBirth = document.getElementById("acc-birth").value;
 
+      const parsedLinks = [];
+      for (let i = 0; i < 3; i++) {
+        const lTitle = document.getElementById(`acc-link-title-${i}`)?.value.trim() || "";
+        const lUrlRaw = document.getElementById(`acc-link-url-${i}`)?.value.trim() || "";
+        const cleanUrl = sanitizeUrl(lUrlRaw);
+        if (cleanUrl) {
+          parsedLinks.push({ title: lTitle || new URL(cleanUrl).hostname, url: cleanUrl });
+        }
+      }
+
       if (newUname.length < 3) return toast("اسم المستخدم يجب ألا يقل عن 3 أحرف");
       if (me.role !== "admin" && isReservedNewUsername(newUname)) {
         return toast("هذا الاسم محجوز ولا يمكن استخدامه في الحسابات الجديدة");
@@ -1711,6 +1910,9 @@
         me.country = newCountry;
         me.birthDate = newBirth;
         me.photoData = window.__editPhotoData || null;
+        if (!db.userLinks) db.userLinks = {};
+        db.userLinks[me.id] = parsedLinks;
+        save();
         if (ui.profileUsername === me.username || ui.view === "profile") {
           ui.profileUsername = newUname;
         }
@@ -1788,6 +1990,7 @@
         db.posts = db.posts.filter((p) => p.userId !== me.id);
         db.follows = db.follows.filter((f) => f.followerId !== me.id && f.followingId !== me.id);
         db.currentUserId = null;
+        save();
         closeModal();
         ui.view = "auth";
         toast("تم حذف الحساب");
@@ -1936,6 +2139,7 @@
           if (me.disabled) {
             try { await awAccount.deleteSession("current"); } catch {}
             db.currentUserId = null;
+            save();
             render();
             return toast("عذراً، هذا الحساب معطل من قِبل الإدارة");
           }
@@ -2023,6 +2227,7 @@
           }
 
           db.currentUserId = userDoc.$id;
+          save();
           ui.view = ui.profileUsername ? "profile" : "feed";
           ui.feedMode = "home";
           window.__regPhotoData = null;
@@ -2037,14 +2242,50 @@
     async function logout() {
       try { await awAccount.deleteSession("current"); } catch {}
       db.currentUserId = null;
+      save();
       ui.view = "auth";
       toast("تم تسجيل الخروج");
       render();
     }
 
+    function handlePostImageSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const me = currentUser();
+      if (!me) return;
+      const imgCheck = canUserPublishImageToday(me.id);
+      if (!imgCheck.allowed) {
+        e.target.value = "";
+        return toast(imgCheck.reason);
+      }
+      compressImageFile(file, (dataUrl) => {
+        window.__composerImageData = dataUrl;
+        const box = document.getElementById("composer-img-preview");
+        if (box) {
+          box.innerHTML = `
+            <div class="row-between" style="margin-top:8px;background:var(--surface-soft);padding:8px 12px;border-radius:10px;border:1px solid var(--border)">
+              <div class="row">
+                <img src="${dataUrl}" style="width:42px;height:42px;border-radius:8px;object-fit:cover" alt="Preview" />
+                <span class="muted">صورة مرفقة للبوست (1/24س)</span>
+              </div>
+              <button type="button" class="btn btn-danger" style="padding:4px 9px;font-size:11px" onclick="clearComposerImage()">إزالة</button>
+            </div>`;
+        }
+      }, 720, 0.72);
+    }
+
+    function clearComposerImage() {
+      window.__composerImageData = null;
+      const inp = document.getElementById("post-img-input");
+      if (inp) inp.value = "";
+      const box = document.getElementById("composer-img-preview");
+      if (box) box.innerHTML = "";
+    }
+
     function renderFeed() {
       const me = currentUser();
       const blocked = me.blockedUsers || [];
+      const rest = getUserRestriction(me.id);
 
       const posts = db.posts
         .filter((p) => {
@@ -2055,7 +2296,14 @@
 
       const q = getQuota(me);
       const myDrafts = db.drafts.filter((d) => d.userId === me.id);
-      const trending = getTrendingHashtags();
+      const imgCheck = canUserPublishImageToday(me.id);
+
+      let composerBlockHtml = "";
+      if (rest.postBanned) {
+        composerBlockHtml = `<div class="card"><div style="font-size:14px;font-weight:600;color:var(--danger)">تم إيقاف النشر مؤقتاً على حسابك</div><div class="muted tabular" style="margin-top:4px">المدة المتبقية: ${remTime(rest.postBanUntil)}</div></div>`;
+      } else if (q.remaining <= 0) {
+        composerBlockHtml = `<div class="card"><div style="font-size:14px;font-weight:600">${t("charLimitZero")}</div><div class="muted tabular" style="margin-top:4px">${t("charLimitNext")} ${q.nextAt ? remTime(q.nextAt) : "24h"}</div></div>`;
+      }
 
       const composerHtml = `<div class="card stack">
         <form onsubmit="publishPost(event)">
@@ -2063,6 +2311,14 @@
             <textarea id="post-input" rows="3" maxlength="500" placeholder="${t("char500")}" oninput="document.getElementById('char-c').textContent=this.value.length; handleMentionAutocomplete(this, 'post-mention-box')"></textarea>
             <div id="post-mention-box" class="mention-dropdown" style="display:none"></div>
           </div>
+          <div id="composer-img-preview">${window.__composerImageData ? `
+            <div class="row-between" style="margin-top:8px;background:var(--surface-soft);padding:8px 12px;border-radius:10px;border:1px solid var(--border)">
+              <div class="row">
+                <img src="${window.__composerImageData}" style="width:42px;height:42px;border-radius:8px;object-fit:cover" alt="Preview" />
+                <span class="muted">صورة مرفقة للبوست (1/24س)</span>
+              </div>
+              <button type="button" class="btn btn-danger" style="padding:4px 9px;font-size:11px" onclick="clearComposerImage()">إزالة</button>
+            </div>` : ""}</div>
           <div class="row-between" style="margin-top:10px">
             <div class="row" style="flex-wrap:wrap">
               <select id="post-cat" class="input" style="width:auto;padding:6px 10px;font-size:12px" onchange="handleCatSelectChange(this.value)">
@@ -2071,6 +2327,9 @@
                 <option value="other">+ تصنيف آخر...</option>
               </select>
               <input id="post-cat-custom" class="input" style="display:none;width:130px;padding:6px 10px;font-size:12px" placeholder="اسم التصنيف..." maxlength="20" />
+              ${db.settings.allowPostImages ? `
+                <input type="file" id="post-img-input" accept="image/*" style="display:none" onchange="handlePostImageSelect(event)" />
+                <button type="button" class="btn btn-soft" style="padding:6px 10px;font-size:12px" onclick="${imgCheck.allowed ? "document.getElementById('post-img-input').click()" : `toast('${esc(imgCheck.reason)}')`}">🖼️ صورة (1/24س)</button>` : ""}
               <button type="button" class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="saveAsDraft()">${t("saveDraft")}</button>
             </div>
             <button type="submit" class="btn btn-primary" ${q.remaining <= 0 ? "disabled" : ""}>${t("publishPost")}</button>
@@ -2098,20 +2357,10 @@
       return `
         <div class="grid-2">
           <div class="stack">
-            ${q.remaining > 0 ? composerHtml : `<div class="card"><div style="font-size:14px;font-weight:600">${t("charLimitZero")}</div><div class="muted tabular" style="margin-top:4px">${t("charLimitNext")} ${q.nextAt ? remTime(q.nextAt) : "24h"}</div></div>`}
+            ${composerBlockHtml || composerHtml}
             ${posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">${t("noPostsFeed")}</div>`}
           </div>
           <aside class="stack">
-            <div class="card">
-              <h3 style="font-size:15px;margin-bottom:12px">${t("trendingTags")}</h3>
-              <div class="stack" style="gap:8px">
-                ${trending.length ? trending.map((item) => `
-                  <div class="row-between" style="background:var(--surface-soft);padding:8px 12px;border-radius:10px;cursor:pointer" onclick="filterByTag('${esc(item.tag)}')">
-                    <span style="color:var(--blue);font-weight:600;font-size:13px">${esc(item.tag)}</span>
-                    <span class="muted tabular" style="font-size:11px">${item.count} بوست</span>
-                  </div>`).join("") : `<div class="muted" style="text-align:center">${t("noTrending")}</div>`}
-              </div>
-            </div>
             <div class="card">
               <h3 style="font-size:15px;margin-bottom:12px">${t("writersInBahr")}</h3>
               <div class="stack" style="gap:10px">
@@ -2126,10 +2375,6 @@
                   </div>`;
                 }).join("") : `<div class="muted" style="text-align:center">${t("noWriters")}</div>`}
               </div>
-            </div>
-            <div class="card muted" style="line-height:1.8">
-              <strong style="color:var(--ink);display:block;margin-bottom:4px">${t("bahrCharter")}</strong>
-              ${t("bahrCharterText")}
             </div>
           </aside>
         </div>`;
@@ -2186,7 +2431,7 @@
 
       const activeFilterInfo = ui.filterTag ? `<div class="card" style="background:var(--surface-tint);padding:10px 14px"><div class="row-between"><span>عرض المنشورات المرتبطة بالوسم: <strong>${esc(ui.filterTag)}</strong></span><button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="ui.filterTag='';render()">إلغاء الوسم</button></div></div>` : "";
 
-      return activeFilterInfo + usersHtml + (posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد نتائج مطابقة لبحثك.</div>`);
+      return renderTrendingCardHtml() + activeFilterInfo + usersHtml + (posts.length ? posts.map(renderPostCard).join("") : `<div class="card muted" style="text-align:center">لا توجد نتائج مطابقة لبحثك.</div>`);
     }
 
     function renderDiscover() {
@@ -2205,6 +2450,25 @@
         </div>`;
     }
 
+    function setReplyCommentTarget(postId, commentId, authorName) {
+      if (!requireAuth("سجّل دخولك أولاً للرد على التعليقات.")) return;
+      if (!db.replyTarget) db.replyTarget = {};
+      db.replyTarget[postId] = { commentId, authorName };
+      ui.openComments[postId] = true;
+      render();
+      setTimeout(() => {
+        const inp = document.getElementById(`cm-${postId}`);
+        if (inp) inp.focus();
+      }, 20);
+    }
+
+    function clearReplyCommentTarget(postId) {
+      if (db.replyTarget && db.replyTarget[postId]) {
+        delete db.replyTarget[postId];
+      }
+      render();
+    }
+
     function renderPostCard(p) {
       const author = getUser(p.userId);
       if (!author || author.disabled) return "";
@@ -2213,6 +2477,8 @@
       const canDel = Boolean(me && (me.id === p.userId || me.role === "admin"));
       const canEdit = Boolean(me && me.id === p.userId && db.settings.allowPostEdits && (Date.now() - p.createdAt < 30 * 60 * 1000));
       const openC = Boolean(ui.openComments[p.id]);
+      const postImg = (db.postImages && db.postImages[p.id]) || null;
+      const activeReply = (db.replyTarget && db.replyTarget[p.id]) || null;
 
       return `
         <article class="card" style="${ui.highlightPostId === p.id ? "border-color:var(--blue)" : ""}">
@@ -2231,6 +2497,7 @@
             </div>
           </div>
           <p class="post-text">${formatRichText(p.content)}</p>
+          ${postImg ? `<img src="${postImg}" alt="Post image" class="post-img" />` : ""}
           <div class="divider"></div>
           <div class="row" style="gap:8px;flex-wrap:wrap">
             <button class="btn ${liked ? "btn-soft" : "btn-ghost"}" style="padding:6px 12px;font-size:12px" onclick="toggleLike('${esc(p.id)}')">♥ ${p.likes.length}</button>
@@ -2243,11 +2510,21 @@
             <div class="stack" style="gap:8px">
               ${p.comments.map((c) => {
                 const cu = getUser(c.userId);
+                const cName = cu ? getDisplayName(cu) : "مستخدم";
                 return `<div style="background:var(--surface-soft);padding:10px;border-radius:10px">
-                  <div class="row" style="font-size:12px"><strong>${esc(cu ? getDisplayName(cu) : "مستخدم")}</strong>${badgeHtml(cu)}<span class="muted">· ${relTime(c.createdAt)}</span></div>
+                  ${c.replyToName ? `<div class="reply-quote">رد على <strong>${esc(c.replyToName)}</strong>${c.replyToSnippet ? `: ${esc(c.replyToSnippet)}` : ""}</div>` : ""}
+                  <div class="row-between">
+                    <div class="row" style="font-size:12px"><strong>${esc(cName)}</strong>${badgeHtml(cu)}<span class="muted">· ${relTime(c.createdAt)}</span></div>
+                    <button type="button" class="btn btn-ghost" style="padding:2px 8px;font-size:11px" onclick="setReplyCommentTarget('${esc(p.id)}', '${esc(c.id)}', '${esc(cName)}')">↩ ${t("reply")}</button>
+                  </div>
                   <div style="font-size:13px;margin-top:4px">${formatRichText(c.content)}</div>
                 </div>`;
               }).join("") || `<div class="muted">${t("noComments")}</div>`}
+              ${activeReply ? `
+                <div class="row-between" style="background:var(--surface-tint);padding:6px 10px;border-radius:9px;font-size:12px">
+                  <span>↩ رد على <strong>${esc(activeReply.authorName)}</strong></span>
+                  <button type="button" class="btn btn-ghost" style="padding:2px 7px;font-size:11px" onclick="clearReplyCommentTarget('${esc(p.id)}')">✕</button>
+                </div>` : ""}
               <form class="row" style="position:relative" onsubmit="addComment(event, '${esc(p.id)}')">
                 <div style="flex:1;position:relative">
                   <input id="cm-${esc(p.id)}" class="input" maxlength="500" placeholder="${t("commentPlaceholder")}" oninput="handleMentionAutocomplete(this, 'cm-mention-box-${esc(p.id)}')" />
@@ -2389,13 +2666,23 @@
       e.preventDefault();
       const me = currentUser();
       if (!me) return openAuthPromptModal("سجّل دخولك أولاً لنشر البوستات.");
+      const rest = getUserRestriction(me.id);
+      if (rest.postBanned) return toast(`النشر موقوف مؤقتاً على حسابك (المتبقي: ${remTime(rest.postBanUntil)})`);
+
       const text = document.getElementById("post-input").value.trim();
       const catSelect = document.getElementById("post-cat").value;
       const catCustom = document.getElementById("post-cat-custom")?.value.trim();
       const cat = catSelect === "other" ? (catCustom || "") : catSelect;
+      const attachedImg = window.__composerImageData || null;
 
-      if (!text || text.length > 500) return;
+      if (!text && !attachedImg) return;
+      if (text.length > 500) return;
       if (getQuota(me).remaining <= 0) return toast("لقد استنفذت حد النشر المسموح اليوم");
+      if (attachedImg) {
+        const imgCheck = canUserPublishImageToday(me.id);
+        if (!imgCheck.allowed) return toast(imgCheck.reason);
+      }
+
       const now = Date.now();
 
       try {
@@ -2405,7 +2692,7 @@
           AW_ID.unique(),
           {
             userId: me.id,
-            content: text,
+            content: text || " ",
             category: cat,
             likes: [],
             commentsJson: "[]",
@@ -2416,13 +2703,19 @@
         const post = {
           id: doc.$id,
           userId: me.id,
-          content: text,
+          content: text || " ",
           category: cat,
           likes: [],
           comments: [],
           createdAt: now
         };
         db.posts.unshift(post);
+        if (attachedImg) {
+          if (!db.postImages) db.postImages = {};
+          db.postImages[doc.$id] = attachedImg;
+          window.__composerImageData = null;
+        }
+        save();
 
         const followers = db.follows.filter((f) => f.followingId === me.id);
         for (const f of followers) {
@@ -2443,8 +2736,11 @@
         db.posts = db.posts.filter((p) => p.id !== id);
         if (db.postAutoDeleteOverrides && db.postAutoDeleteOverrides[id]) {
           delete db.postAutoDeleteOverrides[id];
-          save();
         }
+        if (db.postImages && db.postImages[id]) {
+          delete db.postImages[id];
+        }
+        save();
         toast("تم حذف البوست");
         render();
       } catch (err) {
@@ -2490,10 +2786,16 @@
       const p = db.posts.find((x) => x.id === postId);
       if (!p) return;
 
+      const replyInfo = (db.replyTarget && db.replyTarget[postId]) || null;
+      const parentComment = replyInfo ? p.comments.find((x) => x.id === replyInfo.commentId) : null;
+
       const newComment = {
         id: AW_ID.unique(),
         userId: me.id,
         content: text,
+        replyToId: replyInfo ? replyInfo.commentId : null,
+        replyToName: replyInfo ? replyInfo.authorName : null,
+        replyToSnippet: parentComment ? String(parentComment.content || "").slice(0, 60) : null,
         createdAt: Date.now()
       };
       const updatedComments = [...p.comments, newComment];
@@ -2507,7 +2809,13 @@
           { commentsJson: commentsJsonPayload }
         );
         p.comments = updatedComments;
-        if (p.userId !== me.id) {
+        if (db.replyTarget && db.replyTarget[postId]) {
+          delete db.replyTarget[postId];
+        }
+        if (parentComment && parentComment.userId !== me.id) {
+          await notifyUser(parentComment.userId, "comment", me.id, `رد ${getDisplayName(me)} على تعليقك: "${text.slice(0, 50)}"`, "رد على تعليق", p.id);
+        }
+        if (p.userId !== me.id && (!parentComment || parentComment.userId !== p.userId)) {
           await notifyUser(p.userId, "comment", me.id, `علق ${getDisplayName(me)} على بوستك`, "", p.id);
         }
         await processMentionsAndNotify(text, me, p.id);
@@ -2598,6 +2906,7 @@
       const totalLikes = userPosts.reduce((acc, p) => acc + (p.likes ? p.likes.length : 0), 0);
       const thirtyDaysAgo = Date.now() - (30 * DAY_MS);
       const postsLastMonth = userPosts.filter((p) => p.createdAt > thirtyDaysAgo).length;
+      const links = (db.userLinks && db.userLinks[u.id]) || [];
 
       const canChat = !isOwn && u.role !== "admin" && (!me || me.role !== "admin") && !isBlocked;
 
@@ -2621,6 +2930,10 @@
                     ${u.country ? `<span class="info-chip"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>${esc(u.country)}</span>` : ""}
                     ${u.birthDate ? `<span class="info-chip tabular"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>${esc(u.birthDate)}</span>` : ""}
                   </div>
+                  ${links.length ? `
+                    <div class="bio-links-box">
+                      ${links.map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" class="bio-link-chip">🔗 ${esc(l.title)}</a>`).join("")}
+                    </div>` : ""}
                 </div>
               </div>
               <div class="row" style="flex-wrap:wrap">
@@ -2662,6 +2975,10 @@
     async function startChat(targetId) {
       const me = currentUser();
       if (!me) return openAuthPromptModal("سجّل دخولك أولاً لبدء مراسلة مباشرة.");
+      const rest = getUserRestriction(me.id);
+      if (rest.chatBanned) {
+        return toast(`المحادثات المباشرة موقوفة مؤقتاً على حسابك (المتبقي: ${remTime(rest.chatBanUntil)})`);
+      }
       const target = getUser(targetId);
       if (!target || me.role === "admin" || target.role === "admin") {
         return toast("عذراً، الحساب الإداري لا يستخدم المحادثات المباشرة");
@@ -2705,6 +3022,14 @@
       const me = currentUser();
       if (!me) return renderAuth();
       if (me.role === "admin") return `<div class="card">حساب الإدارة لا يدعم المحادثات المباشرة.</div>`;
+      const rest = getUserRestriction(me.id);
+      if (rest.chatBanned) {
+        return `<div class="card stack">
+          <h3 style="color:var(--danger)">المحادثات المباشرة موقوفة مؤقتاً</h3>
+          <div class="muted tabular">المدة المتبقية: ${remTime(rest.chatBanUntil)} — بقية خصائص حسابك تعمل بشكل طبيعي.</div>
+        </div>`;
+      }
+
       const myConvs = db.conversations.filter((c) => c.user1Id === me.id || c.user2Id === me.id)
         .sort((a, b) => b.lastMessageAt - a.lastMessageAt);
       const active = myConvs.find((c) => c.id === ui.activeChatId) || myConvs[0] || null;
@@ -2766,6 +3091,8 @@
       e.preventDefault();
       const me = currentUser();
       if (!me) return openAuthPromptModal();
+      const rest = getUserRestriction(me.id);
+      if (rest.chatBanned) return toast("المحادثات المباشرة موقوفة مؤقتاً على حسابك");
       const conv = db.conversations.find((c) => c.id === convId);
       if (!conv || conv.messages.length >= 100) return;
       const text = document.getElementById("msg-in").value.trim();
@@ -2870,9 +3197,10 @@
       render();
     }
 
-    function openUserPostsControlModal(userId) {
+    function openUserControlModal(userId) {
       const targetUser = getUser(userId);
       if (!targetUser) return;
+      const rest = getUserRestriction(userId);
       const userPosts = db.posts.filter((p) => p.userId === userId).sort((a, b) => b.createdAt - a.createdAt);
 
       document.getElementById("modal-root").innerHTML = `
@@ -2880,38 +3208,126 @@
           <div class="modal-card stack">
             <div class="row-between">
               <div>
-                <h3>التحكم ببوستات: ${esc(getDisplayName(targetUser))}</h3>
-                <div class="muted tabular">@${esc(targetUser.username)} · عدد البوستات الحالية: ${userPosts.length}</div>
+                <h3>تحكم دقيق بالحساب: ${esc(getDisplayName(targetUser))}</h3>
+                <div class="muted tabular">@${esc(targetUser.username)} · بوستاته: ${userPosts.length}</div>
               </div>
               <button class="btn btn-ghost" style="padding:4px 10px" onclick="closeModal()">✕</button>
             </div>
-            <div class="row" style="flex-wrap:wrap">
-              <button class="btn btn-danger" style="padding:6px 10px;font-size:11px" onclick="adminSetAllUserPostsAutoDelete('${esc(userId)}', 'enabled')">تفعيل حذف 24س لكل بوستاته</button>
-              <button class="btn btn-soft" style="padding:6px 10px;font-size:11px" onclick="adminSetAllUserPostsAutoDelete('${esc(userId)}', 'disabled')">تعطيل حذف 24س لكل بوستاته</button>
-              <button class="btn btn-ghost" style="padding:6px 10px;font-size:11px" onclick="adminSetAllUserPostsAutoDelete('${esc(userId)}', 'inherit')">إرجاع الكل لوضع المستخدم</button>
+
+            <div class="stack" style="background:var(--surface-soft);padding:12px;border-radius:12px;border:1px solid var(--border)">
+              <strong>إيقاف مؤقت للنشر فقط (قراءة وتفاعل فقط)</strong>
+              <div class="muted tabular">الحالة الحالية: ${rest.postBanned ? `موقوف (متبقي ${remTime(rest.postBanUntil)})` : "غير موقوف"}</div>
+              <div class="row" style="flex-wrap:wrap">
+                <input id="post-ban-val" type="number" min="1" max="365" class="input" style="width:85px;padding:6px 8px;font-size:12px" value="24" />
+                <select id="post-ban-unit" class="input" style="width:auto;padding:6px 8px;font-size:12px">
+                  <option value="hours">ساعات</option>
+                  <option value="days">أيام</option>
+                </select>
+                <button type="button" class="btn btn-danger" style="padding:6px 10px;font-size:11px" onclick="adminApplyTempBan('${esc(userId)}', 'post')">تطبيق إيقاف النشر</button>
+                ${rest.postBanned ? `<button type="button" class="btn btn-soft" style="padding:6px 10px;font-size:11px" onclick="adminClearTempBan('${esc(userId)}', 'post')">فك إيقاف النشر</button>` : ""}
+              </div>
             </div>
-            <div class="stack" style="gap:8px;max-height:380px;overflow-y:auto">
+
+            <div class="stack" style="background:var(--surface-soft);padding:12px;border-radius:12px;border:1px solid var(--border)">
+              <strong>إيقاف مؤقت للمحادثات فقط</strong>
+              <div class="muted tabular">الحالة الحالية: ${rest.chatBanned ? `موقوف (متبقي ${remTime(rest.chatBanUntil)})` : "غير موقوف"}</div>
+              <div class="row" style="flex-wrap:wrap">
+                <input id="chat-ban-val" type="number" min="1" max="365" class="input" style="width:85px;padding:6px 8px;font-size:12px" value="24" />
+                <select id="chat-ban-unit" class="input" style="width:auto;padding:6px 8px;font-size:12px">
+                  <option value="hours">ساعات</option>
+                  <option value="days">أيام</option>
+                </select>
+                <button type="button" class="btn btn-danger" style="padding:6px 10px;font-size:11px" onclick="adminApplyTempBan('${esc(userId)}', 'chat')">تطبيق إيقاف المحادثات</button>
+                ${rest.chatBanned ? `<button type="button" class="btn btn-soft" style="padding:6px 10px;font-size:11px" onclick="adminClearTempBan('${esc(userId)}', 'chat')">فك إيقاف المحادثات</button>` : ""}
+              </div>
+            </div>
+
+            <div class="stack" style="background:var(--surface-soft);padding:12px;border-radius:12px;border:1px solid var(--border)">
+              <strong>رسالة إدارية مخصصة أعلى الحساب</strong>
+              <input id="admin-user-notice" class="input" maxlength="240" value="${esc(rest.notice)}" placeholder="مثال: تم تقييد النشر لمدة 24 ساعة بسبب مخالفة..." />
+              <div class="row">
+                <button type="button" class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="adminSaveUserNotice('${esc(userId)}')">حفظ التنويه</button>
+                <button type="button" class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="adminClearUserNotice('${esc(userId)}')">إزالة التنويه</button>
+              </div>
+            </div>
+
+            <div class="stack" style="gap:8px;max-height:300px;overflow-y:auto">
+              <strong>التحكم بحذف البوستات بعد 24 ساعة (فردي أو للجميع)</strong>
+              <div class="row" style="flex-wrap:wrap">
+                <button class="btn btn-danger" style="padding:5px 9px;font-size:11px" onclick="adminSetAllUserPostsAutoDelete('${esc(userId)}', 'enabled')">تفعيل حذف 24س للجميع</button>
+                <button class="btn btn-soft" style="padding:5px 9px;font-size:11px" onclick="adminSetAllUserPostsAutoDelete('${esc(userId)}', 'disabled')">تعطيل حذف 24س للجميع</button>
+                <button class="btn btn-ghost" style="padding:5px 9px;font-size:11px" onclick="adminSetAllUserPostsAutoDelete('${esc(userId)}', 'inherit')">افتراضي للجميع</button>
+              </div>
               ${userPosts.map((p) => {
                 const mode = getPostAutoDeleteMode(p, targetUser);
                 const statusLabel = mode === "enabled" ? "حذف بعد 24س: مفعّل" : (mode === "disabled" ? "حذف بعد 24س: معطّل" : "حذف بعد 24س: حسب المستخدم");
-                return `<div style="padding:12px;background:var(--surface-soft);border:1px solid var(--border);border-radius:12px" class="stack">
-                  <div class="row-between">
-                    <span class="muted tabular">${relTime(p.createdAt)} · <strong>${statusLabel}</strong></span>
-                  </div>
+                return `<div style="padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px" class="stack">
+                  <div class="muted tabular">${relTime(p.createdAt)} · <strong>${statusLabel}</strong></div>
                   <div style="font-size:13px">${esc(p.content)}</div>
                   <div class="row" style="flex-wrap:wrap">
-                    <button class="btn ${mode === 'enabled' ? 'btn-danger' : 'btn-ghost'}" style="padding:4px 9px;font-size:11px" onclick="adminSetSinglePostAutoDelete('${esc(userId)}', '${esc(p.id)}', 'enabled')">تفعيل (24س)</button>
-                    <button class="btn ${mode === 'disabled' ? 'btn-primary' : 'btn-ghost'}" style="padding:4px 9px;font-size:11px" onclick="adminSetSinglePostAutoDelete('${esc(userId)}', '${esc(p.id)}', 'disabled')">تعطيل</button>
-                    <button class="btn ${mode === 'inherit' ? 'btn-soft' : 'btn-ghost'}" style="padding:4px 9px;font-size:11px" onclick="adminSetSinglePostAutoDelete('${esc(userId)}', '${esc(p.id)}', 'inherit')">افتراضي</button>
+                    <button class="btn ${mode === 'enabled' ? 'btn-danger' : 'btn-ghost'}" style="padding:4px 8px;font-size:11px" onclick="adminSetSinglePostAutoDelete('${esc(userId)}', '${esc(p.id)}', 'enabled')">تفعيل (24س)</button>
+                    <button class="btn ${mode === 'disabled' ? 'btn-primary' : 'btn-ghost'}" style="padding:4px 8px;font-size:11px" onclick="adminSetSinglePostAutoDelete('${esc(userId)}', '${esc(p.id)}', 'disabled')">تعطيل</button>
+                    <button class="btn ${mode === 'inherit' ? 'btn-soft' : 'btn-ghost'}" style="padding:4px 8px;font-size:11px" onclick="adminSetSinglePostAutoDelete('${esc(userId)}', '${esc(p.id)}', 'inherit')">افتراضي</button>
                   </div>
                 </div>`;
-              }).join("") || `<div class="muted" style="text-align:center;padding:16px">لا توجد بوستات منشورة لهذا المستخدم حالياً.</div>`}
+              }).join("") || `<div class="muted" style="text-align:center">لا توجد بوستات لهذا المستخدم.</div>`}
             </div>
+
             <div class="row" style="justify-content:flex-end">
               <button class="btn btn-primary" onclick="closeModal()">إغلاق</button>
             </div>
           </div>
         </div>`;
+    }
+
+    function adminApplyTempBan(userId, kind) {
+      const valEl = document.getElementById(kind === "post" ? "post-ban-val" : "chat-ban-val");
+      const unitEl = document.getElementById(kind === "post" ? "post-ban-unit" : "chat-ban-unit");
+      const amount = Math.max(1, parseInt(valEl?.value || "24", 10) || 24);
+      const unit = unitEl?.value || "hours";
+      const durationMs = amount * (unit === "days" ? DAY_MS : HOUR_MS);
+
+      if (!db.userRestrictions) db.userRestrictions = {};
+      const curr = db.userRestrictions[userId] || {};
+      if (kind === "post") curr.postBanUntil = Date.now() + durationMs;
+      else curr.chatBanUntil = Date.now() + durationMs;
+      db.userRestrictions[userId] = curr;
+      save();
+      render();
+      openUserControlModal(userId);
+      toast(kind === "post" ? "تم تطبيق الإيقاف المؤقت للنشر" : "تم تطبيق الإيقاف المؤقت للمحادثات");
+    }
+
+    function adminClearTempBan(userId, kind) {
+      if (!db.userRestrictions || !db.userRestrictions[userId]) return;
+      if (kind === "post") db.userRestrictions[userId].postBanUntil = 0;
+      else db.userRestrictions[userId].chatBanUntil = 0;
+      save();
+      render();
+      openUserControlModal(userId);
+      toast("تم فك الإيقاف المؤقت");
+    }
+
+    function adminSaveUserNotice(userId) {
+      const inp = document.getElementById("admin-user-notice");
+      const notice = (inp?.value || "").trim().slice(0, 240);
+      if (!db.userRestrictions) db.userRestrictions = {};
+      const curr = db.userRestrictions[userId] || {};
+      curr.notice = notice;
+      db.userRestrictions[userId] = curr;
+      save();
+      render();
+      openUserControlModal(userId);
+      toast("تم حفظ الرسالة الإدارية على الحساب");
+    }
+
+    function adminClearUserNotice(userId) {
+      if (!db.userRestrictions || !db.userRestrictions[userId]) return;
+      db.userRestrictions[userId].notice = "";
+      save();
+      render();
+      openUserControlModal(userId);
+      toast("تمت إزالة التنويه الإداري");
     }
 
     function adminSetSinglePostAutoDelete(userId, postId, mode) {
@@ -2923,7 +3339,7 @@
       }
       save();
       render();
-      openUserPostsControlModal(userId);
+      openUserControlModal(userId);
       toast("تم تحديث إعداد الحذف لهذا البوست");
     }
 
@@ -2939,7 +3355,7 @@
       });
       save();
       render();
-      openUserPostsControlModal(userId);
+      openUserControlModal(userId);
       toast("تم تحديث إعداد الحذف لجميع بوستات المستخدم");
     }
 
@@ -2988,6 +3404,7 @@
       const s = db.settings;
       const allPosts = db.posts.sort((a, b) => b.createdAt - a.createdAt);
       const vReqs = db.verificationRequests || [];
+      const tickets = db.techTickets || [];
       const allConvs = db.conversations.slice().sort((a, b) => b.lastMessageAt - a.lastMessageAt);
       const selectedConv = allConvs.find((c) => c.id === ui.adminChatInspectId) || allConvs[0] || null;
       if (selectedConv) ui.adminChatInspectId = selectedConv.id;
@@ -2997,12 +3414,13 @@
           <div class="card row-between">
             <div>
               <h2>${t("adminPanel")}</h2>
-              <div class="muted tabular">إجمالي المستخدمين: ${db.users.length} · البوستات: ${db.posts.length} · المحادثات: ${allConvs.length} · طلبات التوثيق: ${vReqs.length}</div>
+              <div class="muted tabular">إجمالي المستخدمين: ${db.users.length} · البوستات: ${db.posts.length} · المحادثات: ${allConvs.length} · البلاغات والمقترحات: ${tickets.length}</div>
             </div>
             <div class="tabs">
               <button class="tab-btn ${ui.adminTab === "users" ? "active" : ""}" onclick="ui.adminTab='users';render()">المستخدمين والحصص</button>
               <button class="tab-btn ${ui.adminTab === "chats" ? "active" : ""}" onclick="ui.adminTab='chats';render()">مراقبة الشاتات (${allConvs.length})</button>
               <button class="tab-btn ${ui.adminTab === "verify" ? "active" : ""}" onclick="ui.adminTab='verify';render()">طلبات التوثيق (${vReqs.filter(r=>r.status==='pending').length})</button>
+              <button class="tab-btn ${ui.adminTab === "tickets" ? "active" : ""}" onclick="ui.adminTab='tickets';render()">المقترحات والمشاكل (${tickets.length})</button>
               <button class="tab-btn ${ui.adminTab === "broadcast" ? "active" : ""}" onclick="ui.adminTab='broadcast';render()">التنشيط العام</button>
               <button class="tab-btn ${ui.adminTab === "posts" ? "active" : ""}" onclick="ui.adminTab='posts';render()">البوستات</button>
               <button class="tab-btn ${ui.adminTab === "settings" ? "active" : ""}" onclick="ui.adminTab='settings';render()">الإعدادات</button>
@@ -3011,15 +3429,21 @@
           </div>
           ${ui.adminTab === "users" ? `
             <div class="card stack">
-              <h3>إدارة المستخدمين، الحصص، والتحكم بحذف البوستات بعد 24 ساعة</h3>
+              <h3>إدارة المستخدمين، الحصص، والتقييد المؤقت وحذف البوستات بعد 24 ساعة</h3>
               ${db.users.map((u) => {
                 const uMode = u.autoDeleteMode || "inherit";
+                const rest = getUserRestriction(u.id);
                 return `
                 <div class="row-between" style="padding:12px 0;border-bottom:1px solid var(--border)">
                   <div class="row">
                     ${avatarHtml(u, "av-sm")}
                     <div>
-                      <div><strong>${esc(getDisplayName(u))}</strong> (@${esc(u.username)}) ${badgeHtml(u)} <span class="muted">(${u.role})</span> ${u.disabled ? '<span style="color:var(--danger);font-size:11px">[معطل]</span>' : ''}</div>
+                      <div>
+                        <strong>${esc(getDisplayName(u))}</strong> (@${esc(u.username)}) ${badgeHtml(u)} <span class="muted">(${u.role})</span>
+                        ${u.disabled ? '<span style="color:var(--danger);font-size:11px">[معطل]</span>' : ''}
+                        ${rest.postBanned ? '<span style="color:var(--warning-text);font-size:11px">[نشر موقوف]</span>' : ''}
+                        ${rest.chatBanned ? '<span style="color:var(--warning-text);font-size:11px">[شات موقوف]</span>' : ''}
+                      </div>
                       <div class="muted">تاريخ الانضمام: ${relTime(u.createdAt)}</div>
                     </div>
                   </div>
@@ -3033,7 +3457,7 @@
                       <option value="enabled" ${uMode === "enabled" ? "selected" : ""}>حذف 24س: مفعّل للمستخدم</option>
                       <option value="disabled" ${uMode === "disabled" ? "selected" : ""}>حذف 24س: معطّل للمستخدم</option>
                     </select>
-                    <button class="btn btn-soft" style="padding:5px 10px;font-size:11px" onclick="openUserPostsControlModal('${esc(u.id)}')">تحكم ببوستات المستخدم</button>
+                    <button class="btn btn-soft" style="padding:5px 10px;font-size:11px" onclick="openUserControlModal('${esc(u.id)}')">تحكم وتقييد الحساب</button>
                     <button class="btn ${u.verified ? "btn-primary" : "btn-soft"}" style="padding:5px 10px;font-size:11px" onclick="adminVerify('${esc(u.id)}')">${u.verified ? "موثق ✓" : "توثيق"}</button>
                     ${u.role !== "admin" ? `
                       <button class="btn ${u.disabled ? "btn-primary" : "btn-ghost"}" style="padding:5px 10px;font-size:11px" onclick="adminToggleDisable('${esc(u.id)}')">${u.disabled ? "تنشيط الحساب" : "تعطيل الحساب"}</button>
@@ -3042,6 +3466,29 @@
                   </div>
                 </div>`;
               }).join("")}
+            </div>` : ""}
+          ${ui.adminTab === "tickets" ? `
+            <div class="card stack">
+              <h3>المقترحات والمشاكل التقنية المرسلة من المستخدمين (${tickets.length})</h3>
+              ${tickets.map((tk) => `
+                <div style="padding:14px;background:var(--surface-soft);border-radius:12px;border:1px solid var(--border)" class="stack">
+                  <div class="row-between">
+                    <div>
+                      <strong>[${esc(tk.kind)}] ${esc(tk.title)}</strong>
+                      <div class="muted tabular">من: ${esc(tk.displayName)} (@${esc(tk.username)}) · ${relTime(tk.createdAt)}</div>
+                    </div>
+                    <div class="row">
+                      <span class="tag-badge">${esc(tk.status)}</span>
+                      <select class="input" style="width:auto;padding:4px 8px;font-size:12px" onchange="adminUpdateTicketStatus('${esc(tk.id)}', this.value)">
+                        <option value="قيد الدراسة" ${tk.status === "قيد الدراسة" ? "selected" : ""}>قيد الدراسة</option>
+                        <option value="تم التنفيذ" ${tk.status === "تم التنفيذ" ? "selected" : ""}>تم التنفيذ</option>
+                        <option value="مرفوض" ${tk.status === "مرفوض" ? "selected" : ""}>مرفوض</option>
+                        <option value="مفتوح" ${tk.status === "مفتوح" ? "selected" : ""}>مفتوح</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div style="font-size:13px;line-height:1.7">${esc(tk.description)}</div>
+                </div>`).join("") || `<div class="muted" style="text-align:center">لا توجد مقترحات أو مشاكل تقنية حالياً.</div>`}
             </div>` : ""}
           ${ui.adminTab === "chats" ? `
             <div class="chat-box">
@@ -3159,6 +3606,10 @@
                 <div><strong>الحذف التلقائي للمنشورات القديمة (أكثر من 24 ساعة)</strong></div>
                 <button class="btn ${s.autoDeleteEnabled ? "btn-primary" : "btn-ghost"}" onclick="db.settings.autoDeleteEnabled=!db.settings.autoDeleteEnabled;save();render()">${s.autoDeleteEnabled ? "مفعل تلقائياً" : "معطل"}</button>
               </div>
+              <div class="row-between" style="padding:10px 0;border-bottom:1px solid var(--border)">
+                <div><strong>السماح بنشر صورة بجانب النص (صورة واحدة كل 24 ساعة)</strong></div>
+                <button class="btn ${s.allowPostImages ? "btn-primary" : "btn-ghost"}" onclick="db.settings.allowPostImages=!db.settings.allowPostImages;save();render()">${s.allowPostImages ? "مسموح" : "مغلق"}</button>
+              </div>
               <div class="row-between" style="padding:10px 0">
                 <div><strong>السماح للمستخدمين بتعديل بوستاتهم</strong></div>
                 <button class="btn ${s.allowPostEdits ? "btn-primary" : "btn-ghost"}" onclick="db.settings.allowPostEdits=!db.settings.allowPostEdits;save();render()">${s.allowPostEdits ? "مسموح" : "مغلق"}</button>
@@ -3184,6 +3635,18 @@
                 </div>`).join("") || `<div class="muted" style="text-align:center">لا توجد بلاغات نشطة حالياً.</div>`}
             </div>` : ""}
         </div>`;
+    }
+
+    async function adminUpdateTicketStatus(ticketId, newStatus) {
+      const tk = (db.techTickets || []).find((x) => x.id === ticketId);
+      if (!tk) return;
+      tk.status = newStatus;
+      save();
+      if (tk.userId) {
+        await notifyUser(tk.userId, "admin", null, `تم تحديث حالة ${tk.kind} "${tk.title}" إلى: ${newStatus}`, "تحديث حالة الطلب");
+      }
+      toast("تم تحديث حالة الطلب وإشعار المستخدم");
+      render();
     }
 
     async function adminUpdateUserAutoDelete(id, mode) {
@@ -3327,6 +3790,7 @@
     }
 
     (async function initApp() {
+      checkInitialHash();
       render();
       await syncAllFromAppwrite();
       checkInitialHash();
